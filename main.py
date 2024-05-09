@@ -8,7 +8,7 @@ import scipy
 
 
 def read_data():
-    data = pd.read_hdf('../SLB7_231218.h5')
+    data = pd.read_hdf('data/SLB7_231218.h5')
     print(f"header: {[e for e in data.columns]}")
 
     # lengths = [len(data.loc[data['particle'] == idx][['frame']]) for idx in set(data['particle'])]
