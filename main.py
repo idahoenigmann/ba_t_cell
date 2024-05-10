@@ -13,16 +13,13 @@ def read_data():
 
     # lengths = [len(data.loc[data['particle'] == idx][['frame']]) for idx in set(data['particle'])]
     # print(len([lengths[i] for i in range(len(lengths)) if lengths[i] == 948]))
-    # print(len([lengths[i] for i in range(len(lengths)) if lengths[i] != 948]))
-    # print(len([lengths[i] for i in range(len(lengths)) if lengths[i] >= 100]))
     return data
 
 
-def visualize_single_particle(single_particle_data, ax=None):
-    if ax is None:
-        single_particle_data.plot.scatter(x="frame", y="ratio")
-    else:
-        single_particle_data.plot.scatter(x="frame", y="ratio", ax=ax)
+def visualize_single_particle(single_particle_data):
+    ax = single_particle_data.plot.scatter(x="frame", y="ratio")
+    if 'fitted' in single_particle_data.columns:
+        single_particle_data.plot(x='frame', y='fitted', color="red", ax=ax)
     plt.show()
 
 
@@ -42,15 +39,19 @@ def visualize_data():
         min_val, median_val, max_val = np.min(ydata), np.median(ydata), np.max(ydata)
         lower_bounds = (min_val, xdata[0], 0.05, median_val, min_val)
         upper_bounds = (median_val, xdata[-1], 10, max_val, max_val)
-        p0 = [(lower_bounds[i] + upper_bounds[i])/2 for i in range(len(lower_bounds))]
-        p0[1], p0[2] = lower_bounds[1], 0.1
+        p0 = (ydata[0], xdata[0], 0.1, max_val, ydata[-1])
 
         popt, *_ = scipy.optimize.curve_fit(function_, xdata, ydata, p0=p0, method='trf',
                                             bounds=(lower_bounds, upper_bounds))
 
-        f = pandas.DataFrame({'frame': xdata, 'data': function_(xdata, *popt)})
-        ax = f.plot(x='frame', y='data', color="red")
-        visualize_single_particle(single_particle_data, ax)
+        par = Parameters(*popt, xdata[-1])
+
+        single_particle_data['fitted'] = function_(xdata, *par.list())
+        visualize_single_particle(single_particle_data)
+
+        single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fitted']
+        single_particle_data.plot.scatter(x="frame", y="residuum", xlim=(par.transition_point, par.end))
+        plt.show()
 
 
 class Parameters:
