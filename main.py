@@ -1,4 +1,3 @@
-import pandas
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -19,7 +18,11 @@ def read_data():
 def visualize_single_particle(single_particle_data):
     ax = single_particle_data.plot.scatter(x="frame", y="ratio")
     if 'fitted' in single_particle_data.columns:
-        single_particle_data.plot(x='frame', y='fitted', color="red", ax=ax)
+        if 'fft' in single_particle_data.columns:
+            single_particle_data['total_fit'] = single_particle_data['fitted'] + single_particle_data['fft']
+            single_particle_data.plot(x='frame', y='total_fit', color="red", ax=ax)
+        else:
+            single_particle_data.plot(x='frame', y='fitted', color="red", ax=ax)
     plt.show()
 
 
@@ -50,8 +53,29 @@ def visualize_data():
         visualize_single_particle(single_particle_data)
 
         single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fitted']
-        single_particle_data.plot.scatter(x="frame", y="residuum", xlim=(par.transition_point, par.end))
+
+        transition_index = int((np.abs(xdata - par.transition_point)).argmin())
+        end_index = len(xdata)
+
+        fft_out = np.fft.fft(single_particle_data['residuum'][transition_index: end_index])
+
+        # fft_out[len(fft_out)//2:-1] = np.zeros(len(fft_out) - len(fft_out)//2 - 1)
+        # fft_out[0:len(fft_out) // 2] = np.zeros(len(fft_out) // 2)
+        main_freqs = np.argsort(fft_out)[-20:]
+        main_amps = [fft_out[f] for f in main_freqs]
+
+        fft_out = np.zeros(len(fft_out), dtype=complex)
+        fft_out[main_freqs] = main_amps
+
+        a = np.zeros(transition_index)
+        b = np.real(np.fft.ifft(fft_out))
+        single_particle_data['fft'] = np.concatenate((a, b))
+
+        ax = single_particle_data.plot.scatter(x="frame", y="residuum", xlim=(par.transition_point, par.end))
+        single_particle_data.plot(x="frame", y="fft", xlim=(par.transition_point, par.end), ax=ax, color="red")
         plt.show()
+
+        visualize_single_particle(single_particle_data)
 
 
 class Parameters:
