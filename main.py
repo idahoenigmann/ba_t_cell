@@ -10,6 +10,7 @@ def read_data():
     data = pd.read_hdf('data/SLB7_231218.h5')
     print(f"header: {[e for e in data.columns]}")
 
+    # check which lengths of data are present
     # lengths = [len(data.loc[data['particle'] == idx][['frame']]) for idx in set(data['particle'])]
     # print(len([lengths[i] for i in range(len(lengths)) if lengths[i] == 948]))
     return data
@@ -26,56 +27,30 @@ def visualize_single_particle(single_particle_data):
     plt.show()
 
 
-def visualize_data():
-    matplotlib.use('TkAgg')
-    data = read_data()
+def fit_basic_function(xdata, ydata):
+    min_val, median_val, max_val = np.min(ydata), np.median(ydata), np.max(ydata)
+    lower_bounds = (min_val, xdata[0], 0.05, median_val, min_val)
+    upper_bounds = (median_val, xdata[-1], 10, max_val, max_val)
+    p0 = (ydata[0], xdata[0], 0.1, max_val, ydata[-1])
 
-    # visualize particle calcium concentration
-    for particle_idx in set(data['particle']):
-        single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
+    popt, *_ = scipy.optimize.curve_fit(function_, xdata, ydata, p0=p0, method='trf',
+                                        bounds=(lower_bounds, upper_bounds))
 
-        xdata, ydata = [x for x in single_particle_data['frame']], [y for y in single_particle_data['ratio']]
+    return Parameters(*popt, xdata[-1])
 
-        if len(xdata) < 10:
-            continue
 
-        min_val, median_val, max_val = np.min(ydata), np.median(ydata), np.max(ydata)
-        lower_bounds = (min_val, xdata[0], 0.05, median_val, min_val)
-        upper_bounds = (median_val, xdata[-1], 10, max_val, max_val)
-        p0 = (ydata[0], xdata[0], 0.1, max_val, ydata[-1])
+def fit_periodic_part(transition_index, end_index, single_particle_data):
+    fft_out = np.fft.fft(single_particle_data['residuum'][transition_index: end_index])
 
-        popt, *_ = scipy.optimize.curve_fit(function_, xdata, ydata, p0=p0, method='trf',
-                                            bounds=(lower_bounds, upper_bounds))
+    # fft_out[len(fft_out)//2:-1] = np.zeros(len(fft_out) - len(fft_out)//2 - 1)
+    # fft_out[0:len(fft_out) // 2] = np.zeros(len(fft_out) // 2)
+    main_freqs = np.argsort(fft_out)[-20:]
+    main_amps = [fft_out[f] for f in main_freqs]
 
-        par = Parameters(*popt, xdata[-1])
+    fft_out = np.zeros(len(fft_out), dtype=complex)
+    fft_out[main_freqs] = main_amps
 
-        single_particle_data['fitted'] = function_(xdata, *par.list())
-        visualize_single_particle(single_particle_data)
-
-        single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fitted']
-
-        transition_index = int((np.abs(xdata - par.transition_point)).argmin())
-        end_index = len(xdata)
-
-        fft_out = np.fft.fft(single_particle_data['residuum'][transition_index: end_index])
-
-        # fft_out[len(fft_out)//2:-1] = np.zeros(len(fft_out) - len(fft_out)//2 - 1)
-        # fft_out[0:len(fft_out) // 2] = np.zeros(len(fft_out) // 2)
-        main_freqs = np.argsort(fft_out)[-20:]
-        main_amps = [fft_out[f] for f in main_freqs]
-
-        fft_out = np.zeros(len(fft_out), dtype=complex)
-        fft_out[main_freqs] = main_amps
-
-        a = np.zeros(transition_index)
-        b = np.real(np.fft.ifft(fft_out))
-        single_particle_data['fft'] = np.concatenate((a, b))
-
-        ax = single_particle_data.plot.scatter(x="frame", y="residuum", xlim=(par.transition_point, par.end))
-        single_particle_data.plot(x="frame", y="fft", xlim=(par.transition_point, par.end), ax=ax, color="red")
-        plt.show()
-
-        visualize_single_particle(single_particle_data)
+    return fft_out
 
 
 class Parameters:
@@ -109,10 +84,9 @@ class Parameters:
 
 
 def function(t, parameters):
-    if parameters.transition_point is None:
+    if parameters.transition_point is None:     # transition point lies outside datapoints (flat left side)
         return parameters.unactivated_val
-    # logistic function
-    if t <= parameters.transition_point:
+    elif t <= parameters.transition_point:      # logistic function before transition point
         L = parameters.activated_val - parameters.unactivated_val
         t_0 = parameters.increase_point
         k = parameters.increase_steepness
@@ -123,7 +97,7 @@ def function(t, parameters):
             res = 0
         res = res + parameters.unactivated_val
         return res
-    else:
+    else:                                       # linear decrease after transition point
         k = (parameters.decreased_val - parameters.val_at_transition) / (parameters.end - parameters.transition_point)
         return k * (t - parameters.transition_point) + parameters.val_at_transition
 
@@ -133,5 +107,42 @@ def function_(t_arr, unactivated_val, increase_point, increase_steepness, activa
     return [function(t, p) for t in t_arr]
 
 
+def main(visualize=True):
+    matplotlib.use('TkAgg')
+    data = read_data()
+
+    # visualize particle calcium concentration
+    for particle_idx in set(data['particle']):
+        single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
+        xdata, ydata = [x for x in single_particle_data['frame']], [y for y in single_particle_data['ratio']]
+
+        if len(xdata) < 10:     # skip if too short
+            continue
+
+        # calculate fit for basic function and visualize results
+        par = fit_basic_function(xdata, ydata)
+        single_particle_data['fitted'] = function_(xdata, *par.list())
+        if visualize:
+            visualize_single_particle(single_particle_data)
+
+        # calculate residuum
+        single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fitted']
+
+        # do fft to fit a periodic function into the residuum
+        transition_index, end_index = int((np.abs(xdata - par.transition_point)).argmin()), len(xdata)
+        fft_out = fit_periodic_part(transition_index, end_index, single_particle_data)
+        single_particle_data['fft'] = np.concatenate((np.zeros(transition_index), np.real(np.fft.ifft(fft_out))))
+
+        # visualize the fitted periodic function
+        if visualize:
+            ax = single_particle_data.plot.scatter(x="frame", y="residuum", xlim=(par.transition_point, par.end))
+            single_particle_data.plot(x="frame", y="fft", xlim=(par.transition_point, par.end), ax=ax, color="red")
+            plt.show()
+
+        # visualize end result
+        if visualize:
+            visualize_single_particle(single_particle_data)
+
+
 if __name__ == '__main__':
-    visualize_data()
+    main()
