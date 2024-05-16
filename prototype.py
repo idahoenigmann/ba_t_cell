@@ -47,6 +47,9 @@ def fit_periodic_part_using_fft(xdata, ydata, number_of_frequencies_kept):
     main_freqs = np.argsort(fft_out)[-number_of_frequencies_kept:]
     main_amps = [fft_out[f] for f in main_freqs]
 
+    print(main_freqs)
+    print(main_amps)
+
     return main_freqs, main_amps
 
 

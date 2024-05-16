@@ -22,6 +22,15 @@ def approximate_with_sigmoid_curve(dataframe):
     :returns: parameters for sigmoid curve
     """
 
+    def calc_transition_point(w, a, u, k, alpha=0.99):
+        """
+        calculate transition point as point where supremum is almost reached
+        :param w, a, u, k: function parameters
+        :param alpha: margin to supremum
+        :return: transition point
+        """
+        return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
+
     def sigmoid_and_linear_decreasing_(x, w, t, a, d, u, k):
         """
         w   midpoint of sigmoid function
@@ -40,19 +49,17 @@ def approximate_with_sigmoid_curve(dataframe):
                 res = (a - u) / (1 + math.exp(tmp))
             else:
                 res = 0
-            res = res + u
-            return res
+            return res + u
         else:  # linear decrease after transition point
             val_at_transition = sigmoid_and_linear_decreasing_(t, w, t, a, d, u, k)
-            k = (d - val_at_transition) / (end - t)
-            return k * (x - t) + val_at_transition
+            return (d - val_at_transition) / (end - t) * (x - t) + val_at_transition
 
     def sigmoid_and_linear_decreasing(x_arr, w, a, d, u, k):
-        alpha = 0.99
-        t = - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
-        f = np.vectorize(sigmoid_and_linear_decreasing_)
-        # [sigmoid_and_linear_decreasing_(x, w, t, e, a, d, u, k) for x in x_arr]
-        return f(x_arr, w, t, a, d, u, k)
+        """
+        wrapper for sigmoid_and_linear_decreasing_ function, takes list as input
+        """
+        t = calc_transition_point(w, a, u, k)
+        return np.vectorize(sigmoid_and_linear_decreasing_)(x_arr, w, t, a, d, u, k)
 
     min_val, median_val, max_val = np.min(dataframe['ratio']), np.median(dataframe['ratio']), np.max(dataframe['ratio'])
     start, end = min(dataframe['frame']), max(dataframe['frame'])
@@ -63,17 +70,47 @@ def approximate_with_sigmoid_curve(dataframe):
     popt, *_ = scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0,
                                         method='trf', bounds=(lower_bounds, upper_bounds))
     dataframe['fit_sigmoid'] = sigmoid_and_linear_decreasing(dataframe['frame'], *popt)
-    return popt
+
+    w, a, d, u, k = popt
+    t = calc_transition_point(w, a, u, k)
+    return {'w': w, 't': t, 'e': end, 'a': a, 'd': d, 'u': u, 'k': k}
 
 
-def approximate_residuum_with_sin(dataframe):
+def approximate_residuum_with_sin(dataframe, start, end):
     """
     approximates the residuum by a sin function with fluctuating amplitude
     changes dataframe! adds a column named fit_sin
     :param dataframe: datapoints to approximate, must contain columns ratio and fit_sigmoid
     :returns: parameters for sin
     """
-    return 0
+
+    def sin_with_changing_amplitude_(x, f, phi, a_0):
+        """
+        f     frequency
+        phi   phase
+        a_i   coefficients of amplitude polynomial of degree 0
+        """
+        return (a_0) * math.sin(2 * math.pi * f * x + phi)
+
+    def sin_with_changing_amplitude(x_arr, f, phi, a_0):
+        """
+        wrapper for sin_with_changing_amplitude_ function, takes list as input
+        """
+        return np.vectorize(sin_with_changing_amplitude_)(x_arr, f, phi, a_0)
+
+    lower_bounds = (0.001, 0, -np.inf)
+    upper_bounds = (0.1, 2 * math.pi, np.inf)
+    p0 = (0.01, 0, 0)
+
+    popt, *_ = scipy.optimize.curve_fit(sin_with_changing_amplitude, dataframe['frame'][start:end],
+                                        dataframe['residuum'][start:end], p0=p0,
+                                        method='trf', bounds=(lower_bounds, upper_bounds))
+
+    dataframe['fit_sin'] = np.concatenate(
+        (np.zeros(start), sin_with_changing_amplitude(dataframe['frame'][start:end], *p0)))
+
+    f, phi, a_0 = popt
+    return {'f': f, 'phi': phi, 'a_0': a_0}
 
 
 def visualize(dataframe):
@@ -81,12 +118,11 @@ def visualize(dataframe):
     visualizes datapoints and (optional) approximations
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
     """
-    ax = single_particle_data.plot.scatter(x="frame", y="ratio")
-    if 'fit_sigmoid' in single_particle_data.columns:
-        if 'fit_sin' in single_particle_data.columns:
-            pass
-        else:
-            single_particle_data.plot(x='frame', y='fit_sigmoid', color="red", ax=ax)
+    ax = dataframe.plot.scatter(x="frame", y="ratio")
+    if 'fit_total' in dataframe.columns:
+        dataframe.plot(x='frame', y='fit_total', color="red", ax=ax)
+    elif 'fit_sigmoid' in dataframe.columns:
+        dataframe.plot(x='frame', y='fit_sigmoid', color="red", ax=ax)
     plt.show()
 
 
@@ -97,6 +133,14 @@ if __name__ == '__main__':
     for particle_idx in set(data['particle']):
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
-        approximate_with_sigmoid_curve(single_particle_data)
+        parameters = approximate_with_sigmoid_curve(single_particle_data)
+        single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fit_sigmoid']
 
+        transition_index = int((np.abs(single_particle_data['frame'] - parameters['t'])).argmin())
+
+        parameters = {**parameters, **approximate_residuum_with_sin(single_particle_data, transition_index,
+                                                                    len(single_particle_data['frame']))}
+        single_particle_data['fit_total'] = single_particle_data['fit_sigmoid'] + single_particle_data['fit_sin']
+
+        print(parameters)
         visualize(single_particle_data)
