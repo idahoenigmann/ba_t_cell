@@ -29,7 +29,11 @@ def approximate_with_sigmoid_curve(dataframe):
         :param alpha: margin to supremum
         :return: transition point
         """
-        return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
+        try:
+            return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
+        except ValueError:
+            print(f"k: {k}, a: {a}, u: {u}")
+            return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
 
     def sigmoid_and_linear_decreasing_(x, w, t, a, d, u, k):
         """
@@ -63,8 +67,8 @@ def approximate_with_sigmoid_curve(dataframe):
 
     min_val, median_val, max_val = np.min(dataframe['ratio']), np.median(dataframe['ratio']), np.max(dataframe['ratio'])
     start, end = min(dataframe['frame']), max(dataframe['frame'])
-    lower_bounds = (start, median_val, min_val, min_val, 0.05)
-    upper_bounds = (end, max_val, max_val, median_val, 10)
+    lower_bounds = (start, median_val + 0.002, min_val, min_val, 0.05)
+    upper_bounds = (end, max_val, max_val, median_val - 0.002, 10)
     p0 = (start, max_val, median_val, min_val, 0.1)
 
     popt, *_ = scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0,
@@ -159,7 +163,14 @@ if __name__ == '__main__':
     for particle_idx in set(data['particle']):
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
-        parameters_sigmoid = approximate_with_sigmoid_curve(single_particle_data)
+        if len(single_particle_data['frame']) < 20:
+            continue
+
+        try:
+            parameters_sigmoid = approximate_with_sigmoid_curve(single_particle_data)
+        except RuntimeError as e:
+            print(e)
+            continue
         single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fit_sigmoid']
 
         transition_index = int((np.abs(single_particle_data['frame'] - parameters_sigmoid['t'])).argmin())
