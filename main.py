@@ -113,6 +113,32 @@ def approximate_residuum_with_sin(dataframe, start, end):
     return {'f': f, 'phi': phi, 'a_0': a_0}
 
 
+def approximate_residuum_with_fft(dataframe, start, end):
+    """
+    approximates the residuum by sin generated with fft
+    changes dataframe! adds a column named fit_sin
+    :param dataframe: datapoints to approximate, must contain columns ratio and fit_sigmoid
+    :returns: parameters for fft
+    """
+
+    number_of_frequencies_kept = 10
+
+    # assumes frames are evenly spaced!
+    fft_out = np.fft.fft(dataframe['residuum'][start:end])
+
+    # get frequencies with the highest amplitude
+    main_freqs = np.argsort(fft_out)[-number_of_frequencies_kept:]
+    main_amps = [fft_out[f] for f in main_freqs]
+
+    # delete all but main frequencies
+    fft_out = np.zeros(end - start, dtype=complex)
+    fft_out[main_freqs] = main_amps
+
+    dataframe['fit_sin'] = np.concatenate((np.zeros(start), np.real(np.fft.ifft(fft_out))))
+
+    return {'fft': dict([(main_freqs[i], main_amps[i]) for i in range(len(main_freqs))])}
+
+
 def visualize(dataframe):
     """
     visualizes datapoints and (optional) approximations
@@ -133,13 +159,20 @@ if __name__ == '__main__':
     for particle_idx in set(data['particle']):
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
-        parameters = approximate_with_sigmoid_curve(single_particle_data)
+        parameters_sigmoid = approximate_with_sigmoid_curve(single_particle_data)
         single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fit_sigmoid']
 
-        transition_index = int((np.abs(single_particle_data['frame'] - parameters['t'])).argmin())
+        transition_index = int((np.abs(single_particle_data['frame'] - parameters_sigmoid['t'])).argmin())
 
-        parameters = {**parameters, **approximate_residuum_with_sin(single_particle_data, transition_index,
-                                                                    len(single_particle_data['frame']))}
+        # use optimize to fit sin
+        # parameters_sin = approximate_residuum_with_sin(single_particle_data, transition_index,
+        #                                                len(single_particle_data['frame']))
+
+        # use fft to fit sin
+        parameters_sin = approximate_residuum_with_fft(single_particle_data, transition_index,
+                                                       len(single_particle_data['frame']))
+
+        parameters = {**parameters_sigmoid, **parameters_sin}
         single_particle_data['fit_total'] = single_particle_data['fit_sigmoid'] + single_particle_data['fit_sin']
 
         print(parameters)
