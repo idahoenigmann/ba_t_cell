@@ -159,6 +159,7 @@ def visualize(dataframe):
 def calc_residuum_and_error(dataframe):
     """
     calculates residuum and mean squared error
+    :return: mean squared error of eiter fit_sigmoid or fit_total
     :param dataframe: data, must contain column fit_sigmoid or fit_total
     """
     if 'fit_total' in dataframe.columns:
@@ -168,7 +169,7 @@ def calc_residuum_and_error(dataframe):
     else:
         raise ValueError('dataframe does not contain one of the columns fit_sigmoid or fit_total.')
     dataframe['residuum'] = dataframe['ratio'] - dataframe[col_name]
-    return np.sum(np.square(dataframe['residuum'])) / len(dataframe['residuum'])
+    return np.dot(dataframe['residuum'], dataframe['residuum']) / len(dataframe['residuum'])
 
 
 if __name__ == '__main__':
