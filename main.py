@@ -158,7 +158,7 @@ def visualize(dataframe):
 
 def calc_residuum_and_error(dataframe):
     """
-    calculates residuum and relative error
+    calculates residuum and mean squared error
     :param dataframe: data, must contain column fit_sigmoid or fit_total
     """
     if 'fit_total' in dataframe.columns:
@@ -168,8 +168,7 @@ def calc_residuum_and_error(dataframe):
     else:
         raise ValueError('dataframe does not contain one of the columns fit_sigmoid or fit_total.')
     dataframe['residuum'] = dataframe['ratio'] - dataframe[col_name]
-    dataframe['rel_error'] = np.abs(dataframe['residuum'] / dataframe['ratio'])
-    return np.average(dataframe['rel_error'])
+    return np.sum(np.square(dataframe['residuum'])) / len(dataframe['residuum'])
 
 
 if __name__ == '__main__':
@@ -205,5 +204,5 @@ if __name__ == '__main__':
         rel_error_total = calc_residuum_and_error(single_particle_data)
 
         print(f"parameters: {parameters}")
-        print(f"relative error sigmoid: {rel_error_sigmoid}, relative error total: {rel_error_total}")
+        print(f"mse sigmoid: {rel_error_sigmoid}, mse total: {rel_error_total}")
         visualize(single_particle_data)
