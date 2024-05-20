@@ -156,6 +156,22 @@ def visualize(dataframe):
     plt.show()
 
 
+def calc_residuum_and_error(dataframe):
+    """
+    calculates residuum and relative error
+    :param dataframe: data, must contain column fit_sigmoid or fit_total
+    """
+    if 'fit_total' in dataframe.columns:
+        col_name = 'fit_total'
+    elif 'fit_sigmoid' in dataframe.columns:
+        col_name = 'fit_sigmoid'
+    else:
+        raise ValueError('dataframe does not contain one of the columns fit_sigmoid or fit_total.')
+    dataframe['residuum'] = dataframe['ratio'] - dataframe[col_name]
+    dataframe['rel_error'] = np.abs(dataframe['residuum'] / dataframe['ratio'])
+    return np.average(dataframe['rel_error'])
+
+
 if __name__ == '__main__':
     matplotlib.use('TkAgg')
     data = read_data()
@@ -171,7 +187,8 @@ if __name__ == '__main__':
         except RuntimeError as e:
             print(e)
             continue
-        single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fit_sigmoid']
+
+        rel_error_sigmoid = calc_residuum_and_error(single_particle_data)
 
         transition_index = int((np.abs(single_particle_data['frame'] - parameters_sigmoid['t'])).argmin())
 
@@ -185,6 +202,8 @@ if __name__ == '__main__':
 
         parameters = {**parameters_sigmoid, **parameters_sin}
         single_particle_data['fit_total'] = single_particle_data['fit_sigmoid'] + single_particle_data['fit_sin']
+        rel_error_total = calc_residuum_and_error(single_particle_data)
 
-        print(parameters)
+        print(f"parameters: {parameters}")
+        print(f"relative error sigmoid: {rel_error_sigmoid}, relative error total: {rel_error_total}")
         visualize(single_particle_data)
