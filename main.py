@@ -14,6 +14,23 @@ def read_data():
     return pd.read_hdf('data/SLB7_231218.h5')
 
 
+def calc_transition_point(w, a, u, k, alpha=0.99):
+    """
+    calculate transition point as point where supremum is almost reached
+    :param w, a, u, k: function parameters
+    :param alpha: margin to supremum
+    :return: transition point
+    """
+    tmp = ((1 - alpha) * a) / (alpha * a - u)
+    if tmp < 0.0001:
+        return None
+    try:
+        return - 1 / k * math.log(tmp) + w
+    except ValueError:
+        print(f"k: {k}, a: {a}, u: {u}")
+        return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
+
+
 def approximate_with_sigmoid_curve(dataframe):
     """
     approximates the datapoints of dataframe with a combination of a sigmoid curve and a linear decreasing function
@@ -21,19 +38,6 @@ def approximate_with_sigmoid_curve(dataframe):
     :param dataframe: datapoints to approximate, must contain column ratio
     :returns: parameters for sigmoid curve
     """
-
-    def calc_transition_point(w, a, u, k, alpha=0.99):
-        """
-        calculate transition point as point where supremum is almost reached
-        :param w, a, u, k: function parameters
-        :param alpha: margin to supremum
-        :return: transition point
-        """
-        try:
-            return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
-        except ValueError:
-            print(f"k: {k}, a: {a}, u: {u}")
-            return - 1 / k * math.log(((1 - alpha) * a) / (alpha * a - u)) + w
 
     def sigmoid_and_linear_decreasing_(x, w, t, a, d, u, k):
         """
@@ -176,12 +180,17 @@ if __name__ == '__main__':
     matplotlib.use('TkAgg')
     data = read_data()
 
+    all_parameters = dict()
+
     for particle_idx in set(data['particle']):
+        # get data of a single particle
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
+        # skip if too few datapoints
         if len(single_particle_data['frame']) < 20:
             continue
 
+        # might throw error if best fit was not found within limited number of tries
         try:
             parameters_sigmoid = approximate_with_sigmoid_curve(single_particle_data)
         except RuntimeError as e:
@@ -190,7 +199,11 @@ if __name__ == '__main__':
 
         rel_error_sigmoid = calc_residuum_and_error(single_particle_data)
 
-        transition_index = int((np.abs(single_particle_data['frame'] - parameters_sigmoid['t'])).argmin())
+        # calculate the point at which the transition between sigmoid and linear function
+        if parameters_sigmoid['t'] is None:
+            transition_index = single_particle_data['frame'][-1]
+        else:
+            transition_index = int((np.abs(single_particle_data['frame'] - parameters_sigmoid['t'])).argmin())
 
         # use optimize to fit sin
         # parameters_sin = approximate_residuum_with_sin(single_particle_data, transition_index,
@@ -204,6 +217,20 @@ if __name__ == '__main__':
         single_particle_data['fit_total'] = single_particle_data['fit_sigmoid'] + single_particle_data['fit_sin']
         rel_error_total = calc_residuum_and_error(single_particle_data)
 
+        all_parameters[particle_idx] = parameters
+
         print(f"parameters: {parameters}")
         print(f"mse sigmoid: {rel_error_sigmoid}, mse total: {rel_error_total}")
-        visualize(single_particle_data)
+        # visualize(single_particle_data)
+
+    # statistic evaluation
+    statistics = {"steepness": [all_parameters[idx]['k'] for idx in all_parameters.keys()],
+                  "start_increase": [calc_transition_point(all_parameters[idx]['w'], all_parameters[idx]['a'],
+                                                           all_parameters[idx]['u'], all_parameters[idx]['k'], 0.01)
+                                     for idx in all_parameters.keys() if calc_transition_point(all_parameters[idx]['w'], all_parameters[idx]['a'],
+                                                           all_parameters[idx]['u'], all_parameters[idx]['k'], 0.01) is not None],
+                  "end_increase": [all_parameters[idx]['t'] for idx in all_parameters.keys() if all_parameters[idx]['t'] is not None]}
+
+    plt.boxplot(statistics["end_increase"])
+    plt.show()
+
