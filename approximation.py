@@ -73,8 +73,8 @@ def approximate_with_sigmoid_curve(dataframe):
         :param u: unactivated value, infimum of sigmoid function
         :param k: steepness of sigmoid function
         """
-        t = calc_transition_point(w, k)
-        return np.vectorize(sigmoid_and_linear_decreasing_)(x_arr, w, t, a, d, u, k)
+        transition_point = calc_transition_point(w, k)
+        return np.vectorize(sigmoid_and_linear_decreasing_)(x_arr, w, transition_point, a, d, u, k)
 
     min_val, median_val, max_val = np.min(dataframe['ratio']), np.median(dataframe['ratio']), np.max(dataframe['ratio'])
     start, end = min(dataframe['frame']), max(dataframe['frame'])
@@ -147,65 +147,79 @@ def calc_residuum_and_error(dataframe):
     return np.dot(dataframe['residuum'], dataframe['residuum']) / len(dataframe['residuum'])
 
 
-def all_particles_to_parameters(min_length_recording, output_information=True, visualize_particles=False):
+def particle_to_parameters(particle_data, output_information=True, visualize_particles=False):
     """
-    generates the parameters for all particles of the dataset
-    :param min_length_recording: all particles which were recorded for less than this number of frames will be skipped
+    generates the parameters for a single particle
+    :param particle_data: data of a single particle
     :param output_information: if True information such as resulting parameters and error will be printed
     :param visualize_particles: if True a plot showing the data as well as approximation of each particle is shown
     :return: dictionary where keys are particle indices and values are corresponding parameter dictionaries
     """
-    if visualize_particles:
-        matplotlib.use('TkAgg')
-    data = read_data()
 
-    all_parameters = dict()
+    # might throw error if best fit was not found within limited number of tries
+    parameters_sigmoid = approximate_with_sigmoid_curve(particle_data)
+
+    rel_error_sigmoid = calc_residuum_and_error(particle_data)
+
+    # calculate the point at which the transition between sigmoid and linear function
+    if parameters_sigmoid['t'] is None:
+        transition_index = particle_data['frame'][-1]
+    else:
+        transition_index = int((np.abs(particle_data['frame'] - parameters_sigmoid['t'])).argmin())
+
+    # use fft to fit sin
+    parameters_sin = approximate_residuum_with_fft(particle_data, 10, transition_index,
+                                                   len(particle_data['frame']))
+
+    particle_parameters = {**parameters_sigmoid, **parameters_sin}
+    particle_data['fit_total'] = particle_data['fit_sigmoid'] + particle_data['fit_sin']
+    rel_error_total = calc_residuum_and_error(particle_data)
+
+    if output_information:
+        print(f"parameters: {particle_parameters}")
+        print(f"mse sigmoid: {rel_error_sigmoid}, mse total: {rel_error_total}")
+    if visualize_particles:
+        visualize(particle_data)
+
+    return particle_parameters
+
+
+def main():
+    """
+        Approximates data, visualizes results, saves parameters to file
+
+        In this file you can change the minimum length the recordings must have to be processed, and the parameters that
+        get written to the csv file.
+        To generate all particle parameters and save them to a csv file set output_information and visualize_particles to
+        False.
+        """
+
+    matplotlib.use('TkAgg')
+
+    data = read_data()
+    all_parameters = list()
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
         # skip if too few datapoints
-        if len(single_particle_data['frame']) < min_length_recording:
+        if len(single_particle_data['frame']) < 20:
             continue
 
-        # might throw error if best fit was not found within limited number of tries
-        try:
-            parameters_sigmoid = approximate_with_sigmoid_curve(single_particle_data)
+        try:  # throws error if no best fit was found
+            parameters = particle_to_parameters(single_particle_data, output_information=False,
+                                                visualize_particles=False)
         except RuntimeError as e:
-            if output_information:
-                print(e)
+            print(e)
             continue
 
-        rel_error_sigmoid = calc_residuum_and_error(single_particle_data)
+        all_parameters.append([particle_idx, parameters['w'], parameters['t'], parameters['e'], parameters['a'],
+                               parameters['d'], parameters['u'], parameters['k']])
 
-        """
-        # calculate the point at which the transition between sigmoid and linear function
-        if parameters_sigmoid['t'] is None:
-            transition_index = single_particle_data['frame'][-1]
-        else:
-            transition_index = int((np.abs(single_particle_data['frame'] - parameters_sigmoid['t'])).argmin())
-
-        # use fft to fit sin
-        parameters_sin = approximate_residuum_with_fft(single_particle_data, 10, transition_index,
-                                                       len(single_particle_data['frame']))
-
-        parameters = {**parameters_sigmoid, **parameters_sin}
-        single_particle_data['fit_total'] = single_particle_data['fit_sigmoid'] + single_particle_data['fit_sin']
-        rel_error_total = calc_residuum_and_error(single_particle_data)"""
-
-
-        parameters, rel_error_total = parameters_sigmoid, 0
-        all_parameters[particle_idx] = parameters
-
-        if output_information:
-            print(f"parameters: {parameters}")
-            print(f"mse sigmoid: {rel_error_sigmoid}, mse total: {rel_error_total}")
-        if visualize_particles:
-            visualize(single_particle_data)
-
-    return all_parameters
+    np.savetxt("particle_parameters.csv", np.matrix(all_parameters), delimiter=',', newline='\n',
+               header="idx, w, t, e, a, d, u, k")
 
 
 if __name__ == '__main__':
-    all_parameters = all_particles_to_parameters(20, visualize_particles=True)
+    main()
