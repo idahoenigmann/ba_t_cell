@@ -38,11 +38,16 @@ def violin_plot_visualization(parameters, par_indices):
 
 
 def statistics(values):
+    """
+    calculate various statistics to values given
+    :param values: list of numerical values
+    :return: dictionary containing statistics
+    """
     return {"min": np.min(values), "avg": np.average(values), "max": np.max(values), "std": np.std(values),
             "mean": np.mean(values)}
 
 
-if __name__ == '__main__':
+def main():
     matplotlib.use('TkAgg')
 
     all_parameters = np.loadtxt('particle_parameters.csv', delimiter=',')
@@ -57,3 +62,10 @@ if __name__ == '__main__':
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')])}")
 
     violin_plot_visualization(all_parameters, indices)
+
+
+if __name__ == '__main__':
+    """
+    statistical analysis of parameters, plots and prints information
+    """
+    main()
