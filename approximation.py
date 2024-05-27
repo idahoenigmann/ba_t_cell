@@ -198,6 +198,7 @@ def main():
 
     data = read_data()
     all_parameters = list()
+    parameters_saved = ["idx", 'w', 't', 'e', 'a', 'd', 'u', 'k']
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -214,11 +215,11 @@ def main():
             print(e)
             continue
 
-        all_parameters.append([particle_idx, parameters['w'], parameters['t'], parameters['e'], parameters['a'],
-                               parameters['d'], parameters['u'], parameters['k']])
+        parameters["idx"] = particle_idx
+        all_parameters.append([parameters[e] for e in parameters_saved])
 
     np.savetxt("particle_parameters.csv", np.matrix(all_parameters), delimiter=',', newline='\n',
-               header="idx, w, t, e, a, d, u, k")
+               header=",".join(parameters_saved))
 
 
 if __name__ == '__main__':
