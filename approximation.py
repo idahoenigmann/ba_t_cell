@@ -147,14 +147,18 @@ def calc_residuum_and_error(dataframe):
     return np.dot(dataframe['residuum'], dataframe['residuum']) / len(dataframe['residuum'])
 
 
-def particle_to_parameters(particle_data, output_information=True, visualize_particles=False):
+def particle_to_parameters(particle_data, output_information=True, visualize_particles=False, select_by_input=False):
     """
     generates the parameters for a single particle
     :param particle_data: data of a single particle
     :param output_information: if True information such as resulting parameters and error will be printed
     :param visualize_particles: if True a plot showing the data as well as approximation of each particle is shown
+    :param select_by_input: if True the user is asked whether to confirm or discard the approximation for the particle
     :return: dictionary where keys are particle indices and values are corresponding parameter dictionaries
     """
+
+    if select_by_input:
+        visualize_particles = True
 
     # might throw error if best fit was not found within limited number of tries
     parameters_sigmoid = approximate_with_sigmoid_curve(particle_data)
@@ -181,24 +185,20 @@ def particle_to_parameters(particle_data, output_information=True, visualize_par
     if visualize_particles:
         visualize(particle_data)
 
+        if select_by_input:
+            accepted = input('accept (y/n): ')
+            if accepted[0] not in 'yY':
+                raise RuntimeError('Particle approximation was not accepted by user.')
+
     return particle_parameters
 
 
 def main():
-    """
-        Approximates data, visualizes results, saves parameters to file
-
-        In this file you can change the minimum length the recordings must have to be processed, and the parameters that
-        get written to the csv file.
-        To generate all particle parameters and save them to a csv file set output_information and visualize_particles to
-        False.
-        """
-
     matplotlib.use('TkAgg')
 
     data = read_data()
     all_parameters = list()
-    parameters_saved = ["idx", 'w', 't', 'e', 'a', 'd', 'u', 'k']
+    parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k']
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -209,13 +209,14 @@ def main():
             continue
 
         try:  # throws error if no best fit was found
-            parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=False)
+            parameters = particle_to_parameters(single_particle_data, output_information=True,
+                                                visualize_particles=True, select_by_input=True)
         except RuntimeError as e:
             print(e)
             continue
 
         parameters["idx"] = particle_idx
+        parameters['s'] = calc_transition_point(parameters['w'], parameters['k'], alpha=0.01)
         all_parameters.append([parameters[e] for e in parameters_saved])
 
     np.savetxt("particle_parameters.csv", np.matrix(all_parameters), delimiter=',', newline='\n',
@@ -223,4 +224,13 @@ def main():
 
 
 if __name__ == '__main__':
+    """
+        Approximates data, visualizes results, saves parameters to file
+
+        In this file you can change the minimum length the recordings must have to be processed, and the parameters that
+        get written to the csv file.
+        To generate all particle parameters and save them to a csv file set output_information and visualize_particles to
+        False.
+    """
+
     main()
