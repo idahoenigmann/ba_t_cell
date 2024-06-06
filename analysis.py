@@ -43,6 +43,22 @@ def plot_parameters(parameters, par_indices):
     plt.show()
 
 
+def plot_error(parameters, par_indices):
+    """
+    shows violin plots of errors
+    :param parameters: numpy matrix of all parameter values
+    :param par_indices: list of names describing the column order of the parameters matrix
+    """
+
+    violin_plot = ["mse_sigmoid", "mse_total"]
+    fig, ax = plt.subplots(1)
+
+    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plot],
+                              violin_plot, ax, vert=True)
+
+    plt.show()
+
+
 def statistics(values):
     """
     calculate various statistics to values given
@@ -68,6 +84,7 @@ def main():
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')])}")
 
     plot_parameters(all_parameters, indices)
+    plot_error(all_parameters, indices)
 
 
 if __name__ == '__main__':
