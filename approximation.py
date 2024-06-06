@@ -123,11 +123,11 @@ def visualize(dataframe):
     visualizes datapoints and (optional) approximations
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
     """
-    ax = dataframe.plot.scatter(x="frame", y="ratio")
+    ax = dataframe.plot.scatter(x="frame", y="ratio", color="#455054")
+    if 'fit_sigmoid' in dataframe.columns:
+        dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=ax)
     if 'fit_total' in dataframe.columns:
-        dataframe.plot(x='frame', y='fit_total', color="red", ax=ax)
-    elif 'fit_sigmoid' in dataframe.columns:
-        dataframe.plot(x='frame', y='fit_sigmoid', color="red", ax=ax)
+        dataframe.plot(x='frame', y='fit_total', color="#E9190C", ax=ax)
     plt.show()
 
 
@@ -163,7 +163,7 @@ def particle_to_parameters(particle_data, output_information=True, visualize_par
     # might throw error if best fit was not found within limited number of tries
     parameters_sigmoid = approximate_with_sigmoid_curve(particle_data)
 
-    rel_error_sigmoid = calc_residuum_and_error(particle_data)
+    mse_sigmoid = calc_residuum_and_error(particle_data)
 
     # calculate the point at which the transition between sigmoid and linear function
     if parameters_sigmoid['t'] is None:
@@ -177,11 +177,14 @@ def particle_to_parameters(particle_data, output_information=True, visualize_par
 
     particle_parameters = {**parameters_sigmoid, **parameters_sin}
     particle_data['fit_total'] = particle_data['fit_sigmoid'] + particle_data['fit_sin']
-    rel_error_total = calc_residuum_and_error(particle_data)
+    mse_total = calc_residuum_and_error(particle_data)
+
+    particle_parameters["mse_sigmoid"] = mse_sigmoid
+    particle_parameters["mse_total"] = mse_total
 
     if output_information:
         print(f"parameters: {particle_parameters}")
-        print(f"mse sigmoid: {rel_error_sigmoid}, mse total: {rel_error_total}")
+        print(f"mse sigmoid: {mse_sigmoid}, mse total: {mse_total}")
     if visualize_particles:
         visualize(particle_data)
 
@@ -198,7 +201,7 @@ def main():
 
     data = read_data()
     all_parameters = list()
-    parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k']
+    parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "mse_sigmoid", "mse_total"]
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -210,7 +213,7 @@ def main():
 
         try:  # throws error if no best fit was found
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=True, select_by_input=True)
+                                                visualize_particles=False, select_by_input=False)
         except RuntimeError as e:
             print(e)
             continue

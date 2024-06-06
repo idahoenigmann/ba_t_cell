@@ -4,35 +4,41 @@ import matplotlib.patches as mpatches
 import numpy as np
 
 
-def violin_plot_visualization(parameters, par_indices):
+def violin_plot_visualization(parameters, par_names, ax, vert=True):
     """
     plots violin plots of various parameters
+    :param vert: orientation of violin plot
+    :param ax: axis on which to plot
     :param parameters: numpy matrix of all parameter values
-    :param par_indices: list of names describing the column order of the parameters matrix
+    :param par_names: list of names describing the parameters matrix
     """
-    violin_plots = [['u', 'a', 'd'], ['s', 'w', 't', 'e']]
     labels = []
 
     def add_label(violin, label):
         color = violin["bodies"][0].get_facecolor().flatten()
         labels.append((mpatches.Patch(color=color), label))
 
+    ax.set_title(','.join(par_names))
+    for i in range(len(par_names)):
+        add_label(ax.violinplot(parameters[i], showmeans=True,
+                                   showextrema=False, vert=vert), label=par_names[i])
+    ax.legend(*zip(*labels), loc=1)
+
+
+def plot_parameters(parameters, par_indices):
+    """
+    shows violin plots of various parameters
+    :param parameters: numpy matrix of all parameter values
+    :param par_indices: list of names describing the column order of the parameters matrix
+    """
+
+    violin_plots = [['u', 'a', 'd'], ['s', 'w', 't', 'e']]
     fig, ax = plt.subplots(2)
-    ax[0].set_title(','.join(violin_plots[0]))
-    for e in violin_plots[0]:
-        if e in par_indices:
-            add_label(ax[0].violinplot([param[par_indices.index(e)] for param in parameters], showmeans=True,
-                                       showextrema=False), label=e)
-    ax[0].legend(*zip(*labels), loc=1)
 
-    labels = []
-
-    ax[1].set_title(','.join(violin_plots[1]))
-    for e in violin_plots[1]:
-        if e in par_indices:
-            add_label(ax[1].violinplot([param[par_indices.index(e)] for param in parameters], vert=False,
-                                       showmeans=True, showextrema=False), label=e)
-    ax[1].legend(*zip(*labels), loc=1)
+    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[0]],
+                              violin_plots[0], ax[0], vert=True)
+    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[1]],
+                              violin_plots[1], ax[1], vert=False)
 
     plt.show()
 
@@ -61,7 +67,7 @@ def main():
         print(f"{e}: {statistics(all_parameters[:, indices.index(e)])}")
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')])}")
 
-    violin_plot_visualization(all_parameters, indices)
+    plot_parameters(all_parameters, indices)
 
 
 if __name__ == '__main__':
