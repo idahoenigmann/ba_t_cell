@@ -2,19 +2,20 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas
 import pandas as pd
 import scipy
 
 
-def read_data():
+def read_data() -> pandas.DataFrame:
     """
     reads data from file
     :return: pandas dataframe of t-cell calcium concentrations
     """
-    return pd.read_hdf('data/SLB7_231218.h5')
+    return pandas.DataFrame(pd.read_hdf('data/SLB7_231218.h5'))
 
 
-def calc_transition_point(w, k, alpha=0.99):
+def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | None:
     """
     calculate transition point as point where supremum is almost reached
     :param w: function parameter, middle point of increase
@@ -31,7 +32,7 @@ def calc_transition_point(w, k, alpha=0.99):
         return None
 
 
-def approximate_with_sigmoid_curve(dataframe):
+def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     """
     approximates the datapoints of dataframe with a combination of a sigmoid curve and a linear decreasing function
     changes dataframe! adds a column named fit_sigmoid
@@ -91,7 +92,7 @@ def approximate_with_sigmoid_curve(dataframe):
     return {'w': w, 't': t, 'e': end, 'a': a, 'd': d, 'u': u, 'k': k}
 
 
-def approximate_residuum_with_fft(dataframe, number_of_frequencies_kept, start, end):
+def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequencies_kept: int, start: int, end: int) -> dict:
     """
     approximates the residuum between frames start and end by sin generated with fft
     changes dataframe! adds a column named fit_sin
@@ -118,7 +119,7 @@ def approximate_residuum_with_fft(dataframe, number_of_frequencies_kept, start, 
     return {'fft': dict([(main_freqs[i], main_amps[i]) for i in range(len(main_freqs))])}
 
 
-def visualize(dataframe):
+def visualize(dataframe: pandas.DataFrame):
     """
     visualizes datapoints and (optional) approximations
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
@@ -131,7 +132,7 @@ def visualize(dataframe):
     plt.show()
 
 
-def calc_residuum_and_error(dataframe):
+def calc_residuum_and_error(dataframe: pandas.DataFrame) -> float:
     """
     calculates residuum and mean squared error
     :return: mean squared error of eiter fit_sigmoid or fit_total
@@ -147,7 +148,8 @@ def calc_residuum_and_error(dataframe):
     return np.dot(dataframe['residuum'], dataframe['residuum']) / len(dataframe['residuum'])
 
 
-def particle_to_parameters(particle_data, output_information=True, visualize_particles=False, select_by_input=False):
+def particle_to_parameters(particle_data: pandas.DataFrame, output_information: bool = True, visualize_particles: bool = False,
+                           select_by_input: bool = False) -> dict:
     """
     generates the parameters for a single particle
     :param particle_data: data of a single particle
@@ -197,7 +199,7 @@ def particle_to_parameters(particle_data, output_information=True, visualize_par
 
 
 def main():
-    matplotlib.use('TkAgg')
+    # matplotlib.use('TkAgg')
 
     data = read_data()
     all_parameters = list()
@@ -213,7 +215,7 @@ def main():
 
         try:  # throws error if no best fit was found
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=False, select_by_input=False)
+                                                visualize_particles=True, select_by_input=False)
         except RuntimeError as e:
             print(e)
             continue

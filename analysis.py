@@ -4,7 +4,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 
 
-def violin_plot_visualization(parameters, par_names, ax, vert=True):
+def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.pyplot.axes, vert: bool = True):
     """
     plots violin plots of various parameters
     :param vert: orientation of violin plot
@@ -20,12 +20,11 @@ def violin_plot_visualization(parameters, par_names, ax, vert=True):
 
     ax.set_title(', '.join(par_names))
     for i in range(len(par_names)):
-        add_label(ax.violinplot(parameters[i], showmeans=True,
-                                   showextrema=False, vert=vert), label=par_names[i])
+        add_label(ax.violinplot(parameters[i], showmeans=True, showextrema=False, vert=vert), label=par_names[i])
     ax.legend(*zip(*labels), loc=1)
 
 
-def plot_parameters(parameters, par_indices):
+def plot_parameters(parameters: np.ndarray, par_indices: list):
     """
     shows violin plots of various parameters
     :param parameters: numpy matrix of all parameter values
@@ -43,7 +42,7 @@ def plot_parameters(parameters, par_indices):
     plt.show()
 
 
-def plot_error(parameters, par_indices):
+def plot_error(parameters: np.ndarray, par_indices: list):
     """
     shows violin plots of errors
     :param parameters: numpy matrix of all parameter values
@@ -59,7 +58,7 @@ def plot_error(parameters, par_indices):
     plt.show()
 
 
-def statistics(values):
+def statistics(values: list) -> dict:
     """
     calculate various statistics to values given
     :param values: list of numerical values
@@ -70,7 +69,7 @@ def statistics(values):
 
 
 def main():
-    matplotlib.use('TkAgg')
+    # matplotlib.use('TkAgg')
 
     all_parameters = np.loadtxt('particle_parameters.csv', delimiter=',')
 
@@ -80,8 +79,8 @@ def main():
         indices = header.split(',')
 
     for e in indices:
-        print(f"{e}: {statistics(all_parameters[:, indices.index(e)])}")
-    print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')])}")
+        print(f"{e}: {statistics(all_parameters[:, indices.index(e)].tolist())}")
+    print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
 
     plot_parameters(all_parameters, indices)
     plot_error(all_parameters, indices)
