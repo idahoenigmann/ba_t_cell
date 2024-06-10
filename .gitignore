@@ -1,5 +1,4 @@
 .idea/
-venv/
 data/
 
 # Byte-compiled / optimized / DLL files
@@ -129,7 +128,7 @@ celerybeat.pid
 .env
 .venv
 env/
-venv/
+# venv/
 ENV/
 env.bak/
 venv.bak/

@@ -18,7 +18,7 @@ def violin_plot_visualization(parameters, par_names, ax, vert=True):
         color = violin["bodies"][0].get_facecolor().flatten()
         labels.append((mpatches.Patch(color=color), label))
 
-    ax.set_title(','.join(par_names))
+    ax.set_title(', '.join(par_names))
     for i in range(len(par_names)):
         add_label(ax.violinplot(parameters[i], showmeans=True,
                                    showextrema=False, vert=vert), label=par_names[i])
