@@ -92,7 +92,8 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     return {'w': w, 't': t, 'e': end, 'a': a, 'd': d, 'u': u, 'k': k}
 
 
-def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequencies_kept: int, start: int, end: int) -> dict:
+def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequencies_kept: int, start: int, end: int)\
+        -> dict:
     """
     approximates the residuum between frames start and end by sin generated with fft
     changes dataframe! adds a column named fit_sin
@@ -148,8 +149,8 @@ def calc_residuum_and_error(dataframe: pandas.DataFrame) -> float:
     return np.dot(dataframe['residuum'], dataframe['residuum']) / len(dataframe['residuum'])
 
 
-def particle_to_parameters(particle_data: pandas.DataFrame, output_information: bool = True, visualize_particles: bool = False,
-                           select_by_input: bool = False) -> dict:
+def particle_to_parameters(particle_data: pandas.DataFrame, output_information: bool = True,
+                           visualize_particles: bool = False, select_by_input: bool = False) -> dict:
     """
     generates the parameters for a single particle
     :param particle_data: data of a single particle
@@ -230,12 +231,12 @@ def main():
 
 if __name__ == '__main__':
     """
-        Approximates data, visualizes results, saves parameters to file
+    Approximates data, visualizes results, saves parameters to file
 
-        In this file you can change the minimum length the recordings must have to be processed, and the parameters that
-        get written to the csv file.
-        To generate all particle parameters and save them to a csv file set output_information and visualize_particles to
-        False.
+    In this file you can change the minimum length the recordings must have to be processed, and the parameters that
+    get written to the csv file.
+    To generate all particle parameters and save them to a csv file set output_information and visualize_particles
+    to False.
     """
 
     main()

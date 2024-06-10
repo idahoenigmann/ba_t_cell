@@ -98,8 +98,8 @@ def find_outlier(values: np.ndarray, width: float, par_indices: list, ignore: li
 def main():
     # matplotlib.use('TkAgg')
 
+    # read parameters from file
     all_parameters = np.loadtxt('particle_parameters.csv', delimiter=',')
-
     with open('particle_parameters.csv', 'r') as f_in:
         header = f_in.readline()
         header = header.translate({ord(c): None for c in '# \n'})
@@ -121,17 +121,6 @@ def main():
         print(f"Outliers in {e}: {len(outliers[e])}")
     print()
 
-    # find specific outliers
-    specify_par = ['k']
-    outlier_particles = set(all_parameters[:, indices.index("idx")])
-    for e in outliers.keys():
-        if e in specify_par:
-            outlier_particles = outlier_particles.intersection(outliers[e])
-        else:
-            outlier_particles = outlier_particles.difference(outliers[e])
-
-    print(f"(Just) in {specify_par} are the following particles: {outlier_particles}")
-
     # show distribution of parameters
     plot_parameters(all_parameters, indices)
     plot_error(all_parameters, indices)
@@ -141,6 +130,18 @@ def main():
     ax.set_title("Outliers")
     venn(outliers, ax=ax)
     plt.show()
+
+    # find specific outliers
+    outliers_str = input("Visualize particles which are outlier (only) in respect to the following parameters: ")
+    specify_par = set(e.strip() for e in outliers_str.split(",")).intersection(outliers.keys())
+    outlier_particles = set(all_parameters[:, indices.index("idx")])
+    for e in outliers.keys():
+        if e in specify_par:
+            outlier_particles = outlier_particles.intersection(outliers[e])
+        else:
+            outlier_particles = outlier_particles.difference(outliers[e])
+
+    print(f"(Just) in {specify_par} are the following particles: {outlier_particles}")
 
     # plot specific outliers
     data = read_data()
