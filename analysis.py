@@ -114,7 +114,7 @@ def main():
 
     # find outliers in parameters
     print("Outlier analysis")
-    outliers = find_outlier(all_parameters, 3, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't'])
+    outliers = find_outlier(all_parameters, 2, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't'])
     print(f"Total number of particles: {all_parameters.shape[0]}")
 
     for e in outliers.keys():

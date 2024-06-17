@@ -196,7 +196,7 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
 
         if select_by_input:
             accepted = input('accept (y/n): ')
-            if accepted[0] not in 'yY':
+            if len(accepted) == 0 or accepted[0] not in 'yY':
                 raise RuntimeError('Particle approximation was not accepted by user.')
 
     return particle_parameters
@@ -208,8 +208,14 @@ def main():
     data = read_data()
     all_parameters = list()
     parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "mse_sigmoid", "mse_total"]
+    rejected_particles = []
 
-    for particle_idx in set(data['particle']):
+    try:
+        rejected_particles = np.loadtxt("rejected_particles.csv", delimiter=",").tolist()
+    except Exception as e:
+        print(e)
+
+    for particle_idx in set(data['particle']).difference(set(rejected_particles)):
         # get data of a single particle
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
@@ -217,11 +223,12 @@ def main():
         if len(single_particle_data['frame']) < 20:
             continue
 
-        try:  # throws error if no best fit was found
+        try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=True, select_by_input=False)
+                                                visualize_particles=False, select_by_input=True)
         except RuntimeError as e:
             print(e)
+            rejected_particles.append(particle_idx)
             continue
 
         parameters["idx"] = particle_idx
@@ -230,6 +237,8 @@ def main():
 
     np.savetxt("particle_parameters.csv", np.matrix(all_parameters), delimiter=',', newline='\n',
                header=",".join(parameters_saved))
+    if len(rejected_particles) > 0:
+        np.savetxt("rejected_particles.csv", np.matrix(rejected_particles).T, delimiter=',', newline='\n', header="idx")
 
 
 if __name__ == '__main__':
