@@ -91,7 +91,7 @@ def find_outlier(values: np.ndarray, width: float, par_indices: list, ignore: li
         avg, std = stat["avg"], stat["std"]
 
         outliers[par] = set([values[i, par_indices.index("idx")] for i in range(values.shape[0])
-                             if abs(values[i, par_indices.index(par)] - std) > std * width])
+                             if abs(values[i, par_indices.index(par)] - avg) > std * width])
     return outliers
 
 
@@ -114,7 +114,7 @@ def main():
 
     # find outliers in parameters
     print("Outlier analysis")
-    outliers = find_outlier(all_parameters, 2.5, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't'])
+    outliers = find_outlier(all_parameters, 3, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't'])
     print(f"Total number of particles: {all_parameters.shape[0]}")
 
     for e in outliers.keys():

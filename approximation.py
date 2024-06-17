@@ -125,7 +125,7 @@ def visualize(dataframe: pandas.DataFrame):
     visualizes datapoints and (optional) approximations
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
     """
-    ax = dataframe.plot.scatter(x="frame", y="ratio", color="#455054")
+    ax = dataframe.plot.scatter(x="frame", y="ratio", color="#000000")
     if 'fit_sigmoid' in dataframe.columns:
         dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=ax)
     if 'fit_total' in dataframe.columns:
@@ -167,6 +167,9 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
     parameters_sigmoid = approximate_with_sigmoid_curve(particle_data)
 
     mse_sigmoid = calc_residuum_and_error(particle_data)
+
+    # this line here to enable testing sum of sines in matlab
+    # np.savetxt("test.csv", particle_data['residuum'], delimiter=",", newline="\n")
 
     # calculate the point at which the transition between sigmoid and linear function
     if parameters_sigmoid['t'] is None:
