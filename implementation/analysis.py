@@ -99,8 +99,8 @@ def main():
     # matplotlib.use('TkAgg')
 
     # read parameters from file
-    all_parameters = np.loadtxt('particle_parameters.csv', delimiter=',')
-    with open('particle_parameters.csv', 'r') as f_in:
+    all_parameters = np.loadtxt('intermediate/particle_parameters.csv', delimiter=',')
+    with open('intermediate/particle_parameters.csv', 'r') as f_in:
         header = f_in.readline()
         header = header.translate({ord(c): None for c in '# \n'})
         indices = header.split(',')

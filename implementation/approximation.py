@@ -12,7 +12,7 @@ def read_data() -> pandas.DataFrame:
     reads data from file
     :return: pandas dataframe of t-cell calcium concentrations
     """
-    return pandas.DataFrame(pd.read_hdf('data/SLB7_231218.h5'))
+    return pandas.DataFrame(pd.read_hdf('../data/SLB7_231218.h5'))
 
 
 def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | None:
@@ -168,9 +168,6 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
 
     mse_sigmoid = calc_residuum_and_error(particle_data)
 
-    # this line here to enable testing sum of sines in matlab
-    # np.savetxt("test.csv", particle_data['residuum'], delimiter=",", newline="\n")
-
     # calculate the point at which the transition between sigmoid and linear function
     if parameters_sigmoid['t'] is None:
         transition_index = particle_data['frame'][-1]
@@ -211,7 +208,7 @@ def main():
     rejected_particles = []
 
     try:
-        rejected_particles = np.loadtxt("rejected_particles.csv", delimiter=",").tolist()
+        rejected_particles = np.loadtxt("intermediate/rejected_particles.csv", delimiter=",").tolist()
     except Exception as e:
         print(e)
 
@@ -225,7 +222,7 @@ def main():
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=False, select_by_input=True)
+                                                visualize_particles=False, select_by_input=False)
         except RuntimeError as e:
             print(e)
             rejected_particles.append(particle_idx)
@@ -235,10 +232,11 @@ def main():
         parameters['s'] = calc_transition_point(parameters['w'], parameters['k'], alpha=0.01)
         all_parameters.append([parameters[e] for e in parameters_saved])
 
-    np.savetxt("particle_parameters.csv", np.matrix(all_parameters), delimiter=',', newline='\n',
-               header=",".join(parameters_saved))
+    np.savetxt("intermediate/particle_parameters.csv", np.matrix(np.array(all_parameters)), delimiter=',',
+               newline='\n', header=",".join(parameters_saved))
     if len(rejected_particles) > 0:
-        np.savetxt("rejected_particles.csv", np.matrix(rejected_particles).T, delimiter=',', newline='\n', header="idx")
+        np.savetxt("intermediate/rejected_particles.csv", np.matrix(rejected_particles).T, delimiter=',',
+                   newline='\n', header="idx")
 
 
 if __name__ == '__main__':

@@ -1,0 +1,119 @@
+\documentclass[a4paper,11pt,bibliography=totoc,listof=totoc,headinclude=true,cleardoublepage=empty,oneside]{scrbook}
+% Option "oneside" für einseitigen Druck. Weglassen, falls die Arbeit doppelseitig gedruckt wird
+
+\usepackage[english,ngerman]{babel}
+\usepackage[utf8]{inputenc}
+%\usepackage{fullpage}
+\usepackage{ifthen}
+\usepackage{color}
+\usepackage{amsmath,amsthm,amssymb,amsfonts,bbm}
+\usepackage{graphicx}
+\usepackage{psfrag}
+\usepackage{comment}
+\usepackage{listings}
+\usepackage[ruled, vlined]{algorithm2e}
+
+% links in pdf
+\usepackage[unicode,colorlinks=true,pagebackref=false]{hyperref}
+
+% Zum Druck verwende schwarze Links!
+%\usepackage[unicode,colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black,pagebackref=false]{hyperref} 
+	% colorlinks=false umrahmt Links statt einzufaerben, 
+
+\usepackage[backend=biber,style=alphabetic]{biblatex} %numeric
+\addbibresource{literature.bib}
+
+
+% document style
+\KOMAoptions{footinclude=false} % Fusszeile wird nicht zu Satzspiegel gezaehlt
+\KOMAoptions{headsepline=true} % Trennlinie zwischen Kopfzeile und Text
+\KOMAoptions{DIV=12} % beeinflusst Satzspiegel
+\KOMAoptions{BCOR=8mm} % Bindekorrektur
+\pagestyle{headings} % mit Kopfzeilen
+
+\recalctypearea % berechne Satzspiegel neu
+
+\begin{document}
+
+\pagenumbering{Alph}
+
+\begin{titlepage}
+	\selectlanguage{english}
+	\begin{center}
+		\includegraphics[width=0.45\textwidth]{fig/TULogo.eps}
+		\vskip 1cm
+		{\LARGE B~\Large A~C~H~E~L~O~R'~S ~ \LARGE T~\Large H~E~S~I~S}
+		\vskip 8mm
+		{\huge\bfseries Zeile1 \\ Zeile2 \\ Zeile3 \\[1ex]}
+		\vskip 1cm
+		\large 
+		submitted to the    
+		\vskip 0.75cm
+		{\Large Institute of\\[1ex] Analysis and Scientific Computing}\\[1ex]
+		{\Large TU Wien}
+		\vskip0.75cm
+		under the supervision of
+		\vskip0.75cm
+		{\Large\bfseries Assistant Prof. Dr. Andreas Körner}\\
+		\vskip0.75cm
+		by
+		\vskip 0.75cm
+		{\Large\bfseries Ida Hönigmann}\\[1ex]
+		{Matriculation number: 12002348}\\[1ex]
+		{Adresszeile1}
+	\end{center}
+	
+	\vfill
+	
+	\small
+	Vienna, \today 
+	\vspace*{-15mm}
+\end{titlepage}
+
+\cleardoublepage
+
+\chapter*{Acknowledgement}
+\thispagestyle{empty}
+\selectlanguage{english}
+
+\cleardoublepage
+
+\chapter*{Eidesstattliche Erkl\"arung}
+\thispagestyle{empty}
+\selectlanguage{ngerman}
+\thispagestyle{empty}
+
+\vspace*{2cm}
+
+Ich erkl\"are an Eides statt, dass ich die vorliegende Bachelorarbeit selbstst\"andig und ohne fremde Hilfe verfasst, andere als die angegebenen Quellen und Hilfsmittel nicht benutzt bzw. die w\"ortlich oder sinngem\"a{\ss} entnommenen Stellen als solche kenntlich gemacht habe.
+
+\vspace*{3cm}
+
+\noindent
+Wien, am \today
+%
+\hfill 
+%
+\begin{minipage}[t]{5cm}
+\centering
+\underline{\hspace*{5cm}}\\
+\small Ida Hönigmann
+\end{minipage}
+
+\cleardoublepage
+
+\pagenumbering{roman}
+\selectlanguage{english} 
+
+\tableofcontents
+
+\cleardoublepage
+\pagenumbering{arabic} 
+
+\chapter{Introduction}
+\label{chapter:introduction}
+
+
+\printbibliography
+
+\end{document}
