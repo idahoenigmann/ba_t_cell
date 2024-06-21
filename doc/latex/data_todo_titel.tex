@@ -1,0 +1,58 @@
+\chapter{Data}
+\label{chapter:data}
+
+calcium concentration shows activatedness of t cells (reference chapter t cells), relativly easy to measure
+
+\section{Structure of Data}
+
+what format is the data in? which columns are present + datatypes
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|l|}
+		\hline
+		\textbf{Name} & \textbf{Data Type} & \textbf{Description} \\
+		\hline
+		x & float64 & Position of cell in pixels along the horizontal axis \\
+		\hline
+		y & float64 & Position of cell in pixels along the vertical axis \\
+		\hline
+		frame & int32 & Number of frame, with frame rate of 1 frame per second \\
+		\hline
+		mass short & float64 & Brightness of cell in 340nm channel \\
+		\hline
+		bg short & float64 & Background in 340nm channel \\
+		\hline
+		mass long & float64 & Brightness of cell in 380nm channel \\
+		\hline
+		bg long & float64 & Background in 380nm channel \\
+		\hline
+		ratio & float64 & Calculated as mass short divided by mass long \\
+		\hline
+		particle & int32 & Identification for each particle \\
+		\hline
+	\end{tabular}
+	\caption{Description and data type of all columns present in the data matrix.}
+\end{table}
+
+
+\section{How it was generated}
+
+exprimental setup, what types of t cells where used?, apc layer, explain steps in experiment
+
+\begin{itemize}
+	\item Date: 18/12/23
+	\item Cells:  Jurkat wt labelled with Fura-2
+	\item Sample: PDMS coated with OKT3 (positive control)
+	\item Imaging: SDT3, ratiometric Ca imaging, 340nm \& 380 nm, Total cycle time 1000ms (-> 1 frame per sec in sum/ratio image)
+	\item pixel size: 1.6 um / px
+\end{itemize}
+
+
+\subsection{Measuring Calcium Concentration}
+
+how is the calcium concentration measured? different wavelengths and then ratio between them, show example video frame
+
+\subsection{Processing}
+
+tracking of particles (in sum of two images), numbering them, removing bad ones (too out of focus, too short)

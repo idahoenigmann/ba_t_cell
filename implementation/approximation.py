@@ -222,7 +222,7 @@ def main():
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=False, select_by_input=False)
+                                                visualize_particles=False, select_by_input=True)
         except RuntimeError as e:
             print(e)
             rejected_particles.append(particle_idx)

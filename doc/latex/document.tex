@@ -1,4 +1,4 @@
-\documentclass[a4paper,11pt,bibliography=totoc,listof=totoc,headinclude=true,cleardoublepage=empty,oneside]{scrbook}
+\documentclass[a4paper,11pt,bibliography=totoc,listof=totoc,headinclude=true,cleardoublepage=empty]{scrbook}
 % Option "oneside" für einseitigen Druck. Weglassen, falls die Arbeit doppelseitig gedruckt wird
 
 \usepackage[english,ngerman]{babel}
@@ -44,7 +44,11 @@
 		\vskip 1cm
 		{\LARGE B~\Large A~C~H~E~L~O~R'~S ~ \LARGE T~\Large H~E~S~I~S}
 		\vskip 8mm
-		{\huge\bfseries Zeile1 \\ Zeile2 \\ Zeile3 \\[1ex]}
+		{\huge\bfseries
+			%Mathematical Modeling of \\ Calcium Dynamics in T Cells \\ [1ex]
+			%Data Analysis of Calcium Signals in \\ T Cells \\ [1ex]
+			%Mathematical Approximation of \\ Calcium Concentrations in T Cells \\ [1ex]
+			(Arbeitstitel) \\ [1ex]}
 		\vskip 1cm
 		\large 
 		submitted to the    
@@ -60,7 +64,7 @@
 		\vskip 0.75cm
 		{\Large\bfseries Ida Hönigmann}\\[1ex]
 		{Matriculation number: 12002348}\\[1ex]
-		{Adresszeile1}
+		%{Adresszeile1}
 	\end{center}
 	
 	\vfill
@@ -69,6 +73,20 @@
 	Vienna, \today 
 	\vspace*{-15mm}
 \end{titlepage}
+
+
+\begin{comment}
+	Analysis of Calcium Concentration in T Cells Using Optimization Algorithms
+	Optimization and Approximation of Calcium Data in T Cells
+	Mathematical Modeling of Calcium Dynamics in T Cells
+	Development of an Optimizer for Analyzing Calcium Concentration in T Cells
+	Data Analysis of Calcium Signals in T Cells: An Optimization Approach
+	Mathematical Approximation of Calcium Concentrations in T Cells for Biochemical Applications
+	Optimization-Based Analysis of Calcium Concentration in T Cells
+	Applying Simple Functions to Approximate Calcium Data in T Cells
+	Optimization and Data Analysis of Calcium Signals in T Cells: An Interdisciplinary Approach
+	An Optimization Approach to Analyzing Calcium Concentrations in T Cells
+\end{comment}
 
 \cleardoublepage
 
@@ -111,6 +129,11 @@ Wien, am \today
 \pagenumbering{arabic} 
 
 \include{introduction.tex}
+\include{t-cell_todo_titel.tex}
+\include{data_todo_titel.tex}
+\include{optimization_todo_titel.tex}
+\include{results.tex}
+\include{conclusion.tex}
 
 \printbibliography
 
