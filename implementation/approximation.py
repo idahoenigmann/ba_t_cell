@@ -12,7 +12,7 @@ def read_data() -> pandas.DataFrame:
     reads data from file
     :return: pandas dataframe of t-cell calcium concentrations
     """
-    return pandas.DataFrame(pd.read_hdf('../data/SLB7_231218.h5'))
+    return pandas.DataFrame(pd.read_hdf('../data/mouse_negative/mouse_negative.h5'))
 
 
 def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | None:
@@ -126,6 +126,8 @@ def visualize(dataframe: pandas.DataFrame):
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
     """
     ax = dataframe.plot.scatter(x="frame", y="ratio", color="#000000")
+    ax.set_ylim(0, 5)
+    ax.set_xlim(0, 1000)
     if 'fit_sigmoid' in dataframe.columns:
         dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=ax)
     if 'fit_total' in dataframe.columns:
@@ -200,9 +202,11 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
 
 
 def main():
-    # matplotlib.use('TkAgg')
+    matplotlib.use('TkAgg')
 
     data = read_data()
+    # filter out nan and inf values
+    data = data[np.isfinite(data["ratio"])]
     all_parameters = list()
     parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "mse_sigmoid", "mse_total"]
     rejected_particles = []
@@ -217,13 +221,13 @@ def main():
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
         # skip if too few datapoints
-        if len(single_particle_data['frame']) < 20:
+        if len(single_particle_data['frame']) < 300:
             continue
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=False, select_by_input=True)
-        except RuntimeError as e:
+                                                visualize_particles=True, select_by_input=False)
+        except Exception as e:
             print(e)
             rejected_particles.append(particle_idx)
             continue
