@@ -96,7 +96,7 @@ def find_outlier(values: np.ndarray, width: float, par_indices: list, ignore: li
 
 
 def main():
-    matplotlib.use('TkAgg')
+    # matplotlib.use('TkAgg')
 
     # read parameters from file
     all_parameters = np.loadtxt('intermediate/particle_parameters.csv', delimiter=',')

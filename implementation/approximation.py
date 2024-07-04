@@ -12,7 +12,7 @@ def read_data() -> pandas.DataFrame:
     reads data from file
     :return: pandas dataframe of t-cell calcium concentrations
     """
-    return pandas.DataFrame(pd.read_hdf('../data/mouse_negative/mouse_negative.h5'))
+    return pandas.DataFrame(pd.read_hdf('../data/mouse_positive/mouse_positive.h5'))
 
 
 def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | None:
@@ -125,13 +125,16 @@ def visualize(dataframe: pandas.DataFrame):
     visualizes datapoints and (optional) approximations
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
     """
-    ax = dataframe.plot.scatter(x="frame", y="ratio", color="#000000")
-    ax.set_ylim(0, 5)
-    ax.set_xlim(0, 1000)
-    if 'fit_sigmoid' in dataframe.columns:
-        dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=ax)
-    if 'fit_total' in dataframe.columns:
-        dataframe.plot(x='frame', y='fit_total', color="#E9190C", ax=ax)
+    fig, axes = plt.subplots(2, sharex=True)
+    axes[0].set_ylim(0, 5)
+    axes[0].set_xlim(0, 1000)
+
+    for i in range(0, 2):
+        dataframe.plot.scatter(x="frame", y="ratio", color="#000000", ax=axes[i])
+        if 'fit_sigmoid' in dataframe.columns:
+            dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=axes[i])
+        if 'fit_total' in dataframe.columns:
+            dataframe.plot(x='frame', y='fit_total', color="#E9190C", ax=axes[i])
     plt.show()
 
 
@@ -202,11 +205,14 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
 
 
 def main():
-    matplotlib.use('TkAgg')
+    # matplotlib.use('TkAgg')
 
     data = read_data()
-    # filter out nan and inf values
+    # filter out nan and inf values as well as too low and high values
     data = data[np.isfinite(data["ratio"])]
+    data = data[np.less(data["ratio"], np.full((len(data["ratio"])), 10))]
+    data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
+
     all_parameters = list()
     parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "mse_sigmoid", "mse_total"]
     rejected_particles = []
@@ -226,7 +232,7 @@ def main():
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=True,
-                                                visualize_particles=True, select_by_input=False)
+                                                visualize_particles=False, select_by_input=False)
         except Exception as e:
             print(e)
             rejected_particles.append(particle_idx)
