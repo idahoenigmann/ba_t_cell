@@ -95,12 +95,12 @@ def find_outlier(values: np.ndarray, width: float, par_indices: list, ignore: li
     return outliers
 
 
-def main():
+def main(file):
     # matplotlib.use('TkAgg')
 
     # read parameters from file
-    all_parameters = np.loadtxt('intermediate/particle_parameters.csv', delimiter=',')
-    with open('intermediate/particle_parameters.csv', 'r') as f_in:
+    all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
+    with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
         header = f_in.readline()
         header = header.translate({ord(c): None for c in '# \n'})
         indices = header.split(',')
@@ -144,7 +144,7 @@ def main():
     print(f"(Just) in {specify_par} are the following particles: {outlier_particles}")
 
     # plot specific outliers
-    data = read_data()
+    data = read_data(file)
     for particle_idx in outlier_particles:
         particle_to_parameters(data.loc[data['particle'] == particle_idx][['frame', 'ratio']], output_information=True,
                                visualize_particles=True, select_by_input=False)
@@ -154,4 +154,4 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main()
+    main("human_positive")

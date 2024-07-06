@@ -7,12 +7,13 @@ import pandas as pd
 import scipy
 
 
-def read_data() -> pandas.DataFrame:
+def read_data(file: str) -> pandas.DataFrame:
     """
     reads data from file
+    :param file: name of file without .h5-suffix
     :return: pandas dataframe of t-cell calcium concentrations
     """
-    return pandas.DataFrame(pd.read_hdf('../data/mouse_positive/mouse_positive.h5'))
+    return pandas.DataFrame(pd.read_hdf(f"../data/{file}/{file}.h5"))
 
 
 def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | None:
@@ -204,10 +205,10 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
     return particle_parameters
 
 
-def main():
+def main(file_name):
     # matplotlib.use('TkAgg')
 
-    data = read_data()
+    data = read_data(file_name)
     # filter out nan and inf values as well as too low and high values
     data = data[np.isfinite(data["ratio"])]
     data = data[np.less(data["ratio"], np.full((len(data["ratio"])), 10))]
@@ -215,14 +216,8 @@ def main():
 
     all_parameters = list()
     parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "mse_sigmoid", "mse_total"]
-    rejected_particles = []
 
-    try:
-        rejected_particles = np.loadtxt("intermediate/rejected_particles.csv", delimiter=",").tolist()
-    except Exception as e:
-        print(e)
-
-    for particle_idx in set(data['particle']).difference(set(rejected_particles)):
+    for particle_idx in set(data['particle']):
         # get data of a single particle
         single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
 
@@ -235,18 +230,14 @@ def main():
                                                 visualize_particles=False, select_by_input=False)
         except Exception as e:
             print(e)
-            rejected_particles.append(particle_idx)
             continue
 
         parameters["idx"] = particle_idx
         parameters['s'] = calc_transition_point(parameters['w'], parameters['k'], alpha=0.01)
         all_parameters.append([parameters[e] for e in parameters_saved])
 
-    np.savetxt("intermediate/particle_parameters.csv", np.matrix(np.array(all_parameters)), delimiter=',',
+    np.savetxt(f"intermediate/particle_parameters_{file_name}.csv", np.matrix(np.array(all_parameters)), delimiter=',',
                newline='\n', header=",".join(parameters_saved))
-    if len(rejected_particles) > 0:
-        np.savetxt("intermediate/rejected_particles.csv", np.matrix(rejected_particles).T, delimiter=',',
-                   newline='\n', header="idx")
 
 
 if __name__ == '__main__':
@@ -259,4 +250,6 @@ if __name__ == '__main__':
     to False.
     """
 
-    main()
+    main("human_positive")
+    main("mouse_positive")
+    main("mouse_negative")
