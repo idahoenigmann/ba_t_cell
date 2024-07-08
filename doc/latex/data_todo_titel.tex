@@ -43,6 +43,8 @@ One recording can have between 500 and 10000 cells and is between 700 and 1000 f
 
 \section{How it was generated}
 
+Four recordings where generated, with two each from human and mouse cells. Per cell type a positive and negative control was measured. In a positive control the conditions are such, that in theory every cell should activate, while in negative control the conditions are such, that none should activate. Due to stress on the cells and other factors a few cells will not follow theory.
+
 \subsection{Jurkat Cells, 5c.c7 primary mouse T cells and Fura-2}
 
 The prototypical cell line to study T cell signalling is the Jurkat cell line.\cite{morgan2023} It was obtained from the blood of a boy with T cell leukaemia.\cite{schneider1977} Different cell lines within the Jurkat family are described by Abraham and Weiss.\cite{abraham2004} They provide a timeline of discoveries linked to Jurkat cells and t cell receptor signalling.
@@ -53,7 +55,7 @@ In order to be able to measure the intracellular \Calcium concentration of cells
 
 \subsection{Measuring Calcium Concentration}
 
-After the cells have been labelled with Fura-2, a recording of up to 15 minute can be generated. To achieve this the cells and stimulant are photographed at both 340nm and 380nm wavelength once per second. The resolution of the images are 1.6um per pixel. By calculating the ratio of the two images at each point the \Calcium concentration can be observed. An exemplary resulting image showing the ratio is shown in figure~\ref{fig:example_ratio_img}. The T cells appear a lighter shade than the background.
+After the cells have been labelled with Fura-2, a recording of up to 15 to 20 minute can be generated. To achieve this the cells and stimulant are photographed at both 340nm and 380nm wavelength once per second. The resolution of the images are 1.6um per pixel. By calculating the ratio of the two images at each point the \Calcium concentration can be observed. An exemplary resulting image showing the ratio is shown in figure~\ref{fig:example_ratio_img}. The T cells appear a lighter shade than the background when activated and darker when not activated.
 
 \begin{figure}
 	\centering
@@ -62,8 +64,8 @@ After the cells have been labelled with Fura-2, a recording of up to 15 minute c
 	\label{fig:example_ratio_img}
 \end{figure}
 
-To activate the cells in the duration of the recording they are transferred to a plate covered with replicas of the MHC-peptide complex normally present on APCs. For a negative control the plate is not covered with peptides, while for the positive control the plate is covered very dense. Recordings of different densities in peptides lead to activation of only some of the t cells.
+To activate the cells in the duration of the recording they are transferred to a plate covered with replicas of the MHC-peptide complex normally present on APCs. This plate is then recorded as described above. For a negative control the plate is not covered with peptides, while for the positive control the peptide covering on the plate is very dense. Recordings of different densities in peptides lead to activation of a percentage of t cells.
 
 \subsection{Processing}
 
-To track single t cells moving around during the video the sum of the 340nm and 380nm image for each second is calculated. In this image it is easier to separate t cells from the background. Therefore, it is used to track the movement of cells. Each cell is numbered, such that the same cell will have the same number during as much of the video as possible. The position and shade during both 340nm and 380nm as well as the ratio of each particle and each frame is then recorded into the data structure used in this work. The first 50 frames at the start of the recording are discarded due to the video being out of focus. Additionally, cells only appearing in fewer than 20 frames are discarded as they most likely represent trajectories incorrectly tracked.
+To track single t cells moving around during the video the sum of the 340nm and 380nm image of each second is calculated. This image provides the basis for separating t cells from the background. On this image all t cells will appear similarly light in colour. Therefore, it is used to track the movement of cells. Each cell is numbered, such that the same cell will have the same number during the video. For some cells the trajectory tracking is not perfect, resulting in a split of the numbering into multiple numbers for the same cell. The position and shade during both 340nm and 380nm as well as the ratio of each particle and each frame is then recorded into the data structure used in this work. The first roughly 50 frames at the start of the recording are discarded due to the video being out of focus. Additionally, cells only appearing in fewer than 300 frames are discarded as they most likely represent trajectories incorrectly tracked or split. The resulting data is then stored in a matrix structured as described in table~\ref{tab:information_data_matrix}.

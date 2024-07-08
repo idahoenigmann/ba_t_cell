@@ -1,7 +1,14 @@
 \chapter{Optimization Algorithm}
 \label{chapter:optimization}
 
-objective, mathematical formulation of problem
+An optimization problem is any problem where a function $f:X \rightarrow Y$ is given, and we search for the point $x \in X$ such that $f(x)$ is minimal. Obviously the minimum must not exist, as the example $f: (0, 1] \rightarrow \mathbb{R}, x \mapsto x$ demonstrates. Investigating conditions on $X$, $Y$ and $f$ such that a minimum exists is mathematically interesting. However, when implementing an optimization algorithm the true minimum can often not be found and is instead replaced by a sufficiently good approximation.
+
+First we want to first think about some variations of the problem.
+
+In the case of a problem with additional conditions $P$ the minimum must satisfy we can consider at the subset $M:= \{x \in X: P(x)\} \subseteq X$. By finding the minimum of $f: M \rightarrow Y$ the problem is solved. Once again such a minimum must not exist, even if one is present in $X$.
+
+
+In the example dealt with in this work we are given some data points $((x_k, y_k))_{k \in \{1, 2, ..., n\}}$ and want to find a close approximation in the form of a function $g(x, a_1, a_2, ..., a_m)$ where for every $a = (a_1, ..., a_m)$ we have a function $g_a(x) : \mathbb{R} \rightarrow \mathbb{R}, x \mapsto g(x, a_1, ..., a_m)$. Searching for a good approximation can be reformulated as searching for the minimum of $r(a) := \sum_{k=1}^{n} |g_a(x_k) - b_k|^2$ or any other error function.
 
 \section{Algorithm Name}
 
