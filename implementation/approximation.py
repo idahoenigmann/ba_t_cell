@@ -90,7 +90,7 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
 
     w, a, d, u, k = popt
     t = calc_transition_point(w, k)
-    return {'w': w, 't': t, 'e': end, 'a': a, 'd': d, 'u': u, 'k': k}
+    return {'w': w, 't': t, 'e': end, 'a': a, 'd': d, 'u': u, 'k': k, "start": start}
 
 
 def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequencies_kept: int, start: int, end: int)\
@@ -215,7 +215,7 @@ def main(file_name):
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
 
     all_parameters = list()
-    parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "mse_sigmoid", "mse_total"]
+    parameters_saved = ["idx", 's', 'w', 't', 'e', 'a', 'd', 'u', 'k', "start", "mse_sigmoid", "mse_total"]
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -226,7 +226,7 @@ def main(file_name):
             continue
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
-            parameters = particle_to_parameters(single_particle_data, output_information=True,
+            parameters = particle_to_parameters(single_particle_data, output_information=False,
                                                 visualize_particles=False, select_by_input=False)
         except Exception as e:
             print(e)
@@ -250,6 +250,6 @@ if __name__ == '__main__':
     to False.
     """
 
-    main("human_positive")
+    # main("human_positive")
     main("mouse_positive")
     main("mouse_negative")
