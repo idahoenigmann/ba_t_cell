@@ -1,75 +1,92 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from sklearn.mixture import GaussianMixture
+from sklearn.model_selection import GridSearchCV
+import pandas as pd
+from matplotlib.patches import Ellipse
+from scipy import linalg
+import seaborn as sns
 
+FILE_NAMES = ["human_positive", "mouse_positive", "mouse_negative"]
 
 def import_all_data():
-    all_data = {"human_positive": None, "mouse_positive": None, "mouse_negative": None}
-    all_indices = {"human_positive": None, "mouse_positive": None, "mouse_negative": None}
-    for file in all_data.keys():
-        all_data[file] = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
+    all_data = []
+    for file in FILE_NAMES:
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
-            header = header.translate({ord(c): None for c in '# \n'})
-            all_indices[file] = header.split(',')
-    return all_data, all_indices
+            header = header.translate({ord(c): None for c in '# \n'}).split(',')
+        df2 = pd.DataFrame(data=np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=','),
+                           columns=header)
+        df2["file"] = file
+        all_data.append(df2)
+    return pd.concat(all_data)
 
 
-def index_term_to_data(data, file, term):
-    def term_sub_helper(data, file, term):
+def index_term_to_data(data, term):
+    def term_sub_helper(data, term):
         token_lst = term.split("-")
         if len(token_lst) == 1:
-            return data[file][:, indices[file].index(term)]
+            return data[term]
         else:
-            tmp = data[file][:, indices[file].index(token_lst[0])]
+            tmp = data[token_lst[0]]
             for i in range(1, len(token_lst)):
-                tmp -= data[file][:, indices[file].index(token_lst[i])]
+                tmp -= data[token_lst[i]]
             return tmp
 
     token_lst = term.split("+")
     if len(token_lst) == 1:
-        return term_sub_helper(data, file, term)
+        return term_sub_helper(data, term)
     else:
-        tmp = term_sub_helper(data, file, token_lst[0])
+        tmp = term_sub_helper(data, token_lst[0])
         for i in range(1, len(token_lst)):
-            tmp += term_sub_helper(data, file, token_lst[i])
+            tmp += term_sub_helper(data, token_lst[i])
         return tmp
 
 
 def visualize_2d_compare(data, x_axis, y_axis):
-    for f in data.keys():
-        plt.scatter(index_term_to_data(data, f, x_axis), index_term_to_data(data, f, y_axis))
+    fig, ax = plt.subplots(2)
 
-    plt.xlabel(x_axis)
-    plt.ylabel(y_axis)
+    for i, filtered in [[0, "file"], [1, "predicted_clusters"]]:
+        for f in set(data[filtered]):
+            data_f = data.loc[data[filtered] == f]
+            ax[i].scatter(index_term_to_data(data_f, x_axis), index_term_to_data(data_f, y_axis), label=f, alpha=0.3)
+        ax[i].set_xlabel(x_axis)
+        ax[i].set_ylabel(y_axis)
+        ax[i].legend()
     plt.show()
 
 
 def visualize_3d_compare(data, x_axis, y_axis, z_axis):
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    for i, filtered in [[0, "file"], [1, "predicted_clusters"]]:
+        fig = plt.figure(i)
+        ax = fig.add_subplot(projection='3d')
 
-    for f in data.keys():
-        ax.scatter(index_term_to_data(data, f, x_axis), index_term_to_data(data, f, y_axis),
-                   index_term_to_data(data, f, z_axis))
-
-    ax.set_xlabel(x_axis)
-    ax.set_ylabel(y_axis)
-    ax.set_zlabel(z_axis)
+        for f in set(data[filtered]):
+            data_f = data.loc[data[filtered] == f]
+            ax.scatter(index_term_to_data(data_f, x_axis), index_term_to_data(data_f, y_axis),
+                          index_term_to_data(data_f, z_axis), label=f)
+        ax.set_xlabel(x_axis)
+        ax.set_ylabel(y_axis)
+        ax.set_zlabel(z_axis)
+        ax.legend()
     plt.show()
 
 
 if __name__ == "__main__":
     """
-    plot multiple datasets in single plot with various axis
+    plot multiple datasets in single plot with various axis,
+    cluster the data
     """
 
-    data, indices = import_all_data()
-
+    data = import_all_data()
     dim = 2
+    tmp = ["a", "u", "d", "k"]
 
-    tmp = ["u", "a", "d", "k", "w-start", "t-start"]
+    gm = GaussianMixture(n_components=2, covariance_type="full")
+    gm.fit(data[tmp])
+    data["predicted_clusters"] = gm.predict(data[tmp])
+
     if dim == 2:
         for x in range(len(tmp)):
             for y in range(x + 1, len(tmp)):
