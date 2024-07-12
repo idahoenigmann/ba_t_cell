@@ -2,17 +2,12 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
-from sklearn.model_selection import GridSearchCV
 import pandas as pd
-from matplotlib.patches import Ellipse
-from scipy import linalg
-import seaborn as sns
 
-FILE_NAMES = ["human_positive", "mouse_positive", "mouse_negative"]
 
 def import_all_data():
     all_data = []
-    for file in FILE_NAMES:
+    for file in ["human_positive", "mouse_positive", "mouse_negative"]:
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
             header = header.translate({ord(c): None for c in '# \n'}).split(',')
