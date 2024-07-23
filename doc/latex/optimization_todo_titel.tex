@@ -234,6 +234,8 @@ Gauss-Newton has two problems, the starting value being too far from the root an
 
 \subsection{Levenberg-Marquardt Algorithm}
 
+This section is following section~18.3 of the book Introduction to Applied Linear Algebra by Stephen Boyd and Lieven Vandenberghe\cite{TODO}.
+
 As stated above a shortcoming of Gauss-Newton is that for $x$ far from $x_n$ we must not have that $r(x) \approx r(x_n) + Dr(x_n)(x-x_n) =: \hat{r}(x, x_n)$. Levenberg-Marquardt addresses this by minimizing $||\hat{r}(x, x_n)||^2 + \lambda_n ||x-x_n||^2$. The first is the same as above, while the second objective expresses our desire to not stray away too much from the region where we trust the linear approximation. The parameter $\lambda_n$ is a positive parameter specifying how far the trusted region extends.
 
 Writing the above idea as a single squared norm to minimize gives us the problem
@@ -253,7 +255,7 @@ The change of including $\lambda_n$ translates into the algorithm as replacing s
 
 The question of how to choose $\lambda_n$ arises. If too small $x_{n+1}$ can be too far from $x_n$ to trust the approximation. If too big the convergence will be slow. If in the previous step the objective $||r(x_n)||^2$ decreased we decrease $\lambda_{n+1}$ slightly. If the last step was not successful $\lambda_n$ was too small. Therefore we increase $\lambda_{n+1}$.
 
-Pseudo code of the resulting Levenberg-Marquardt algorithm is shown below. The stopping criteria of $||2Dr(x_n)^Tr(x_n)||$ is too small is known as the optimality condition. It is derived from $2Dr(x)^Tr(x) = \nabla||r(x)||^2 = 0$ for any $x$ minimizing $||r(x)||^2$. Note that this condition can be met for points other that the minimum.
+Pseudo code of the resulting Levenberg-Marquardt algorithm is shown below. The stopping criteria of $||2Dr(x_n)^Tr(x_n)||$ being too small is known as the optimality condition. It is derived from the fact that $2Dr(x)^Tr(x) = \nabla||r(x)||^2 = 0$ holds for any $x$ minimizing $||r(x)||^2$. Note that this condition can be met for points other that the minimum.
 
 \begin{algorithm}[H] \label{alg:levenberg-marquardt}
 	\SetAlgoLined
