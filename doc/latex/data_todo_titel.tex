@@ -40,10 +40,7 @@ The data matrix has a row per tracked cell and frame. The information stored for
 
 One recording can have between 500 and 10000 cells and is between 700 and 1000 frames long, which corresponds to between about 11 and 17 minutes. The ratio is typically between 0 and 5.
 
-
-\section{How it was generated}
-
-Four recordings where generated, with two each from human and mouse cells. Per cell type a positive and negative control was measured. In a positive control the conditions are such, that in theory every cell should activate, while in negative control the conditions are such, that none should activate. Due to stress on the cells and other factors a few cells will not follow theory.
+Four recordings where generated, with two each from human and mouse cells. For each cell type a positive and negative control was measured. In a positive control the conditions are such, that in theory every cell should activate, while in negative control the conditions are such, that none should activate. Due to stress on the cells and other factors a few cells will activate before the recording starts, during the recording or not activate at all regardless of the conditions.
 
 \subsection{Jurkat Cells, 5c.c7 primary mouse T cells and Fura-2}
 
@@ -55,7 +52,7 @@ In order to be able to measure the intracellular \Calcium concentration of cells
 
 \subsection{Measuring Calcium Concentration}
 
-After the cells have been labelled with Fura-2, a recording of up to 15 to 20 minute can be generated. To achieve this the cells and stimulant are photographed at both 340nm and 380nm wavelength once per second. The resolution of the images are 1.6um per pixel. By calculating the ratio of the two images at each point the \Calcium concentration can be observed. An exemplary resulting image showing the ratio is shown in figure~\ref{fig:example_ratio_img}. The T cells appear a lighter shade than the background when activated and darker when not activated.
+After the cells have been labelled with Fura-2, a recording of up to 15 to 20 minute can be generated. To achieve this the cells and stimulant are photographed at both 340nm and 380nm wavelength once per second. The resolution of the images are 1.6um per pixel. By calculating the ratio of the two images at each pixel the \Calcium concentration can be observed. An exemplary resulting image showing the ratio is shown in figure~\ref{fig:example_ratio_img}. The T cells appear a lighter shade than the background when activated and darker when not activated.
 
 \begin{figure}
 	\centering

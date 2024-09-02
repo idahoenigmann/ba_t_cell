@@ -227,7 +227,7 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=False, select_by_input=False)
+                                                visualize_particles=True, select_by_input=False)
         except Exception as e:
             print(e)
             continue
@@ -251,5 +251,36 @@ if __name__ == '__main__':
     """
 
     # main("human_positive")
-    main("mouse_positive")
-    main("mouse_negative")
+    # main("mouse_positive")
+    # main("mouse_negative")
+
+    end = 800
+
+    def sigmoid_and_linear_decreasing_(x, w, t, a, d, u, k):
+        """
+        piecewise function, logistic function followed by linear function
+        :param x: point at which to evaluate the function
+        :param w: midpoint of sigmoid function
+        :param t: transition point between sigmoid and linear function
+        :param a: activated value, supremum of sigmoid function
+        :param d: decreased value, value reached at end of decrease
+        :param u: unactivated value, infimum of sigmoid function
+        :param k: steepness of sigmoid function
+        """
+        if t is None:  # transition point lies outside datapoints (flat left side)
+            return u
+        elif x <= t:  # logistic function before transition point
+            tmp = -k * (x - w)
+            if tmp <= 32:
+                res = (a - u) / (1 + math.exp(tmp))
+            else:
+                res = 0
+            return res + u
+        else:  # linear decrease after transition point
+            val_at_transition = sigmoid_and_linear_decreasing_(t, w, t, a, d, u, k)
+            return (d - val_at_transition) / (end - t) * (x - t) + val_at_transition
+
+    res = [[x, sigmoid_and_linear_decreasing_(x, 300, 400, 4, 2, 0.9, 0.075)] for x in range(0, 400, 10)]
+
+    for r in res:
+        print(f"{r[0]} {r[1]}")
