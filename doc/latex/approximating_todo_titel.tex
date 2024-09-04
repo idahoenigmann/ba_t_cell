@@ -55,7 +55,7 @@ for activated cells. The parameters can be understood as
 	\end{tabular}
 \end{table}
 
-Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell} might look like for a typical unactivated and activated cell.
+Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell} look and how the relations to the parameters are in unactivated and activated cells.
 
 % u=0.9, a=4, k=0.075, w=300, t=400, d=2, z=800, f_ac(t)=3.098286
 \begin{figure}
@@ -155,3 +155,26 @@ Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functio
 	\label{fig:typical_time_series_with_parameters}
 \end{figure}
 
+For our model to make sense we have to impose some conditions onto the parameters. We expect $0 \leq u \leq d \leq a$, $w \leq t$ and $k > 0$.
+
+There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get a function similar to $f_{unac}$. If $w \gg z$ or $u \approx d \approx a$ then $f_{ac}$ approaches a constant value of $u$, thus approximating $f_{unac}$. If the approximation of a cell has parameters with $w \gg z$ or $u \approx d \approx a$ we can therefore expect it to be of an unactivated cell. Otherwise, it is more probable to be activated.
+
+\section{Implementation}
+
+Now that we have defined our model functions we will implement a routine that fits such a $f_{ac}$-function through the data of a cell.
+
+main:
+* read data
+* filter data
+* seperate single particles
+* skip if too short
+* approximate
+* show approx and real data
+* save parameters
+
+approximate:
+* set boundaries for parameters
+* set start approx values for parameters
+* scipy.optimize.curve-fit
+* calculate approximation
+* return paramters
