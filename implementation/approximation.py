@@ -130,6 +130,13 @@ def visualize(dataframe: pandas.DataFrame):
     axes[0].set_ylim(0, 5)
     axes[0].set_xlim(0, 1000)
 
+    axes[0].xaxis.label.set_size(12)
+    axes[0].yaxis.label.set_size(12)
+    axes[0].tick_params(axis='both', labelsize=12)
+    axes[1].xaxis.label.set_size(12)
+    axes[1].yaxis.label.set_size(12)
+    axes[1].tick_params(axis='both', labelsize=12)
+
     for i in range(0, 2):
         dataframe.plot.scatter(x="frame", y="ratio", color="#000000", ax=axes[i])
         if 'fit_sigmoid' in dataframe.columns:
@@ -251,6 +258,6 @@ if __name__ == '__main__':
     """
 
     # main("human_positive")
-    main("human_negative")
+    # main("human_negative")
     # main("mouse_positive")
-    # main("mouse_negative")
+    main("mouse_negative")

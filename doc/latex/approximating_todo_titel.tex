@@ -32,7 +32,7 @@ for unactivated cells and
 		\frac{d-f_{ac}(t)}{z-t} (x-t) + f_{ac}(t) & \textbf{ else}
 	\end{cases}
 \end{align}
-for activated cells. The parameters can be understood as
+for activated cells. The parameters can be understood as described in table~\ref{tab:parameters}.
 
 \begin{table}[h!]
 	\centering
@@ -53,6 +53,8 @@ for activated cells. The parameters can be understood as
 		$z$ ... & time point at which the data ends. \\
 		\hline
 	\end{tabular}
+	\label{tab:parameters}
+	\caption{List of parameters and their interpretation.}
 \end{table}
 
 Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell} look and how the relations to the parameters are in unactivated and activated cells.
@@ -163,18 +165,96 @@ There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get
 
 Now that we have defined our model functions we will implement a routine that fits such a $f_{ac}$-function through the data of a cell.
 
-main:
-* read data
-* filter data
-* seperate single particles
-* skip if too short
-* approximate
-* show approx and real data
-* save parameters
+First we describe a routine which handles reading the data, some necessary preprocessing steps and saving of the resulting parameter lists. The approximation itself is wrapped in the function \texttt{particle\_to\_parameters}, which takes a (frame, ratio)-matrix and returns a parameter list.
 
-approximate:
-* set boundaries for parameters
-* set start approx values for parameters
-* scipy.optimize.curve-fit
-* calculate approximation
-* return paramters
+\begin{algorithm}[H] \label{alg:main}
+	\SetAlgoLined
+	\DontPrintSemicolon
+	\LinesNumbered
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	\caption{Main}
+	
+	\Output{parameter matrix}
+	
+	\BlankLine
+	\Begin{
+		read data\;
+		filter data\;
+		\For{each single particle}{
+			particle data := (frame, ratio) columns of this particle\;
+			\If{length of particle data is too short}{
+				skip\;
+			}
+			parameters := approximate(particle data)\;
+			show approximation and ratio\;
+			save parameters\;
+		}
+	}
+\end{algorithm}
+\vspace{1cm}
+
+Filtering the data is necessary as the ratio can be very large if the denominator can be small. Values are therefore cropped to lie within $[0, 10]$. Any values higher than 10 are almost certainly caused by measurement errors.
+
+The visualization of line 10 generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.8\linewidth}
+		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_pos}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.8\linewidth}
+		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_neg}
+	\end{subfigure}
+	
+	\caption{The upper plot shows the data in black and approximation in orange of an activated cell. The first plot is scaled from 0 to 5, the second one is scaled to fit the data. The lower plot shows the same of an unactivated cell.}
+	\label{fig:particle_vis_sigmoid_approx}
+\end{figure}
+
+The above-mentioned approximation function is described in pseudocode below.
+
+\begin{algorithm}[H] \label{alg:approximate}
+	\SetAlgoLined
+	\DontPrintSemicolon
+	\LinesNumbered
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	\caption{Approximate}
+	
+	\Input{particle data as (frame, ratio) matrix}
+	\Output{parameters}
+	
+	\BlankLine
+	\Begin{
+		set boundaries for parameters\;
+		set start values for parameters\;
+		use Trust Region Reflective Algorithm with boundaries and start values to get parameters\;
+		calculate corresponding approximation and add as fit\_sigmoid columns to data matrix\;
+		return paramters\;
+	}
+\end{algorithm}
+\vspace{1cm}
+
+Setting boundaries is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w \leq t$ and $k > 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters.
+
+The parameters are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k(x-w)})$ almost reaches the value $a$. We choose $t := w - log(1/0.99-1) / k = w - log(1/99) / k$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point. The parameter $z$ is set at the last frame in which data of this particle was recorded.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|}
+		\hline
+		parameter & u & a & k & w & d \\ 
+		\hline
+		upper bound & median val - 0.002 & max val & 10 & end & max \\ 
+		\hline
+		lower bound & min val & median val + 0.002 & 0.05 & start & min \\ 
+		\hline
+		starting value & min val & max val & 0.1 & start & median val \\ 
+		\hline
+	\end{tabular}
+	\label{tab:boundaries_and_starting_vals}
+	\caption{Upper and lower bounds as well as starting value for each of the independent parameters.}
+\end{table}
+
+%[TODO Write about scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0, method='trf', bounds=(lower_bounds, upper_bounds)) ]
