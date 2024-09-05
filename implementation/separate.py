@@ -7,7 +7,7 @@ import pandas as pd
 
 def import_all_data():
     all_data = []
-    for file in ["human_positive", "mouse_positive", "mouse_negative"]:
+    for file in ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]:
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
             header = header.translate({ord(c): None for c in '# \n'}).split(',')

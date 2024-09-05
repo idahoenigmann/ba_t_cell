@@ -41,5 +41,6 @@ if __name__ == '__main__':
     """
 
     # main("human_positive")
-    main("mouse_positive")
+    main("human_negative")
+    # main("mouse_positive")
     # main("mouse_negative")

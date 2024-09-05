@@ -154,4 +154,4 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("human_positive")
+    main("human_negative")
