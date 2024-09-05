@@ -236,9 +236,7 @@ The above-mentioned approximation function is described in pseudocode below.
 \end{algorithm}
 \vspace{1cm}
 
-Setting boundaries is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w \leq t$ and $k > 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters.
-
-The parameters are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k(x-w)})$ almost reaches the value $a$. We choose $t := w - log(1/0.99-1) / k = w - log(1/99) / k$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point. The parameter $z$ is set at the last frame in which data of this particle was recorded.
+The parameters of $f_{ac}$ used in the approximation are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k(x-w)})$ almost reaches the value $a$. We choose $t := w - log(1/0.99-1) / k = w - log(1/99) / k$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point. The parameter $z$ is set at the last frame in which data of this particle was recorded.
 
 \begin{table}[h!]
 	\centering
@@ -246,9 +244,9 @@ The parameters are not independent of each other if we choose $t$ to be the poin
 		\hline
 		parameter & u & a & k & w & d \\ 
 		\hline
-		upper bound & median val - 0.002 & max val & 10 & end & max \\ 
+		upper bound & median val - 0.002 & max val & 10 & end & max val \\ 
 		\hline
-		lower bound & min val & median val + 0.002 & 0.05 & start & min \\ 
+		lower bound & min val & median val + 0.002 & 0.05 & start & min val \\ 
 		\hline
 		starting value & min val & max val & 0.1 & start & median val \\ 
 		\hline
@@ -257,4 +255,25 @@ The parameters are not independent of each other if we choose $t$ to be the poin
 	\caption{Upper and lower bounds as well as starting value for each of the independent parameters.}
 \end{table}
 
-%[TODO Write about scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0, method='trf', bounds=(lower_bounds, upper_bounds)) ]
+Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w \leq t$ and $k > 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by setting the boundaries as described in table~\ref{tab:boundaries_and_starting_vals}, where we set min val, max val and median val as the minimum, maximum and median of the particles' ratio data respectively while start and end is the first and last frame where data was recorded for this particle. This guarantees
+
+\begin{align*}
+	0 \leq \text{min val} \leq u \leq \text{median val} - 0.002 < \text{median val} + 0.002 \leq a \leq \text{max val}\\
+	\implies 0 \leq u < a.
+\end{align*}
+
+Where $d$ lies within this inequality chain is not fixed. The other conditions are met as
+
+\begin{align*}
+	t = w - \underbrace{\frac{\log(\frac{1}{99})}{k}}_{< 0} \geq w
+\end{align*}
+
+and $k \in [0.05, 10]$.
+
+Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing $w$ as the start we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle and experimenting showed that $k$ often has a value around $0.1$.
+
+This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(function, xdata, ydata, p0=starting\_values, method='trf', bounds=(lower\_bounds, upper\_bounds))} as it provides all the necessary functionality. The method parameter \texttt{trf} stands for Trust Region Reflective, as described in section~\ref{subsec:algorithms_bounded_lsp}.
+
+\section{Analysis of the Approximation}
+
+Violin Plots + outliers comparison between activated and unactivated in both human and mouse cells
