@@ -28,8 +28,8 @@ for unactivated cells and
 \begin{align}
 	\label{math:function_activated_cell}
 	f_{ac}(x) := \begin{cases}
-		\frac{a-u}{1+ e^{-k(x-w)}} & \textbf{ if } x <= t\\
-		\frac{d-f_{ac}(t)}{z-t} (x-t) + f_{ac}(t) & \textbf{ else}
+		\frac{a-u}{1 + e^{-k_1(x-w_1)}} + u & \textbf{ if } x <= t\\
+		\frac{a-d}{1 + e^{-k_2(x-w_2)}} + d & \textbf{ else}
 	\end{cases}
 \end{align}
 for activated cells. The parameters can be understood as described in table~\ref{tab:parameters}.
@@ -42,15 +42,17 @@ for activated cells. The parameters can be understood as described in table~\ref
 		\hline
 		$a$ ... & value reached at the peak of activation, \\
 		\hline
-		$k$ ... & steepness of increase, \\
+		$d$ ... & average value after activation, \\
 		\hline
-		$w$ ... & time point at which the increase happens, \\
+		$k_1$ ... & steepness of increase, \\
 		\hline
-		$t$ ... & time point at which the increase ends, \\
+		$k_2$ ... & steepness of decrease, \\
 		\hline
-		$d$ ... & average value toward the end of the data, \\
+		$w_1$ ... & time point at which the increase happens, \\
 		\hline
-		$z$ ... & time point at which the data ends. \\
+		$w_2$ ... & time point at which the decrease happens, \\
+		\hline
+		$t$ ... & time point at which the increase ends, and the decrease starts, \\
 		\hline
 	\end{tabular}
 	\label{tab:parameters}
@@ -59,7 +61,8 @@ for activated cells. The parameters can be understood as described in table~\ref
 
 Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell} look and how the relations to the parameters are in unactivated and activated cells.
 
-% u=0.9, a=4, k=0.075, w=300, t=400, d=2, z=800, f_ac(t)=3.098286
+% start = 50, u = 0.9, a = 4, k1 = 0.075, k2 = -0.04, w1 = 300, w2 = 520, t = 400, d = 2, z = 800
+
 \begin{figure}
 	\centering
 	\begin{subfigure}{0.45\linewidth}
@@ -93,7 +96,7 @@ Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functio
 				min value = 0,
 				max value = 1000,
 				length = 5cm,
-				ticks and grid = {major={at={300 as $w$, 400 as $t$, 800 as $z$}}},
+				ticks and grid = {major={at={300 as $w_1$, 400 as $t$, 520 as $w_2$}}},
 				label = frame
 			}, y axis = {
 				min value = 0,
@@ -140,26 +143,63 @@ Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functio
 				370 3.983817610349969
 				380 3.9923348682144324
 				390 3.9963745181783277
-			}
-			data [format=function] {
-				var x : interval [400:800]; func y = (2 - 3.998286) / (800 - 400) * (\value x - 400) + 3.998286;
+				400 3.998286386225537
+				410 3.9757431300314514
+				420 3.964027580075817
+				430 3.946806012846268
+				440 3.9216685544064713
+				450 3.8853516482022625
+				460 3.8336546070121553
+				470 3.7615941559557644
+				480 3.664036770267849
+				490 3.537049566998035
+				500 3.379948962255225
+				510 3.197375320224904
+				520 3.0
+				530 2.802624679775096
+				540 2.620051037744775
+				550 2.4629504330019647
+				560 2.335963229732151
+				570 2.238405844044235
+				580 2.1663453929878447
+				590 2.1146483517977375
+				600 2.0783314455935287
+				610 2.053193987153732
+				620 2.035972419924183
+				630 2.0242568699685486
+				640 2.0163251423063198
+				650 2.010972597798901
+				660 2.007368479798872
+				670 2.0049452463132695
+				680 2.0033176021603487
+				690 2.0022250720657206
+				700 2.0014920576676736
+				710 2.001000402214159
+				720 2.0006707002609327
+				730 2.0004496335404665
+				740 2.0003014207161196
+				750 2.0002020583878157
+				760 2.0001354482992397
+				770 2.000090795737405
+				780 2.0000608631138013
+				790 2.00004079817456
 			}
 			info {
-			\draw (visualization cs: x=300, y=2.45)
-			node [left,font=\footnotesize] {$k$};
+			\draw (visualization cs: x=300, y=2.5)
+			node [left,font=\footnotesize] {$k_1$};
+			\draw (visualization cs: x=520, y=3.1)
+			node [right,font=\footnotesize] {$k_2$};
 			};
 		\end{tikzpicture}
 	\end{subfigure}
 	
-	%3.1/(1 + exp(-0.075 * (\value x - 300))) + 0.9
-	
-	\caption{Left shows the function $f_{unac}$ defined in~\ref{math:function_unactivated_cell} with the parameter $u$. The right shows the function $f_{ac}$ defined in~\ref{math:function_activated_cell} with the parameters $u$, $d$, $a$, $w$, $t$, $z$ and $k$.}
+	\caption{Left shows the function $f_{unac}$ defined in~\ref{math:function_unactivated_cell} with the parameter $u$. The right shows the function $f_{ac}$ defined in~\ref{math:function_activated_cell} with the parameters $u$, $d$, $a$, $w_1$, $t$, $w_2$, $k_1$ and $k_2$.}
 	\label{fig:typical_time_series_with_parameters}
 \end{figure}
 
-For our model to make sense we have to impose some conditions onto the parameters. We expect $0 \leq u \leq d \leq a$, $w \leq t$ and $k > 0$.
+For our model to make sense we have to impose some conditions onto the parameters. We expect $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$.
 
-There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get a function similar to $f_{unac}$. If $w \gg z$ or $u \approx d \approx a$ then $f_{ac}$ approaches a constant value of $u$, thus approximating $f_{unac}$. If the approximation of a cell has parameters with $w \gg z$ or $u \approx d \approx a$ we can therefore expect it to be of an unactivated cell. Otherwise, it is more probable to be activated.
+There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get a function similar to $f_{unac}$. If $w_1$ is very large or $u \approx d \approx a$ then $f_{ac}$ approaches a constant value of $u$, thus approximating $f_{unac}$. If the approximation of a cell has parameters with $w_1$ very large or $u \approx d \approx a$ we can therefore expect it to be of an unactivated cell. Otherwise, it is more probable to be activated.
 
 \section{Implementation}
 
@@ -200,11 +240,11 @@ The visualization of line 10 generates images such as figure~\ref{fig:particle_v
 
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.8\linewidth}
+	\begin{subfigure}{0.69\linewidth}
 		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_pos}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.8\linewidth}
+	\begin{subfigure}{0.69\linewidth}
 		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_neg}
 	\end{subfigure}
 	
@@ -236,41 +276,49 @@ The above-mentioned approximation function is described in pseudocode below.
 \end{algorithm}
 \vspace{1cm}
 
-The parameters of $f_{ac}$ used in the approximation are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k(x-w)})$ almost reaches the value $a$. We choose $t := w - log(1/0.99-1) / k = w - log(1/99) / k$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point. The parameter $z$ is set at the last frame in which data of this particle was recorded.
+The parameters of $f_{ac}$ used in the approximation are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k_1(x-w_1)})$ almost reaches the value $a$. We choose $t := w_1 - log(1/0.99-1) / k_1 = w_1 - log(1/99) / k_1$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point.
 
-\begin{table}[h!]
-	\centering
-	\begin{tabular}{|c|c|c|c|c|c|}
-		\hline
-		parameter & u & a & k & w & d \\ 
-		\hline
-		upper bound & median val - 0.002 & max val & 10 & end & max val \\ 
-		\hline
-		lower bound & min val & median val + 0.002 & 0.05 & start & min val \\ 
-		\hline
-		starting value & min val & max val & 0.1 & start & median val \\ 
-		\hline
-	\end{tabular}
-	\label{tab:boundaries_and_starting_vals}
-	\caption{Upper and lower bounds as well as starting value for each of the independent parameters.}
-\end{table}
-
-Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w \leq t$ and $k > 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by setting the boundaries as described in table~\ref{tab:boundaries_and_starting_vals}, where we set min val, max val and median val as the minimum, maximum and median of the particles' ratio data respectively while start and end is the first and last frame where data was recorded for this particle. This guarantees
+Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by setting the boundaries as described in table~\ref{tab:boundaries_and_starting_vals}, where we set min val, max val and median val as the minimum, maximum and median of the particles' ratio data respectively while start and end is the first and last frame where data was recorded for this particle. This guarantees
 
 \begin{align*}
 	0 \leq \text{min val} \leq u \leq \text{median val} - 0.002 < \text{median val} + 0.002 \leq a \leq \text{max val}\\
 	\implies 0 \leq u < a.
 \end{align*}
 
-Where $d$ lies within this inequality chain is not fixed. The other conditions are met as
+Where $d$ lies within this inequality chain is not fixed. For the condition $w_1 \leq t \leq w_2$ we only guarantee
 
 \begin{align*}
-	t = w - \underbrace{\frac{\log(\frac{1}{99})}{k}}_{< 0} \geq w
+	t = w_1 - \underbrace{\frac{\log(\frac{1}{99})}{k_1}}_{< 0} \geq w_1.
 \end{align*}
 
-and $k \in [0.05, 10]$.
+The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$.
 
-Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing $w$ as the start we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle and experimenting showed that $k$ often has a value around $0.1$.
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		parameter & lower bound & upper bound & starting value \\ 
+		\hline
+		$u$ & min val & median val - 0.002 & min val\\
+		\hline
+		$a$ & median val + 0.002 & max val & max val\\
+		\hline
+		$d$ & min val & max val & median val\\
+		\hline
+		$w_1$ & start & end & start\\
+		\hline
+		$w_2$ & start & end & (start + end) / 2\\
+		\hline
+		$k_1$ & 0.05 & 10 & 0.1\\
+		\hline
+		$k_2$ & -1 & -0.01 & -0.03\\
+		\hline
+	\end{tabular}
+	\label{tab:boundaries_and_starting_vals}
+	\caption{Upper and lower bounds as well as starting value for each of the independent parameters.}
+\end{table}
+
+Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing $w_1$ as the start we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ lies in the middle. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle and experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
 
 This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(function, xdata, ydata, p0=starting\_values, method='trf', bounds=(lower\_bounds, upper\_bounds))} as it provides all the necessary functionality. The method parameter \texttt{trf} stands for Trust Region Reflective, as described in section~\ref{subsec:algorithms_bounded_lsp}.
 

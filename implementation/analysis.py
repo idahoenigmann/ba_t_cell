@@ -33,7 +33,7 @@ def plot_parameters(parameters: np.ndarray, par_indices: list):
     :param par_indices: list of names describing the column order of the parameters matrix
     """
 
-    violin_plots = [['u', 'a', 'd'], ['s', 'w', 't', 'e'], ['k']]
+    violin_plots = [['u', 'a', 'd'], ['s', 'w1', 't', 'w2', 'e'], ['k1', 'k2']]
     fig, ax = plt.subplots(3)
 
     violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[0]],
@@ -114,7 +114,7 @@ def main(file):
 
     # find outliers in parameters
     print("Outlier analysis")
-    outliers = find_outlier(all_parameters, 2, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't'])
+    outliers = find_outlier(all_parameters, 2, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't', "start", "w2"])
     print(f"Total number of particles: {all_parameters.shape[0]}")
 
     for e in outliers.keys():

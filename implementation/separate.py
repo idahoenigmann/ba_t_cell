@@ -75,8 +75,8 @@ if __name__ == "__main__":
     """
 
     data = import_all_data()
-    dim = 2
-    tmp = ["a", "u", "d", "k"]
+    dim = 3
+    tmp = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
     gm = GaussianMixture(n_components=2, covariance_type="full")
     gm.fit(data[tmp])
