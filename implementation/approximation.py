@@ -89,7 +89,7 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     min_val, median_val, max_val = np.min(dataframe['ratio']), np.median(dataframe['ratio']), np.max(dataframe['ratio'])
     start, end = min(dataframe['frame']), max(dataframe['frame'])
     lower_bounds = (start, start, median_val + 0.002, min_val, min_val, 0.05, -1)
-    upper_bounds = (end, end, max_val, max_val, median_val - 0.002, 10, -0.01)
+    upper_bounds = (end, end, max_val, max_val, median_val - 0.002, 3, -0.01)
     p0 = (start, (start + end)//2, max_val, median_val, min_val, 0.1, -0.03)
 
     popt, *_ = scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0,
@@ -226,7 +226,7 @@ def main(file_name):
     data = read_data(file_name)
     # filter out nan and inf values as well as too low and high values
     data = data[np.isfinite(data["ratio"])]
-    data = data[np.less(data["ratio"], np.full((len(data["ratio"])), 10))]
+    data = data[np.less(data["ratio"], np.full((len(data["ratio"])), 5))]
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
 
     all_parameters = list()
@@ -242,7 +242,7 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=False, select_by_input=False)
+                                                visualize_particles=True, select_by_input=False)
         except Exception as e:
             print(e)
             continue

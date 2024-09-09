@@ -234,7 +234,7 @@ First we describe a routine which handles reading the data, some necessary prepr
 \end{algorithm}
 \vspace{1cm}
 
-Filtering the data is necessary as the ratio can be very large if the denominator can be small. Values are therefore cropped to lie within $[0, 10]$. Any values higher than 10 are almost certainly caused by measurement errors.
+Filtering the data is necessary as the ratio can be very large if the denominator can be small. Values are therefore cropped to lie within $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors.
 
 The visualization of line 10 generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}.
 
@@ -324,4 +324,80 @@ This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(funct
 
 \section{Analysis of the Approximation}
 
-Violin Plots + outliers comparison between activated and unactivated in both human and mouse cells
+We now give data on the parameters found from the above approximation. Some statistics are found in table~\ref{tab:statistics_parameters}. Figure~\ref{fig:parameter_violin_plot} shows the distribution of the resulting parameters of the approximation. From the figure it seems the differences between activated and unactivated cells is biggest in the parameters activated value $a$ and decreased value $d$ and the steepness of increase $k_1$.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+		\hline
+		 & & \multicolumn{2}{|c|}{Positive Control} & \multicolumn{2}{|c|}{Negative Control} & \\ 
+		\hline
+		& Parameter & Average & Standard Deviation & Average & Standard Deviation & Difference \\ 
+		\hline
+		\multirow{7}{*}{\rotatebox[origin=c]{90}{human cells}} & $u$ & 0.663 & 0.521 & 0.613 & 0.311 & 0.05\\
+		\cline{2-7}
+		& $a$ & 2.808 & 0.461 & 0.923 & 0.669 & 1.885\\
+		\cline{2-7}
+		& $d$ & 1.937 & 0.491 & 0.685 & 0.412 & 1.252\\
+		\cline{2-7}
+		& $w_1$ & 142.228 & 124.012 & 171.062 & 131.563 & -28.834 \\
+		\cline{2-7}
+		& $w_2$ & 445.386 & 185.971 & 478.843 & 190.792 & -33.457 \\
+		\cline{2-7}
+		& $k_1$ & 0.263 & 0.428 & 0.524 & 0.963 & -0.261 \\
+		\cline{2-7}
+		& $k_2$ & -0.059 & 0.164 & -0.163 & 0.292 & 0.104 \\
+		\hline
+		\multirow{7}{*}{\rotatebox[origin=c]{90}{mouse cells}} & $u$ & 0.889 & 0.27 & 0.79 & 0.093 & 0.099 \\
+		\cline{2-7}
+		& $a$ & 2.9 & 0.907 & 0.876 & 0.186 & 2.024 \\
+		\cline{2-7}
+		& $d$ & 1.749 & 0.407 & 0.804 & 0.129 & 0.945 \\
+		\cline{2-7}
+		& $w_1$ & 295.809 & 77.207 & 100.712 & 112.352 & 195.097 \\
+		\cline{2-7}
+		& $w_2$ & 469.952 & 105.375 & 304.283 & 179.834 & 165.669 \\
+		\cline{2-7}
+		& $k_1$ & 0.15 & 0.409 & 1.161 & 1.235 & -1.011 \\
+		\cline{2-7}
+		& $k_2$ & -0.1 & 0.195 & -0.133 & 0.267 & 0.033 \\
+		\hline
+	\end{tabular}
+	\label{tab:statistics_parameters}
+	\caption{Statistics of the parameters retrieved from approximating the human cell data.}
+\end{table}
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\textwidth]{fig/parameter_violin_plot_human_pos}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\textwidth]{fig/parameter_violin_plot_human_neg}
+	\end{subfigure}
+	
+	\caption{Violin plots of parameters $u, a, d, w_1, w_2, k_1$ and $k_2$ from the approximations. The parameters of the positive control are on the left and those of the negative control are on the right. Both are of human cells.}
+	\label{fig:parameter_violin_plot}
+\end{figure}
+
+As the datasets are not perfectly labelled, meaning there are activated cells in the negative control and vice versa, we have relatively high standard deviation.
+
+\section{Adding Oscillation in the Decrease}
+
+In order to answer the research questions concerned with the oscillations happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fast Fourier Transformation (FFT).
+
+FFT transforms temporal data into a representation consisting of the sum of sines. From this we can directly see which frequencies are contained in the data with which amplitudes.
+
+As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can then filter out the 10 frequencies with the highest amplitudes and use them to further analyse the oscillations. This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{fig/particle_vis_fft_approx_pos}
+	
+	\caption{The data of an activated cell with heavy oscillation is shown in black, simple approximation in orange and the approximation with FFT added in red. The first plot is scaled from 0 to 5, the second one is scaled to fit the data.}
+	\label{fig:particle_vis_fft_approx}
+\end{figure}
+
+We can store the data gathered using the FFT as a list of frequencies and corresponding amplitudes.
+

@@ -21,6 +21,9 @@ def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.
         labels.append((mpatches.Patch(color=color), label))
 
     ax.set_title(', '.join(par_names))
+    ax.xaxis.label.set_size(12)
+    ax.yaxis.label.set_size(12)
+    ax.tick_params(axis='both', labelsize=12)
     for i in range(len(par_names)):
         add_label(ax.violinplot(parameters[i], showmeans=True, showextrema=False, vert=vert), label=par_names[i])
     ax.legend(*zip(*labels), loc=1)
@@ -33,14 +36,16 @@ def plot_parameters(parameters: np.ndarray, par_indices: list):
     :param par_indices: list of names describing the column order of the parameters matrix
     """
 
-    violin_plots = [['u', 'a', 'd'], ['s', 'w1', 't', 'w2', 'e'], ['k1', 'k2']]
+    violin_plots = [['u', 'a', 'd'], ['w1', 'w2'], ['k1', 'k2']]
+    # violin_plots = [['u', 'a', 'd'], ["start", 's', 'w1', 't', 'w2', 'e'], ['k1', 'k2']]
+
     fig, ax = plt.subplots(3)
 
     violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[0]],
                               violin_plots[0], ax[0], vert=True)
     violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[1]],
                               violin_plots[1], ax[1], vert=False)
-    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[1]],
+    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[2]],
                               violin_plots[2], ax[2], vert=True)
 
     plt.show()
@@ -154,4 +159,4 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("human_negative")
+    main("mouse_negative")
