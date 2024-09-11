@@ -126,7 +126,10 @@ def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequen
 
     dataframe['fit_sin'] = np.concatenate((np.zeros(start), np.real(np.fft.ifft(fft_out))))
 
-    return {'fft': dict([(main_freqs[i], main_amps[i]) for i in range(len(main_freqs))])}
+    freqs = {f'freq{i}': main_freqs[-i] for i in range(len(main_freqs))}
+    amps = {f'amp{i}': abs(main_amps[-i]) for i in range(len(main_amps))}
+
+    return {**freqs, **amps}
 
 
 def visualize(dataframe: pandas.DataFrame):
@@ -230,7 +233,10 @@ def main(file_name):
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
 
     all_parameters = list()
-    parameters_saved = ["idx", "start", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid", "mse_total"]
+    parameters_saved = ["idx", "start", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid",
+                        "mse_total"]
+    # TODO 10 is not a fixed value, but a parameter of approximate_residuum_with_fft
+    parameters_saved = parameters_saved + [f"freq{i}" for i in range(10)] + [f"amp{i}" for i in range(10)]
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -242,7 +248,7 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=True, select_by_input=False)
+                                                visualize_particles=False, select_by_input=False)
         except Exception as e:
             print(e)
             continue

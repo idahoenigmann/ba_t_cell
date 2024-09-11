@@ -5,7 +5,9 @@ From section~\ref{sec:t-cell/activation}, we gather that analysing the intracell
 
 \section{Structure of Data}
 
-The data matrix has a row per tracked cell and frame. The information stored for each cell and frame combination is described in detail in table~\ref{tab:information_data_matrix}.
+First we describe the structure of the data this work uses. 
+
+The data matrix has one row for each tracked particle and frame combination. In this context cells are called particles as the recording might feature non-cells that are detected as a cell and recorded in the data set. The information stored for each particle and frame combination is described in detail in table~\ref{tab:information_data_matrix}.
 
 \begin{table}[h!]
 	\centering
@@ -13,9 +15,9 @@ The data matrix has a row per tracked cell and frame. The information stored for
 		\hline
 		\textbf{Name} & \textbf{Data Type} & \textbf{Description} \\
 		\hline
-		x & float64 & Position of cell in pixels along the horizontal axis \\
+		x & float64 & Position of particle in pixels along the horizontal axis \\
 		\hline
-		y & float64 & Position of cell in pixels along the vertical axis \\
+		y & float64 & Position of particle in pixels along the vertical axis \\
 		\hline
 		frame & int32 & Number of frame, with frame rate of 1 frame per second \\
 		\hline
@@ -38,9 +40,9 @@ The data matrix has a row per tracked cell and frame. The information stored for
 
 % mouse pos: 4289, 720; mouse neg: 7683, 785; human pos: 694, 948
 
-One recording can have between 500 and 10000 cells and is between 700 and 1000 frames long, which corresponds to between about 11 and 17 minutes. The ratio is typically between 0 and 5.
+One recording can have between 500 and 10000 particles and is between 700 and 1000 frames long, which corresponds to between about 11 and 17 minutes. The ratio recorded is typically between 0 and 5.
 
-Four recordings where generated, with two each from human and mouse cells. For each cell type a positive and negative control was measured. In a positive control the conditions are such, that in theory every cell should activate, while in negative control the conditions are such, that none should activate. Due to stress on the cells and other factors a few cells will activate before the recording starts, during the recording or not activate at all regardless of the conditions.
+Four recordings where generated, with two each from human and mouse cells. For each cell type a positive and negative control was measured. In a positive control the conditions are such, that in theory every cell should activate, while in negative control the conditions are such, that none should activate. Due to stress on the cells caused by the movement or changes in temperature and other factors a few cells will activate before the recording starts, during the recording in the negative control or not activate at all in the positive control, regardless of the conditions.
 
 \section{Jurkat Cells, 5c.c7 primary mouse T cells and Fura-2}
 

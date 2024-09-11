@@ -115,11 +115,15 @@ def main(file):
     for e in indices:
         print(f"{e}: {statistics(all_parameters[:, indices.index(e)].tolist())}")
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
+    print(f"weighted average freq: {np.average([all_parameters[:, indices.index(f'freq{i}')] for i in range(10)], 
+                                        weights=[all_parameters[:, indices.index(f'amp{i}')] for i in range(10)])}")
     print()
 
     # find outliers in parameters
     print("Outlier analysis")
-    outliers = find_outlier(all_parameters, 2, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't', "start", "w2"])
+    outliers = find_outlier(all_parameters, 2, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't',
+                                                                "start", "w2"] + [f"freq{i}" for i in range(10)] +
+                                                               [f"amp{i}" for i in range(10)])
     print(f"Total number of particles: {all_parameters.shape[0]}")
 
     for e in outliers.keys():
@@ -159,4 +163,4 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("mouse_negative")
+    main("human_positive")

@@ -387,7 +387,30 @@ As the datasets are not perfectly labelled, meaning there are activated cells in
 
 In order to answer the research questions concerned with the oscillations happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fast Fourier Transformation (FFT).
 
-FFT transforms temporal data into a representation consisting of the sum of sines. From this we can directly see which frequencies are contained in the data with which amplitudes.
+Many applications are concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
+
+\begin{figure}
+	\centering
+	
+	\begin{subfigure}[b]{\textwidth}
+		\begin{tikzpicture}
+			\begin{axis}[xlabel=Time, ylabel=Amplitude, width=\textwidth, height=0.4\textwidth]
+				\addplot+ [domain=0:pi, samples=100, no marks, color=black, style=solid]{0};
+				\addplot+ [domain=pi:3*pi, samples=100, no marks, color=black, style=solid]{sin(deg(x)) + 0.5*sin(deg(4*x)) + 0.1*sin(deg(10*x))};
+				\addplot+ [domain=3*pi:15, samples=100, no marks, color=black, style=solid]{0};
+				
+				\addplot+ [domain=0:pi+2, samples=100, no marks, color=red, style=solid]{0};
+				\addplot+ [domain=pi+2:3*pi+2, samples=100, no marks, color=red, style=solid]{sin(deg(x-2)) + 0.5*sin(deg(4*(x-2))) + 0.1*sin(deg(10*(x-2)))};section
+				\addplot+ [domain=3*pi+2:15, samples=100, no marks, color=red, style=solid]{0};
+			\end{axis}
+		\end{tikzpicture}
+	\end{subfigure}
+	
+	\caption{Two signals that differ by a temporal shift.}
+	\label{fig:tempoal_shift}
+\end{figure}
+
+As the function of sound waves or oscillations in the \Calcium concentration in t cells is cyclic we might be interested in a decomposition into simple cyclic function, such as sine. We can then analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. FFT is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
 
 As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can then filter out the 10 frequencies with the highest amplitudes and use them to further analyse the oscillations. This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
 
@@ -400,4 +423,6 @@ As the oscillations happen in the decrease of the \Calcium concentration we appl
 \end{figure}
 
 We can store the data gathered using the FFT as a list of frequencies and corresponding amplitudes.
+
+[TODO analyse frequencies and amplitudes]
 
