@@ -33,6 +33,53 @@ def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | No
         return None
 
 
+def sigmoid_and_linear_decreasing_(x, w1, t, w2, a, d, u, k1, k2):
+    """
+    piecewise function, logistic function followed by linear function
+    :param x: point at which to evaluate the function
+    :param w1: midpoint of increasing sigmoid function
+    :param t: transition point between increasing sigmoid and decreasing sigmoid
+    :param w2: midpoint of decreasing sigmoid function
+    :param a: activated value, supremum of sigmoid function
+    :param d: decreased value, value reached at end of decrease
+    :param u: unactivated value, infimum of sigmoid function
+    :param k1: steepness of increasing sigmoid function
+    :param k2: steepness of decreasing sigmoid function
+    """
+    if t is None:  # transition point lies outside datapoints (flat left side)
+        return u
+    elif x <= t:  # logistic (increasing) function before transition point
+        tmp = -k1 * (x - w1)
+        if tmp <= 32:
+            res = (a - u) / (1 + math.exp(tmp))
+        else:
+            res = 0
+        return res + u
+    else:  # logistic (decreasing) function after transition point
+        tmp = -k2 * (x - w2)
+        if tmp <= 32:
+            res = (a - d) / (1 + math.exp(tmp))
+        else:
+            res = 0
+        return res + d
+
+
+def sigmoid_and_linear_decreasing(x_arr, w1, w2, a, d, u, k1, k2):
+    """
+    wrapper for sigmoid_and_linear_decreasing_ function, takes list as input
+    :param x_arr: list of points at which to evaluate the function
+    :param w1: midpoint of increasing sigmoid function
+    :param w2: midpoint of decreasing sigmoid function
+    :param a: activated value, supremum of sigmoid function
+    :param d: decreased value, value reached at end of decrease
+    :param u: unactivated value, infimum of sigmoid function
+    :param k1: steepness of increasing sigmoid function
+    :param k2: steepness of decreasing sigmoid function
+    """
+    transition_point = calc_transition_point(w1, k1)
+    return np.vectorize(sigmoid_and_linear_decreasing_)(x_arr, w1, transition_point, w2, a, d, u, k1, k2)
+
+
 def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     """
     approximates the datapoints of dataframe with a combination of a sigmoid curve and a linear decreasing function
@@ -41,37 +88,7 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     :returns: parameters for sigmoid curve
     """
 
-    def sigmoid_and_linear_decreasing_(x, w1, t, w2, a, d, u, k1, k2):
-        """
-        piecewise function, logistic function followed by linear function
-        :param x: point at which to evaluate the function
-        :param w1: midpoint of increasing sigmoid function
-        :param t: transition point between increasing sigmoid and decreasing sigmoid
-        :param w2: midpoint of decreasing sigmoid function
-        :param a: activated value, supremum of sigmoid function
-        :param d: decreased value, value reached at end of decrease
-        :param u: unactivated value, infimum of sigmoid function
-        :param k1: steepness of increasing sigmoid function
-        :param k2: steepness of decreasing sigmoid function
-        """
-        if t is None:  # transition point lies outside datapoints (flat left side)
-            return u
-        elif x <= t:  # logistic (increasing) function before transition point
-            tmp = -k1 * (x - w1)
-            if tmp <= 32:
-                res = (a - u) / (1 + math.exp(tmp))
-            else:
-                res = 0
-            return res + u
-        else:  # logistic (decreasing) function after transition point
-            tmp = -k2 * (x - w2)
-            if tmp <= 32:
-                res = (a - d) / (1 + math.exp(tmp))
-            else:
-                res = 0
-            return res + d
-
-    def sigmoid_and_linear_decreasing(x_arr, w1, w2, a, d, u, k1, k2):
+    def sigmoid_and_linear_decreasing_for_approx(x_arr, w1_start, w2_w1, a_d, d_u, u, k1, k2):
         """
         wrapper for sigmoid_and_linear_decreasing_ function, takes list as input
         :param x_arr: list of points at which to evaluate the function
@@ -83,21 +100,27 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
         :param k1: steepness of increasing sigmoid function
         :param k2: steepness of decreasing sigmoid function
         """
+        w1 = w1_start + start
+        w2 = w2_w1 + w1
+        d = d_u + u
+        a = a_d + d
         transition_point = calc_transition_point(w1, k1)
         return np.vectorize(sigmoid_and_linear_decreasing_)(x_arr, w1, transition_point, w2, a, d, u, k1, k2)
 
     min_val, median_val, max_val = np.min(dataframe['ratio']), np.median(dataframe['ratio']), np.max(dataframe['ratio'])
     start, end = min(dataframe['frame']), max(dataframe['frame'])
-    lower_bounds = (start, start, median_val + 0.002, min_val, min_val, 0.05, -1)
-    upper_bounds = (end, end, max_val, max_val, median_val - 0.002, 3, -0.01)
-    p0 = (start, (start + end)//2, max_val, median_val, min_val, 0.1, -0.03)
+    lower_bounds = (0,           0,           0,       0,       min_val, 0.05, -1)
+    upper_bounds = (end - start, end - start, max_val, max_val, max_val, 3, -0.01)
+    p0 = (0, (end - start)/2, max_val - median_val, median_val - min_val, min_val, 0.1, -0.03)
 
-    popt, *_ = scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0,
+    popt, *_ = scipy.optimize.curve_fit(sigmoid_and_linear_decreasing_for_approx, dataframe['frame'], dataframe['ratio'], p0=p0,
                                         method='trf', bounds=(lower_bounds, upper_bounds))
 
-    w1, w2, a, d, u, k1, k2 = popt
-    d, w2 = min(d, a), max(w1, w2)      # fix parameters if d > a or w2 < w1
-
+    w1_start, w2_w1, a_d, d_u, u, k1, k2 = popt
+    w1 = w1_start + start
+    w2 = w2_w1 + w1
+    d = d_u + u
+    a = a_d + d
     t = calc_transition_point(w1, k1)
     dataframe['fit_sigmoid'] = sigmoid_and_linear_decreasing(dataframe['frame'], w1, w2, a, d, u, k1, k2)
     return {"start": start, 'w1': w1, 't': t, 'w2': w2, 'e': end, 'a': a, 'd': d, 'u': u, 'k1': k1, 'k2': k2}
@@ -241,7 +264,7 @@ def main(file_name):
     parameters_saved = ["idx", "start", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid",
                         "mse_total"]
     # TODO 10 is not a fixed value, but a parameter of approximate_residuum_with_fft
-    parameters_saved = parameters_saved + [f"freq{i}" for i in range(10)] + [f"amp{i}" for i in range(10)]
+    parameters_saved = parameters_saved # + [f"freq{i}" for i in range(10)] + [f"amp{i}" for i in range(10)]
 
     for particle_idx in set(data['particle']):
         # get data of a single particle

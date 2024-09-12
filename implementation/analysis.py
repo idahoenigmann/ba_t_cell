@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 from venn import venn
-from approximation import read_data, particle_to_parameters
+from approximation import read_data, visualize, sigmoid_and_linear_decreasing
 
 
 def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.pyplot.axes, vert: bool = True):
@@ -144,9 +144,10 @@ def main(file):
     data = read_data(file)
     for particle_idx in list(set([item for sublist in outliers.values() for item in sublist])):
         try:
-            particle_to_parameters(data.loc[data['particle'] == particle_idx][['frame', 'ratio']],
-                                   output_information=False, visualize_particles=True, select_by_input=False,
-                                   titel=f"{int(particle_idx)} is outlier in parameters {",".join(
+            # TODO add approximation to visualization
+            single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
+            # single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2, a, d, u, k1, k2)
+            visualize(single_particle_data, titel=f"{int(particle_idx)} is outlier in parameters {",".join(
                                        [key for key in outliers.keys() if particle_idx in outliers[key]])}")
         except RuntimeError as e:
             print(e)
