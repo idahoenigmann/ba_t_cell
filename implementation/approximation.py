@@ -94,10 +94,12 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
 
     popt, *_ = scipy.optimize.curve_fit(sigmoid_and_linear_decreasing, dataframe['frame'], dataframe['ratio'], p0=p0,
                                         method='trf', bounds=(lower_bounds, upper_bounds))
-    dataframe['fit_sigmoid'] = sigmoid_and_linear_decreasing(dataframe['frame'], *popt)
 
     w1, w2, a, d, u, k1, k2 = popt
+    d, w2 = min(d, a), max(w1, w2)      # fix parameters if d > a or w2 < w1
+
     t = calc_transition_point(w1, k1)
+    dataframe['fit_sigmoid'] = sigmoid_and_linear_decreasing(dataframe['frame'], w1, w2, a, d, u, k1, k2)
     return {"start": start, 'w1': w1, 't': t, 'w2': w2, 'e': end, 'a': a, 'd': d, 'u': u, 'k1': k1, 'k2': k2}
 
 
@@ -132,12 +134,14 @@ def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequen
     return {**freqs, **amps}
 
 
-def visualize(dataframe: pandas.DataFrame):
+def visualize(dataframe: pandas.DataFrame, titel: str = ""):
     """
     visualizes datapoints and (optional) approximations
+    :param titel: title of plot
     :param dataframe: datapoints to visualize, must contain column ratio, can contain columns fit_sigmoid and fit_sin
     """
     fig, axes = plt.subplots(2, sharex=True)
+    axes[0].title.set_text(titel)
     axes[0].set_ylim(0, 5)
     axes[0].set_xlim(0, 1000)
 
@@ -174,9 +178,10 @@ def calc_residuum_and_error(dataframe: pandas.DataFrame) -> float:
 
 
 def particle_to_parameters(particle_data: pandas.DataFrame, output_information: bool = True,
-                           visualize_particles: bool = False, select_by_input: bool = False) -> dict:
+                           visualize_particles: bool = False, select_by_input: bool = False, titel: str = "") -> dict:
     """
     generates the parameters for a single particle
+    :param titel: title shown in plot if visualization is turned on
     :param particle_data: data of a single particle
     :param output_information: if True information such as resulting parameters and error will be printed
     :param visualize_particles: if True a plot showing the data as well as approximation of each particle is shown
@@ -213,7 +218,7 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
         print(f"parameters: {particle_parameters}")
         print(f"mse sigmoid: {mse_sigmoid}, mse total: {mse_total}")
     if visualize_particles:
-        visualize(particle_data)
+        visualize(particle_data, titel)
 
         if select_by_input:
             accepted = input('accept (y/n): ')
@@ -248,7 +253,8 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=False, select_by_input=False)
+                                                visualize_particles=False, select_by_input=False,
+                                                titel=f"particle {particle_idx}")
         except Exception as e:
             print(e)
             continue
@@ -272,6 +278,6 @@ if __name__ == '__main__':
     """
 
     main("human_positive")
-    # main("human_negative")
-    # main("mouse_positive")
-    # main("mouse_negative")
+    main("human_negative")
+    main("mouse_positive")
+    main("mouse_negative")

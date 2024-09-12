@@ -25,7 +25,7 @@ def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.
     ax.yaxis.label.set_size(12)
     ax.tick_params(axis='both', labelsize=12)
     for i in range(len(par_names)):
-        add_label(ax.violinplot(parameters[i], showmeans=True, showextrema=False, vert=vert), label=par_names[i])
+        add_label(ax.violinplot(parameters[i], showmedians=True, showmeans=False, showextrema=False, vert=vert), label=par_names[i])
     ax.legend(*zip(*labels), loc=1)
 
 
@@ -77,26 +77,23 @@ def statistics(values: list) -> dict:
             "mean": np.mean(values)}
 
 
-def find_outlier(values: np.ndarray, width: float, par_indices: list, ignore: list = None) -> dict:
+def find_outlier(values: np.ndarray, width: float, par_indices: list, par_used: list = []) -> dict:
     """
     returns sets of outliers, where an outlier is defined by being more than width*std_dev away from the average
-    :param ignore: list of parameter names, to be ignored when finding outliers
+    :param par_used: list of parameter names, to be used when finding outliers
     :param par_indices: list of names describing the column order of the parameters matrix
     :param values: matrix of values for which to determine the outliers
-    :param width: list of names describing the column order of the values matrix
+    :param width: min distance from mean in std for particle to count as outlier
     """
-
-    if ignore is None:
-        ignore = []
 
     outliers = dict()
 
-    for par in set(par_indices).difference(set(ignore)):
+    for par in set(par_used):
         stat = statistics(values[:, par_indices.index(par)].tolist())
-        avg, std = stat["avg"], stat["std"]
+        mean, std = stat["mean"], stat["std"]
 
         outliers[par] = set([values[i, par_indices.index("idx")] for i in range(values.shape[0])
-                             if abs(values[i, par_indices.index(par)] - avg) > std * width])
+                             if abs(values[i, par_indices.index(par)] - mean) > std * width])
     return outliers
 
 
@@ -115,19 +112,21 @@ def main(file):
     for e in indices:
         print(f"{e}: {statistics(all_parameters[:, indices.index(e)].tolist())}")
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
-    print(f"weighted average freq: {np.average([all_parameters[:, indices.index(f'freq{i}')] for i in range(10)], 
-                                        weights=[all_parameters[:, indices.index(f'amp{i}')] for i in range(10)])}")
+    if "freq1" in indices:
+        print(f"weighted average freq: {np.average([all_parameters[:, indices.index(f'freq{i}')] for i in range(10)], 
+                                            weights=[all_parameters[:, indices.index(f'amp{i}')] for i in range(10)])}")
     print()
 
     # find outliers in parameters
     print("Outlier analysis")
-    outliers = find_outlier(all_parameters, 2, indices, ignore=["idx", "mse_sigmoid", "mse_total", 'e', 's', 't',
-                                                                "start", "w2"] + [f"freq{i}" for i in range(10)] +
-                                                               [f"amp{i}" for i in range(10)])
+    outliers = find_outlier(all_parameters, 2, indices, par_used=["a", "d"])
     print(f"Total number of particles: {all_parameters.shape[0]}")
+    print(f"Total number of outliers: {len(set([item for sublist in outliers.values() for item in sublist]))}")
 
     for e in outliers.keys():
-        print(f"Outliers in {e}: {len(outliers[e])}")
+        stat = statistics(all_parameters[:, indices.index(e)].tolist())
+        mean, std = stat["mean"], stat["std"]
+        print(f"Outliers in {e}: {len(outliers[e])}            interval: [{mean - 2*std}, {mean + 2*std}]")
     print()
 
     # show distribution of parameters
@@ -135,32 +134,26 @@ def main(file):
     plot_error(all_parameters, indices)
 
     # show venn diagram of outliers
-    fig, ax = plt.subplots(1)
-    ax.set_title("Outliers")
-    venn(outliers, ax=ax)
-    plt.show()
+    if 2 <= len(outliers.keys()) <= 6:
+        fig, ax = plt.subplots(1)
+        ax.set_title("Outliers")
+        venn(outliers, ax=ax)
+        plt.show()
 
-    # find specific outliers
-    outliers_str = input("Visualize particles which are outlier (only) in respect to the following parameters: ")
-    specify_par = set(e.strip() for e in outliers_str.split(",")).intersection(outliers.keys())
-    outlier_particles = set(all_parameters[:, indices.index("idx")])
-    for e in outliers.keys():
-        if e in specify_par:
-            outlier_particles = outlier_particles.intersection(outliers[e])
-        else:
-            outlier_particles = outlier_particles.difference(outliers[e])
-
-    print(f"(Just) in {specify_par} are the following particles: {outlier_particles}")
-
-    # plot specific outliers
+    # plot outliers
     data = read_data(file)
-    for particle_idx in outlier_particles:
-        particle_to_parameters(data.loc[data['particle'] == particle_idx][['frame', 'ratio']], output_information=True,
-                               visualize_particles=True, select_by_input=False)
+    for particle_idx in list(set([item for sublist in outliers.values() for item in sublist])):
+        try:
+            particle_to_parameters(data.loc[data['particle'] == particle_idx][['frame', 'ratio']],
+                                   output_information=False, visualize_particles=True, select_by_input=False,
+                                   titel=f"{int(particle_idx)} is outlier in parameters {",".join(
+                                       [key for key in outliers.keys() if particle_idx in outliers[key]])}")
+        except RuntimeError as e:
+            print(e)
 
 
 if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("human_positive")
+    main("human_negative")

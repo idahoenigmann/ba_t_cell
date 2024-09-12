@@ -270,6 +270,7 @@ The above-mentioned approximation function is described in pseudocode below.
 		set boundaries for parameters\;
 		set start values for parameters\;
 		use Trust Region Reflective Algorithm with boundaries and start values to get parameters\;
+		check resulting parameters for validity\;
 		calculate corresponding approximation and add as fit\_sigmoid columns to data matrix\;
 		return paramters\;
 	}
@@ -291,7 +292,7 @@ Where $d$ lies within this inequality chain is not fixed. For the condition $w_1
 	t = w_1 - \underbrace{\frac{\log(\frac{1}{99})}{k_1}}_{< 0} \geq w_1.
 \end{align*}
 
-The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$.
+The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$. The condition $d \leq a$ and $w_1 \leq w_2$ can be checked after an approximation has been found and used to reject some approximations.
 
 \begin{table}[h!]
 	\centering
