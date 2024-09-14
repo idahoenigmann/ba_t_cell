@@ -4,6 +4,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 from venn import venn
 from approximation import read_data, visualize, sigmoid_and_linear_decreasing
+from matplotlib.backends.backend_pdf import PdfPages
 
 
 def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.pyplot.axes, vert: bool = True):
@@ -25,7 +26,8 @@ def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.
     ax.yaxis.label.set_size(12)
     ax.tick_params(axis='both', labelsize=12)
     for i in range(len(par_names)):
-        add_label(ax.violinplot(parameters[i], showmedians=True, showmeans=False, showextrema=False, vert=vert), label=par_names[i])
+        add_label(ax.violinplot(parameters[i], showmedians=True, showmeans=False, showextrema=False, vert=vert),
+                  label=par_names[i])
     ax.legend(*zip(*labels), loc=1)
 
 
@@ -77,7 +79,7 @@ def statistics(values: list) -> dict:
             "mean": np.mean(values)}
 
 
-def find_outlier(values: np.ndarray, width: float, par_indices: list, par_used: list = []) -> dict:
+def find_outlier(values: np.ndarray, width: list, par_indices: list, par_used: list = []) -> dict:
     """
     returns sets of outliers, where an outlier is defined by being more than width*std_dev away from the average
     :param par_used: list of parameter names, to be used when finding outliers
@@ -92,12 +94,15 @@ def find_outlier(values: np.ndarray, width: float, par_indices: list, par_used: 
         stat = statistics(values[:, par_indices.index(par)].tolist())
         mean, std = stat["mean"], stat["std"]
 
+        interval = [mean - std * width[0], mean + std * width[1]]
+
         outliers[par] = set([values[i, par_indices.index("idx")] for i in range(values.shape[0])
-                             if abs(values[i, par_indices.index(par)] - mean) > std * width])
+                             if values[i, par_indices.index(par)] < interval[0] or
+                             values[i, par_indices.index(par)] > interval[1]])
     return outliers
 
 
-def main(file):
+def main(file, width, par_used):
     # matplotlib.use('TkAgg')
 
     # read parameters from file
@@ -113,21 +118,36 @@ def main(file):
         print(f"{e}: {statistics(all_parameters[:, indices.index(e)].tolist())}")
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
     if "freq1" in indices:
-        print(f"weighted average freq: {np.average([all_parameters[:, indices.index(f'freq{i}')] for i in range(10)], 
-                                            weights=[all_parameters[:, indices.index(f'amp{i}')] for i in range(10)])}")
+        print(f"weighted average freq: {np.average([all_parameters[:, indices.index(f'freq{i}')] for i in range(10)],
+                                                   weights=[all_parameters[:, indices.index(f'amp{i}')] for i in range(10)])}")
     print()
 
+    pp = PdfPages(f'{file}.pdf')
+
     # find outliers in parameters
-    print("Outlier analysis")
-    outliers = find_outlier(all_parameters, 2, indices, par_used=["a", "d"])
-    print(f"Total number of particles: {all_parameters.shape[0]}")
-    print(f"Total number of outliers: {len(set([item for sublist in outliers.values() for item in sublist]))}")
+    outliers = find_outlier(all_parameters, width, indices, par_used=par_used)
+
+    text = (f"\n{file}\n\nOutlier analysis\n"
+            f"Total number of particles: {all_parameters.shape[0]}\n"
+            f"Total number of outliers: {len(set([item for sublist in outliers.values() for item in sublist]))}\n\n")
 
     for e in outliers.keys():
         stat = statistics(all_parameters[:, indices.index(e)].tolist())
         mean, std = stat["mean"], stat["std"]
-        print(f"Outliers in {e}: {len(outliers[e])}            interval: [{mean - 2*std}, {mean + 2*std}]")
-    print()
+        text += (f"Outliers in {e}: {len(outliers[e])}\n"
+                 f"mean: {mean}\n"
+                 f"std: {std}\n"
+                 f"interval: [{mean - width[0] * std}, {mean + width[1] * std}]\n\n")
+    print(text)
+
+    fig = plt.figure()
+    plt.axis((0, 10, 0, 10))
+    fig.axes[0].get_xaxis().set_visible(False)
+    fig.axes[0].get_yaxis().set_visible(False)
+    plt.text(5, 10, text, fontsize=18, style='oblique', ha='center',
+             va='top', wrap=True)
+    pp.savefig(fig)
+    plt.close(fig)
 
     # show distribution of parameters
     plot_parameters(all_parameters, indices)
@@ -142,19 +162,36 @@ def main(file):
 
     # plot outliers
     data = read_data(file)
+
     for particle_idx in list(set([item for sublist in outliers.values() for item in sublist])):
         try:
-            # TODO add approximation to visualization
+            row_number = all_parameters[:, indices.index("idx")].tolist().index(particle_idx)
+            w1 = all_parameters[row_number][indices.index("w1")]
+            w2 = all_parameters[row_number][indices.index("w2")]
+            a = all_parameters[row_number][indices.index("a")]
+            d = all_parameters[row_number][indices.index("d")]
+            u = all_parameters[row_number][indices.index("u")]
+            k1 = all_parameters[row_number][indices.index("k1")]
+            k2 = all_parameters[row_number][indices.index("k2")]
+
             single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
-            # single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2, a, d, u, k1, k2)
-            visualize(single_particle_data, titel=f"{int(particle_idx)} is outlier in parameters {",".join(
-                                       [key for key in outliers.keys() if particle_idx in outliers[key]])}")
+            single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2,
+                                                                                a, d, u, k1, k2)
+            fig = visualize(single_particle_data, titel=f"particle {int(particle_idx)}", return_fig=True)
+            pp.savefig(fig)
+            plt.close(fig)
+
         except RuntimeError as e:
             print(e)
+
+    pp.close()
 
 
 if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("human_negative")
+    main("human_positive", [3, np.infty], ["a"])
+    main("human_negative", [np.infty, 0.5], ["a"])
+    main("mouse_positive", [2, np.infty], ["a"])
+    main("mouse_negative", [np.infty, 3], ["a"])

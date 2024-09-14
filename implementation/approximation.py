@@ -157,7 +157,7 @@ def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequen
     return {**freqs, **amps}
 
 
-def visualize(dataframe: pandas.DataFrame, titel: str = ""):
+def visualize(dataframe: pandas.DataFrame, titel: str = "", return_fig: bool = False):
     """
     visualizes datapoints and (optional) approximations
     :param titel: title of plot
@@ -181,7 +181,10 @@ def visualize(dataframe: pandas.DataFrame, titel: str = ""):
             dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=axes[i])
         if 'fit_total' in dataframe.columns:
             dataframe.plot(x='frame', y='fit_total', color="#E9190C", ax=axes[i])
-    plt.show()
+    if return_fig:
+        return fig
+    else:
+        plt.show()
 
 
 def calc_residuum_and_error(dataframe: pandas.DataFrame) -> float:
