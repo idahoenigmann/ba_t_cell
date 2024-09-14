@@ -279,36 +279,38 @@ The above-mentioned approximation function is described in pseudocode below.
 
 The parameters of $f_{ac}$ used in the approximation are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k_1(x-w_1)})$ almost reaches the value $a$. We choose $t := w_1 - log(1/0.99-1) / k_1 = w_1 - log(1/99) / k_1$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point.
 
-Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by setting the boundaries as described in table~\ref{tab:boundaries_and_starting_vals}, where we set min val, max val and median val as the minimum, maximum and median of the particles' ratio data respectively while start and end is the first and last frame where data was recorded for this particle. This guarantees
+Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by changing the parameters to be relative to each other. As $u \leq d \leq a$ we choose to use the three parameters $u, d-u$ and $a-d$. We can then set the lower boundary to be $0$ which ensures
 
 \begin{align*}
-	0 \leq \text{min val} \leq u \leq \text{median val} - 0.002 < \text{median val} + 0.002 \leq a \leq \text{max val}\\
-	\implies 0 \leq u < a.
+	0 \leq u &&\land &&0 \leq d - u \implies d \geq u &&\land &&0 \leq a - d \implies a \geq d\\
+	&& &&\implies 0 \leq u \leq d \leq a.
 \end{align*}
 
-Where $d$ lies within this inequality chain is not fixed. For the condition $w_1 \leq t \leq w_2$ we only guarantee
+Using the same method, we choose the parameters $w_1 - start$ and $w_2 - w_1$, where $start$ is the first frame in which the particle was tracked. The resulting boundaries are described in table~\ref{tab:boundaries_and_starting_vals}, where we set min val, max val and median val as the minimum, maximum and median of the particles' ratio data respectively while start and end is the first and last frame where data was recorded for this particle.
+
+The condition $t \leq w_2$ can be violated, but it is ensured that at least $w_1 \leq w_2$.
+
+The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$ and
 
 \begin{align*}
-	t = w_1 - \underbrace{\frac{\log(\frac{1}{99})}{k_1}}_{< 0} \geq w_1.
+	t = w_1 - \underbrace{log(1/99) / k_1}_{< 0} \geq w_1.
 \end{align*}
-
-The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$. The condition $d \leq a$ and $w_1 \leq w_2$ can be checked after an approximation has been found and used to reject some approximations.
 
 \begin{table}[h!]
 	\centering
 	\begin{tabular}{|c|c|c|c|}
 		\hline
-		parameter & lower bound & upper bound & starting value \\ 
+		\textbf{parameter} & \textbf{lower bound} & \textbf{upper bound} & \textbf{starting value} \\ 
 		\hline
-		$u$ & min val & median val - 0.002 & min val\\
+		$u$ & min val & max val & min val\\
 		\hline
-		$a$ & median val + 0.002 & max val & max val\\
+		$d - u$ & 0 & max val & median val - min val\\
 		\hline
-		$d$ & min val & max val & median val\\
+		$a - d$ & 0 & max val & max val - median val\\
 		\hline
-		$w_1$ & start & end & start\\
+		$w_1 - start$ & 0 & end - start & 0\\
 		\hline
-		$w_2$ & start & end & (start + end) / 2\\
+		$w_2 - w_1$ & 0 & end - start & (end - start) / 2\\
 		\hline
 		$k_1$ & 0.05 & 10 & 0.1\\
 		\hline
@@ -316,10 +318,10 @@ The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2
 		\hline
 	\end{tabular}
 	\label{tab:boundaries_and_starting_vals}
-	\caption{Upper and lower bounds as well as starting value for each of the independent parameters.}
+	\caption{Upper and lower bounds as well as starting value for each of the parameters.}
 \end{table}
 
-Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing $w_1$ as the start we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ lies in the middle. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle and experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
+Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing the starting value of $w_1 - start$ as $0$, which corresponds to choosing $w_1 = start$, we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ will lie somewhere in the middle. Therefore we choose $(end - start)/2$ as the starting value. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle. Experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
 
 This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(function, xdata, ydata, p0=starting\_values, method='trf', bounds=(lower\_bounds, upper\_bounds))} as it provides all the necessary functionality. The method parameter \texttt{trf} stands for Trust Region Reflective, as described in section~\ref{subsec:algorithms_bounded_lsp}.
 
