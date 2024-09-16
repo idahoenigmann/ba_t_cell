@@ -117,9 +117,6 @@ def main(file, width, par_used):
     for e in indices:
         print(f"{e}: {statistics(all_parameters[:, indices.index(e)].tolist())}")
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
-    if "freq1" in indices:
-        print(f"weighted average freq: {np.average([all_parameters[:, indices.index(f'freq{i}')] for i in range(10)],
-                                                   weights=[all_parameters[:, indices.index(f'amp{i}')] for i in range(10)])}")
     print()
 
     pp = PdfPages(f'{file}.pdf')

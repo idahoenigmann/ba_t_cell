@@ -227,7 +227,7 @@ First we describe a routine which handles reading the data, some necessary prepr
 				skip\;
 			}
 			parameters := approximate(particle data)\;
-			show approximation and ratio\;
+			show ratio data and approximation\;
 			save parameters\;
 		}
 	}
@@ -270,7 +270,6 @@ The above-mentioned approximation function is described in pseudocode below.
 		set boundaries for parameters\;
 		set start values for parameters\;
 		use Trust Region Reflective Algorithm with boundaries and start values to get parameters\;
-		check resulting parameters for validity\;
 		calculate corresponding approximation and add as fit\_sigmoid columns to data matrix\;
 		return paramters\;
 	}
@@ -316,12 +315,21 @@ The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2
 		\hline
 		$k_2$ & -1 & -0.01 & -0.03\\
 		\hline
+		\hline
+		$d$ & min val & 2 max val & median val \\
+		\hline
+		$a$ & min val & 3 max val & max val \\
+		\hline
+		$w_1$ & start & end & start \\
+		\hline
+		$w_2$ & start & 2 end - 2 start & (start + end)/2\\
+		\hline
 	\end{tabular}
 	\label{tab:boundaries_and_starting_vals}
-	\caption{Upper and lower bounds as well as starting value for each of the parameters.}
+	\caption{Upper and lower bounds as well as starting value for each of the parameters. The boundaries and starting values of $d, a, w_1$ and $w_2$ are derived from the parameters used in the implementation of the approximation, shown above the double line.}
 \end{table}
 
-Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing the starting value of $w_1 - start$ as $0$, which corresponds to choosing $w_1 = start$, we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ will lie somewhere in the middle. Therefore we choose $(end - start)/2$ as the starting value. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle. Experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
+Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing the starting value of $w_1 - start$ as $0$, which corresponds to choosing $w_1 = start$, we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ will lie somewhere in the middle. Therefore we choose $(end - start)/2$ as the starting value for $w_2 - w_1$. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle. Experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
 
 This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(function, xdata, ydata, p0=starting\_values, method='trf', bounds=(lower\_bounds, upper\_bounds))} as it provides all the necessary functionality. The method parameter \texttt{trf} stands for Trust Region Reflective, as described in section~\ref{subsec:algorithms_bounded_lsp}.
 
@@ -388,7 +396,7 @@ As the datasets are not perfectly labelled, meaning there are activated cells in
 
 \section{Adding Oscillation in the Decrease}
 
-In order to answer the research questions concerned with the oscillations happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fast Fourier Transformation (FFT).
+In order to answer the research questions concerned with the oscillations happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fourier Transformation.
 
 Many applications are concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
 
@@ -413,7 +421,7 @@ Many applications are concerned with cyclic temporal data. Examples are sound wa
 	\label{fig:tempoal_shift}
 \end{figure}
 
-As the function of sound waves or oscillations in the \Calcium concentration in t cells is cyclic we might be interested in a decomposition into simple cyclic function, such as sine. We can then analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. FFT is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
+As the function of sound waves or oscillations in the \Calcium concentration in t cells is almost cyclic we might be interested in a decomposition into simple cyclic function, such as sine. We can then analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. Fast Fourier Transformation (FFT) is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
 
 As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can then filter out the 10 frequencies with the highest amplitudes and use them to further analyse the oscillations. This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
 

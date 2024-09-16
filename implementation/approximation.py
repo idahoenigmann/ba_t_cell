@@ -123,7 +123,15 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     a = a_d + d
     t = calc_transition_point(w1, k1)
     dataframe['fit_sigmoid'] = sigmoid_and_linear_decreasing(dataframe['frame'], w1, w2, a, d, u, k1, k2)
-    return {"start": start, 'w1': w1, 't': t, 'w2': w2, 'e': end, 'a': a, 'd': d, 'u': u, 'k1': k1, 'k2': k2}
+    return {"start": start, "end": end, 'w1': w1, 't': t, 'w2': w2, 'e': end, 'a': a, 'd': d, 'u': u, 'k1': k1, 'k2': k2}
+
+
+def freq_to_func(freqs, amps, start, end):
+    # delete all but main frequencies
+    fft_out = np.zeros(end - start, dtype=complex)
+    fft_out[freqs] = amps
+
+    return np.concatenate((np.zeros(start), np.real(np.fft.ifft(fft_out))))
 
 
 def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequencies_kept: int, start: int, end: int)\
@@ -143,13 +151,9 @@ def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequen
 
     # get frequencies with the highest amplitude
     main_freqs = np.argsort(fft_out)[-number_of_frequencies_kept:]
-    main_amps = [fft_out[f] for f in main_freqs]
+    main_amps = [abs(fft_out[f]) for f in main_freqs]
 
-    # delete all but main frequencies
-    fft_out = np.zeros(end - start, dtype=complex)
-    fft_out[main_freqs] = main_amps
-
-    dataframe['fit_sin'] = np.concatenate((np.zeros(start), np.real(np.fft.ifft(fft_out))))
+    dataframe['fit_sin'] = freq_to_func(main_freqs, main_amps, start, end)
 
     freqs = {f'freq{i}': main_freqs[-i] for i in range(len(main_freqs))}
     amps = {f'amp{i}': abs(main_amps[-i]) for i in range(len(main_amps))}
@@ -233,6 +237,11 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
     parameters_sin = approximate_residuum_with_fft(particle_data, 10, transition_index,
                                                    len(particle_data['frame']))
 
+    for i in range(10):
+        if f"freq{i}" not in parameters_sin.keys():
+            parameters_sin[f"freq{i}"] = 0
+            parameters_sin[f"amp{i}"] = 0
+
     particle_parameters = {**parameters_sigmoid, **parameters_sin}
     particle_data['fit_total'] = particle_data['fit_sigmoid'] + particle_data['fit_sin']
     mse_total = calc_residuum_and_error(particle_data)
@@ -264,10 +273,10 @@ def main(file_name):
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
 
     all_parameters = list()
-    parameters_saved = ["idx", "start", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid",
+    parameters_saved = ["idx", "start", "end", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid",
                         "mse_total"]
     # TODO 10 is not a fixed value, but a parameter of approximate_residuum_with_fft
-    parameters_saved = parameters_saved # + [f"freq{i}" for i in range(10)] + [f"amp{i}" for i in range(10)]
+    parameters_saved = parameters_saved + [f"freq{i}" for i in range(10)] + [f"amp{i}" for i in range(10)]
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -281,13 +290,14 @@ def main(file_name):
             parameters = particle_to_parameters(single_particle_data, output_information=False,
                                                 visualize_particles=False, select_by_input=False,
                                                 titel=f"particle {particle_idx}")
+
+            parameters["idx"] = particle_idx
+            parameters['s'] = calc_transition_point(parameters['w1'], parameters['k1'], alpha=0.01)
+            all_parameters.append([parameters[e] for e in parameters_saved])
+
         except Exception as e:
             print(e)
             continue
-
-        parameters["idx"] = particle_idx
-        parameters['s'] = calc_transition_point(parameters['w1'], parameters['k1'], alpha=0.01)
-        all_parameters.append([parameters[e] for e in parameters_saved])
 
     np.savetxt(f"intermediate/particle_parameters_{file_name}.csv", np.matrix(np.array(all_parameters)), delimiter=',',
                newline='\n', header=",".join(parameters_saved))
