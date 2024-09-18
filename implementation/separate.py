@@ -14,6 +14,7 @@ def import_all_data():
         df2 = pd.DataFrame(data=np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=','),
                            columns=header)
         df2["file"] = file
+        df2["activation"] = "positive" if file in ["human_positive", "mouse_positive"] else "negative"
         all_data.append(df2)
     return pd.concat(all_data)
 
@@ -78,9 +79,20 @@ if __name__ == "__main__":
     dim = 2
     tmp = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
-    gm = GaussianMixture(n_components=2, covariance_type="full")
+    gm = GaussianMixture(n_components=2, covariance_type="diag")
     gm.fit(data[tmp])
+
+    for i in range(dim):
+        print(f"weigh: {gm.weights_[0]}")
+        print(f"mean: {gm.means_[0]}")
+        print(f"covariance: {gm.covariances_[0]}")
+        print()
+
     data["predicted_clusters"] = gm.predict(data[tmp])
+    print(f"0 + positive: {len(data[(data['predicted_clusters'] == 0) & (data['activation'] == 'positive')])}")
+    print(f"1 + positive: {len(data[(data['predicted_clusters'] == 1) & (data['activation'] == 'positive')])}")
+    print(f"0 + negative: {len(data[(data['predicted_clusters'] == 0) & (data['activation'] == 'negative')])}")
+    print(f"1 + negative: {len(data[(data['predicted_clusters'] == 1) & (data['activation'] == 'negative')])}")
 
     if dim == 2:
         for x in range(len(tmp)):

@@ -10,7 +10,9 @@ from approximation import read_data, visualize, sigmoid_and_linear_decreasing, f
 def main(file):
     # matplotlib.use('TkAgg')
 
-    VISUALIZE = True
+    VISUALIZE = False
+
+    print(file)
 
     # read parameters from file
     all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
@@ -24,14 +26,18 @@ def main(file):
     all_freqs = []
     all_amps = []
 
+    ignore = np.loadtxt(f"intermediate/ignore_{file}.csv", delimiter=",").flatten()
+
     for particle_idx in all_parameters[:, indices.index("idx")]:
+        if particle_idx in ignore:
+            continue
+
         try:
             row_number = all_parameters[:, indices.index("idx")].tolist().index(particle_idx)
             freqs = [all_parameters[row_number][indices.index(f"freq{i}")] for i in range(10)]
             amps = [all_parameters[row_number][indices.index(f"amp{i}")] for i in range(10)]
 
             tmp = list(zip(*((f, a) for f, a in zip(freqs, amps) if a > 0)))
-            print(tmp)
             if len(tmp) == 2:
                 freqs, amps = tmp
             else:
@@ -69,8 +75,13 @@ def main(file):
             print(e)
 
     # filter according to amplitude
-    # all_freqs, all_amps = zip(*((f, a) for f, a in zip(all_freqs, all_amps) if a > 120))
+    try:
+        all_freqs, all_amps = zip(*((f, a) for f, a in zip(all_freqs, all_amps) if 2 <= f <= 20 and a > 0))
+    except ValueError:
+        print("no frequencies and amplitudes matched the given conditions")
+        return
 
+    # violin plots
     labels = []
 
     def add_label(violin, label):
@@ -98,6 +109,14 @@ def main(file):
 
     tmp_freqs = np.array(list(set(all_freqs)), dtype=int)
     tmp_amps = np.array([sum([all_amps[i] for i in range(len(all_amps)) if all_freqs[i] == f]) for f in tmp_freqs])
+
+    # histogram
+    fig, axs = plt.subplots(1)
+    axs.set_title("weighted frequencies")
+    axs.hist(tmp_freqs, weights=tmp_amps, bins=20)
+    plt.show()
+
+    # typical oscillation
     tmp = pandas.DataFrame()
     tmp["frame"] = np.array(range(0, 1000))
     tmp["ratio"] = freq_to_func(tmp_freqs, tmp_amps, 0, 1000)
@@ -108,7 +127,16 @@ if __name__ == '__main__':
     """
     statistical analysis of frequencies and amplitudes
     """
-    main("human_positive")
-    main("human_negative")
-    main("mouse_positive")
+
+    """
+    # Test different frequenices and amplitudes
+    tmp = pandas.DataFrame()
+    tmp["frame"] = np.array(range(0, 1000))
+    tmp["ratio"] = freq_to_func(np.array([10], dtype=int), np.array([500]), 0, 1000)
+    visualize(tmp)
+    """
+
+    # main("human_positive")
+    # main("human_negative")
+    # main("mouse_positive")
     main("mouse_negative")

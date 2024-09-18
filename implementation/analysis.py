@@ -183,6 +183,9 @@ def main(file, width, par_used):
 
     pp.close()
 
+    ignore = [list(out)[e] for out in outliers.values() for e in range(len(out))]
+    np.savetxt(f"intermediate/ignore_{file}.csv", list(set(ignore)))
+
 
 if __name__ == '__main__':
     """
