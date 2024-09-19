@@ -105,6 +105,8 @@ def find_outlier(values: np.ndarray, width: list, par_indices: list, par_used: l
 def main(file, width, par_used):
     # matplotlib.use('TkAgg')
 
+    SAVE_PDF = True
+
     # read parameters from file
     all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
     with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
@@ -119,7 +121,8 @@ def main(file, width, par_used):
     print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
     print()
 
-    pp = PdfPages(f'{file}.pdf')
+    if SAVE_PDF:
+        pp = PdfPages(f'{file}.pdf')
 
     # find outliers in parameters
     outliers = find_outlier(all_parameters, width, indices, par_used=par_used)
@@ -137,14 +140,15 @@ def main(file, width, par_used):
                  f"interval: [{mean - width[0] * std}, {mean + width[1] * std}]\n\n")
     print(text)
 
-    fig = plt.figure()
-    plt.axis((0, 10, 0, 10))
-    fig.axes[0].get_xaxis().set_visible(False)
-    fig.axes[0].get_yaxis().set_visible(False)
-    plt.text(5, 10, text, fontsize=18, style='oblique', ha='center',
-             va='top', wrap=True)
-    pp.savefig(fig)
-    plt.close(fig)
+    if SAVE_PDF:
+        fig = plt.figure()
+        plt.axis((0, 10, 0, 10))
+        fig.axes[0].get_xaxis().set_visible(False)
+        fig.axes[0].get_yaxis().set_visible(False)
+        plt.text(5, 10, text, fontsize=18, style='oblique', ha='center',
+                 va='top', wrap=True)
+        pp.savefig(fig)
+        plt.close(fig)
 
     # show distribution of parameters
     plot_parameters(all_parameters, indices)
@@ -175,13 +179,15 @@ def main(file, width, par_used):
             single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2,
                                                                                 a, d, u, k1, k2)
             fig = visualize(single_particle_data, titel=f"particle {int(particle_idx)}", return_fig=True)
-            pp.savefig(fig)
+            if SAVE_PDF:
+                pp.savefig(fig)
             plt.close(fig)
 
         except RuntimeError as e:
             print(e)
 
-    pp.close()
+    if SAVE_PDF:
+        pp.close()
 
     ignore = [list(out)[e] for out in outliers.values() for e in range(len(out))]
     np.savetxt(f"intermediate/ignore_{file}.csv", list(set(ignore)))
@@ -192,6 +198,6 @@ if __name__ == '__main__':
     statistical analysis of parameters, plots and prints information
     """
     main("human_positive", [3, np.infty], ["a"])
-    main("human_negative", [np.infty, 0.5], ["a"])
-    main("mouse_positive", [2, np.infty], ["a"])
-    main("mouse_negative", [np.infty, 3], ["a"])
+    # main("human_negative", [np.infty, 0.5], ["a"])
+    # main("mouse_positive", [2, np.infty], ["a"])
+    # main("mouse_negative", [np.infty, 3], ["a"])
