@@ -37,11 +37,11 @@ def main(file):
             freqs = [all_parameters[row_number][indices.index(f"freq{i}")] for i in range(10)]
             amps = [all_parameters[row_number][indices.index(f"amp{i}")] for i in range(10)]
 
-            tmp = list(zip(*((f, a) for f, a in zip(freqs, amps) if a > 0)))
+            """tmp = list(zip(*((f, a) for f, a in zip(freqs, amps) if a > 0)))
             if len(tmp) == 2:
                 freqs, amps = tmp
             else:
-                freqs, amps = [], []
+                freqs, amps = [], []"""
 
             freqs, amps = np.array(freqs, dtype=int), np.array(amps)
 
@@ -76,7 +76,7 @@ def main(file):
 
     # filter according to amplitude
     try:
-        all_freqs, all_amps = zip(*((f, a) for f, a in zip(all_freqs, all_amps) if 2 <= f <= 20 and a > 0))
+        all_freqs, all_amps = zip(*((f, a) for f, a in zip(all_freqs, all_amps) if 2 <= f <= 20))
     except ValueError:
         print("no frequencies and amplitudes matched the given conditions")
         return
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     visualize(tmp)
     """
 
-    # main("human_positive")
-    # main("human_negative")
-    # main("mouse_positive")
+    main("human_positive")
+    main("human_negative")
+    main("mouse_positive")
     main("mouse_negative")
