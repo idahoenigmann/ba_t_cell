@@ -19,6 +19,8 @@ If we have a look at the typical trajectory of the calcium concentration in acti
 
 By modelling the time series with a function incorporating features such as the increase, maximum value and oscillations present in the decrease afterwards, we can extract these features more easily. By doing this, using approximation methods from chapter~\ref{chapter:optimization}, we want to answer the research questions from the introduction.
 
+\section{Approximation Function}
+
 From studying the data in the two control groups we find to expect a function close to
 \begin{align}
 	\label{math:function_unactivated_cell}
@@ -394,7 +396,34 @@ We now give data on the parameters found from the above approximation. Some stat
 
 As the datasets are not perfectly labelled, meaning there are activated cells in the negative control and vice versa, we have relatively high standard deviation.
 
-[TODO discuss outliers + analysis done to derive outliers]
+We can use the mean and standard deviation of each of the parameters to find data points that can be considered outliers. We expect wrongly-labelled data, e.g. activated cells in the negative control, to be an outlier in the parameters $a$ and $d$. However, activated cells in the positive control might have a decreased value $d$ that is very low, around $u$. This makes it difficult to distinguish activated from unactivated cells when looking at the parameter $d$. Therefore, we choose $a$ as the only parameter when filtering for these kinds of outliers.
+
+A particle from the positive control dataset that has a value in parameter $a$ higher than the median should still be classified as activated. Only a value lower than some threshold indicates an unactivated cell. The same holds for values of $a$ lower than the median in the negative control dataset. In short, we want to filter out particles with a high value of $a$ in the negative control and those with a low value of $a$ in the positive control dataset. The question of how to choose the threshold will be discussed next.
+
+As we do not have information on what percentage of cells behaved correctly in the positive and negative control we do not have enough information to choose threshold values without guessing. Instead, we can manipulate the threshold as a multiple of the standard deviation until we filter out incorrectly labelled data, but would filter out correctly labelled data points if we increase the value. This trial and error approach led to different values for each of the four control datasets, which can be seen in table~\ref{tab:threshold_outlier}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		dataset & lower bound & upper bound \\
+		\hline
+		human positive & mean $ - 3$ std $ = 1.582$ & $\infty$ \\
+		\hline
+		human negative & $-\infty$ & mean $ + 0.5$ std $ = 1.306$ \\
+		\hline
+		mouse positive & mean $ - 2$ std $ = 1.41$ & $\infty$ \\
+		\hline
+		mouse negative & $-\infty$ & mean $ + 3$ std $ = 1.445$ \\
+		\hline
+	\end{tabular}
+	\label{tab:threshold_outlier}
+	\caption{Thresholds in outlier detection in the different datasets.}
+\end{table}
+
+Naturally we can use the same outlier detection with different parameters to find particles where the approximation failed to yield a good result.
+
+These results will be used in [TODO] to remove wrongly-labelled data from the datasets.
 
 \section{Adding Oscillation in the Decrease}
 

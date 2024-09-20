@@ -50,8 +50,50 @@ for $w_i$, $\mu_i$ and $\sigma_i^2$ respectively. One can show that with this it
 % https://scikit-learn.org/stable/modules/mixture.html#gmm
 
 \section{Implementation}
+
+Python offers an implementation of Gaussian Mixture Model with the sklearn package. The function with parameters relevant to us is \texttt{sklearn.mixture.GaussianMixture(n\_components, covariance\_type)}. The number of components \texttt{n\_components} can be any positive integer. The \texttt{covariance\_type} can be one of \texttt{‘full’, ‘tied’, ‘diag’} or \texttt{‘spherical’} and describes what type of covariance matrix is used.
+
+[TODO
+
 describe separating algorithm
 
 which parameters to use?
 
-visualize
+visualize]
+
+\begin{algorithm}[H] \label{alg:separate}
+	\SetAlgoLined
+	\DontPrintSemicolon
+	\LinesNumbered
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	\caption{Separate}
+	
+	\Input{approximation parameters of all particle data sets}
+	\Output{assignments to different clusters}
+	
+	\BlankLine
+	\Begin{
+		initialize Gaussian Mixture by specifying \texttt{n\_components} and \texttt{covariance\_type}\;
+		apply Gaussian Mixture to approximation parameters of all particle data sets\;
+		assign particles to clusters according to Gaussian Mixture results\;
+		compare asignments from Gaussian Mixture to those of the data set the data stems from\;
+	}
+\end{algorithm}
+\vspace{1cm}
+
+When comparing different covariance types in the Gaussian Mixture we see that using \texttt{‘diag’} we have the lowest error rate. The details are shown in table~\ref{tab:covariance_type_comparison}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\texttt{full}: $13.23\%$ & \texttt{tied}: $12.7\%$ \\
+		\hline
+		\texttt{diag}: $7.17\%$ & \texttt{spherical}: $31.52\%$ \\
+		\hline
+	\end{tabular}
+	\label{tab:covariance_type_comparison}
+	\caption{Error as a percentage of particles being assigned the wrong component.}
+\end{table}
+
