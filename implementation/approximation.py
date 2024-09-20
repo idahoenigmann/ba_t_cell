@@ -265,6 +265,7 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
 
 def main(file_name):
     # matplotlib.use('TkAgg')
+    print(file_name)
 
     data = read_data(file_name)
     # filter out nan and inf values as well as too low and high values
