@@ -90,7 +90,7 @@ When comparing different covariance types in the Gaussian Mixture we see that us
 	\caption{Error as a percentage of particles being assigned the wrong component.}
 \end{table}
 
-Using a diagonal covariance matrix we can now try to separate the four data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}.
+Using a diagonal covariance matrix we can now try to separate the four data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}. The results can be seen in figure~\ref{fig:vis_output_seperate}.
 
 \begin{figure}
 	\centering
@@ -212,3 +212,5 @@ Using the order of parameters $a, u, d, k_1, k_2, w_1$ and $w_2$ we get the mean
 	0.004\\ 0.002\\ 0.001\\ 1.513\\	0.002\\ 1149.598\\ 29471.53
 	\end{matrix}\right).	
 \end{align*}
+
+When comparing these results to those of the average and standard deviation analysis done in table~\ref{tab:statistics_parameters} we can see similarities. However in comparison, to the approach focusing on outlier detection in section~\ref{sec:analysis_of_approximation} we now have an approach that is not only not dependent on parameters specified by a user, but can also be applied to a greater set of problems. A proposed way of answering the research questions from chapter~\ref{chapter:introduction} using these methods is described in [TODO].

@@ -336,6 +336,7 @@ Starting values can have a big impact on the approximation reached by the algori
 This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(function, xdata, ydata, p0=starting\_values, method='trf', bounds=(lower\_bounds, upper\_bounds))} as it provides all the necessary functionality. The method parameter \texttt{trf} stands for Trust Region Reflective, as described in section~\ref{subsec:algorithms_bounded_lsp}.
 
 \section{Analysis of the Approximation}
+\label{sec:analysis_of_approximation}
 
 We now give data on the parameters found from the above approximation. Some statistics are found in table~\ref{tab:statistics_parameters}. Figure~\ref{fig:parameter_violin_plot} shows the distribution of the resulting parameters of the approximation. From the figure it seems the differences between activated and unactivated cells is biggest in the parameters activated value $a$ and decreased value $d$ and the steepness of increase $k_1$.
 
