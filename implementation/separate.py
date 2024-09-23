@@ -52,6 +52,9 @@ def visualize_2d_compare(data, x_axis, y_axis):
         ax[i].set_xlabel(x_axis)
         ax[i].set_ylabel(y_axis)
         ax[i].legend()
+        ax[i].xaxis.label.set_size(12)
+        ax[i].yaxis.label.set_size(12)
+        ax[i].tick_params(axis='both', labelsize=12)
     plt.show()
 
 
