@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 import pandas as pd
+import itertools
 
 
 def import_all_data():
@@ -15,6 +16,7 @@ def import_all_data():
                            columns=header)
         df2["file"] = file
         df2["activation"] = "positive" if file in ["human_positive", "mouse_positive"] else "negative"
+        df2["cell_type"] = "human" if file in ["human_positive", "human_negative"] else "mouse"
         all_data.append(df2)
     return pd.concat(all_data)
 
@@ -75,24 +77,40 @@ if __name__ == "__main__":
     cluster the data
     """
 
+    N_COMPONENTS = 4
+
     data = import_all_data()
     dim = 2
     tmp = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
-    gm = GaussianMixture(n_components=2, covariance_type="diag")
+    gm = GaussianMixture(n_components=N_COMPONENTS, covariance_type="diag")
     gm.fit(data[tmp])
 
-    for i in range(dim):
-        print(f"weigh: {gm.weights_[0]}")
-        print(f"mean: {gm.means_[0]}")
-        print(f"covariance: {gm.covariances_[0]}")
+    data["predicted_clusters"] = gm.predict(data[tmp])
+
+    files = ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]
+    assign_matrix = np.zeros([len(files), N_COMPONENTS])
+    for i in range(N_COMPONENTS):
+        for f_idx in range(len(files)):
+            assign_matrix[f_idx, i] = len(data[(data['predicted_clusters'] == i) & (data['file'] == files[f_idx])])
+            print(f"{i} + {files[f_idx]}: {assign_matrix[f_idx, i]}")
         print()
 
-    data["predicted_clusters"] = gm.predict(data[tmp])
-    print(f"0 + positive: {len(data[(data['predicted_clusters'] == 0) & (data['activation'] == 'positive')])}")
-    print(f"1 + positive: {len(data[(data['predicted_clusters'] == 1) & (data['activation'] == 'positive')])}")
-    print(f"0 + negative: {len(data[(data['predicted_clusters'] == 0) & (data['activation'] == 'negative')])}")
-    print(f"1 + negative: {len(data[(data['predicted_clusters'] == 1) & (data['activation'] == 'negative')])}")
+    res_sum = 0
+    for per in itertools.permutations(range(len(files))):
+        tmp_sum = 0
+        for i in range(len(per)):
+            tmp_sum += assign_matrix[per[i], i]
+        if tmp_sum > res_sum:
+            res = per
+            res_sum = tmp_sum
+
+    for i in range(N_COMPONENTS):
+        print(files[res[i]])
+        print(f"weigh: {gm.weights_[i]}")
+        print(f"mean: {gm.means_[i]}")
+        print(f"covariance: {gm.covariances_[i]}")
+        print()
 
     if dim == 2:
         for x in range(len(tmp)):

@@ -96,9 +96,27 @@ Using a diagonal covariance matrix we can now try to separate the four data sets
 
 The relevant information derived from the Gaussian Mixture clustering is the means and covariances of the four components. From this we can decide which cluster a new data point belongs to. A use case might be to find percentages of activated cells in an experiment. Distinguishing between mouse and human cells does not have a clear use case. When specifying \texttt{n\_components=2} we assume to have a cluster for activated and a second for unactivated cells.
 
-The mean and covariances for each of the data sets used in this work are 
+Using the order of parameters $a, u, d, k_1, k_2, w_1$ and $w_2$ we get the mean and covariances for each of the data sets used in this work as 
 
 \begin{align*}
-	\text{human positive}\\
-	\text{human negative}
+	\text{human positive} && w = 0.148 && \mu = \left(\begin{matrix}
+		2.429\\ 0.987\\ 1.703\\ 0.363\\	-0.275\\ 292.798\\ 587.26
+	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
+		0.541\\ 0.245\\ 0.276\\ 0.395\\	0.131\\ 37561.179\\ 74216.954
+	\end{matrix}\right),\\
+	\text{human negative} && w = 0.278 && \mu = \left(\begin{matrix}
+		0.735\\ 0.586\\ 0.612\\ 0.83\\ -0.267\\ 179.044\\ 491.68
+	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
+		0.061\\ 0.029\\ 0.032\\ 1.347\\	0.144\\ 24314.336\\ 59213.616
+	\end{matrix}\right),\\
+	\text{mouse positive} && w = 0.346 && \mu = \left(\begin{matrix}
+		3.111\\ 0.818\\ 1.676\\ 0.067\\ -0.038\\ 287.576\\ 480.405
+	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
+		0.478\\ 0.016\\ 0.128\\ 0.0005\\ 0.0006\\ 7147.489\\ 10182.191
+	\end{matrix}\right),\\
+	\text{mouse negative} && w = 0.228 && \mu = \left(\begin{matrix}
+		0.842\\ 0.762\\ 0.78\\ 1.335\\ -0.037\\ 56.052\\  285.085
+	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
+	0.004\\ 0.002\\ 0.001\\ 1.513\\	0.002\\ 1149.598\\ 29471.53
+	\end{matrix}\right).	
 \end{align*}
