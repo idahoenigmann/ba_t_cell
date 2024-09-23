@@ -197,14 +197,7 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-<<<<<<< HEAD
-    # main("human_positive", [3, np.infty], ["a"])
-    # main("human_negative", [np.infty, 0.5], ["a"])
-    # main("mouse_positive", [2, np.infty], ["a"])
-    main("mouse_negative", [np.infty, 3], ["a"])
-=======
     main("human_positive", [3, np.infty], ["a"])
     # main("human_negative", [np.infty, 0.5], ["a"])
     # main("mouse_positive", [2, np.infty], ["a"])
     # main("mouse_negative", [np.infty, 3], ["a"])
->>>>>>> df81ac427e90a3630ee8fc2b18f33ff9111ecc96

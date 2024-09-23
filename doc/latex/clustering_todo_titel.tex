@@ -3,6 +3,7 @@
 The objective of classification is to find assignments between data points and categories. For some applications this can be done by taking correctly labelled data and comparing a new data point to the data points in different categories to see which category best fits. One such algorithm is k-nearest-neighbour. In our context the issue with this approach is that the data is only labelled as to which experiment it came from, e.g. positive control in human cells, negative control in mouse cells. However, as noted before not all cells from these experiments behaved as we expected them to, e.g. some activated in the negative control or did not activate in the positive control. Therefore, we choose to use a clustering algorithm which does not have the need for classified training data.
 
 \section{Gaussian Mixture Model}
+\label{sec:gaussian_mixture_model}
 
 This section follows the article Gaussian Mixture Model by Reynolds~\cite{reynolds2009}.
 
@@ -45,21 +46,13 @@ with $X = (x_1, ..., x_n)$ being the recorded data. As $L(w_i, \mu_i, \Sigma_i|X
 
 for $w_i$, $\mu_i$ and $\sigma_i^2$ respectively. One can show that with this iteration rule we have $p(X|\bar{\lambda}) \geq p(X|\lambda)$. The value $Pr(i|x_t, \lambda)$ is known as the a posteriori probability for the i-th component.
 
-%clustering algorithm description, different parameters (diag, full, tied, spherical)
-
 % https://scikit-learn.org/stable/modules/mixture.html#gmm
 
 \section{Implementation}
 
 Python offers an implementation of Gaussian Mixture Model with the sklearn package. The function with parameters relevant to us is \texttt{sklearn.mixture.GaussianMixture(n\_components, covariance\_type)}. The number of components \texttt{n\_components} can be any positive integer. The \texttt{covariance\_type} can be one of \texttt{‘full’, ‘tied’, ‘diag’} or \texttt{‘spherical’} and describes what type of covariance matrix is used.
 
-[TODO
-
-describe separating algorithm
-
-which parameters to use?
-
-visualize]
+As the input of the Gaussian Mixture Model we use data points of the form \texttt{[a, u, d, k1, k2, w1, w2]}, where \texttt{a, u, ..., w2} are the parameters of the approximation from chapter~\ref{chapter:approximating}. As our goal is to separate data points from the four data sets mouse cells and human cells each with a negative and a positive control, we use all particles as input. The pseudo code below describes the steps performed to reach a clustering of the data.
 
 \begin{algorithm}[H] \label{alg:separate}
 	\SetAlgoLined
@@ -82,7 +75,7 @@ visualize]
 \end{algorithm}
 \vspace{1cm}
 
-When comparing different covariance types in the Gaussian Mixture we see that using \texttt{‘diag’} we have the lowest error rate. The details are shown in table~\ref{tab:covariance_type_comparison}.
+When comparing different covariance types in the Gaussian Mixture we see that using \texttt{‘diag’} we have the lowest error rate. The details are shown in table~\ref{tab:covariance_type_comparison}. Why reducing the number of parameters in the covariance matrix can yield better results is described in section~\ref{sec:gaussian_mixture_model}.
 
 \begin{table}[h!]
 	\centering
@@ -97,3 +90,15 @@ When comparing different covariance types in the Gaussian Mixture we see that us
 	\caption{Error as a percentage of particles being assigned the wrong component.}
 \end{table}
 
+Using a diagonal covariance matrix we can now try to separate the four data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}.
+
+[TODO visualization of seperation algorithm, choose good axis, maybe show multiple different axis, 2d]
+
+The relevant information derived from the Gaussian Mixture clustering is the means and covariances of the four components. From this we can decide which cluster a new data point belongs to. A use case might be to find percentages of activated cells in an experiment. Distinguishing between mouse and human cells does not have a clear use case. When specifying \texttt{n\_components=2} we assume to have a cluster for activated and a second for unactivated cells.
+
+The mean and covariances for each of the data sets used in this work are 
+
+\begin{align*}
+	\text{human positive}\\
+	\text{human negative}
+\end{align*}
