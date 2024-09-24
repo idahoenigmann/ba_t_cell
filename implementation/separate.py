@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas
 from sklearn.mixture import GaussianMixture
+from sklearn.decomposition import PCA
 import pandas as pd
 import itertools
 
@@ -114,6 +116,15 @@ if __name__ == "__main__":
         print(f"mean: {gm.means_[i]}")
         print(f"covariance: {gm.covariances_[i]}")
         print()
+
+    pca = PCA(n_components=2, whiten=True)
+    pca.fit(data[tmp])
+
+    new_data = pandas.DataFrame(pca.transform(data[tmp]), columns=["PCA1", "PCA2"], index=data[tmp].index)
+    new_data["file"] = data["file"]
+    new_data["predicted_clusters"] = data["predicted_clusters"]
+
+    visualize_2d_compare(new_data, "PCA1", "PCA2")
 
     if dim == 2:
         for x in range(len(tmp)):

@@ -48,7 +48,7 @@ for $w_i$, $\mu_i$ and $\sigma_i^2$ respectively. One can show that with this it
 
 % https://scikit-learn.org/stable/modules/mixture.html#gmm
 
-\section{Implementation}
+\section{Implementation of the Clustering Algorithm}
 
 Python offers an implementation of Gaussian Mixture Model with the sklearn package. The function with parameters relevant to us is \texttt{sklearn.mixture.GaussianMixture(n\_components, covariance\_type)}. The number of components \texttt{n\_components} can be any positive integer. The \texttt{covariance\_type} can be one of \texttt{‘full’, ‘tied’, ‘diag’} or \texttt{‘spherical’} and describes what type of covariance matrix is used.
 
@@ -62,15 +62,16 @@ As the input of the Gaussian Mixture Model we use data points of the form \textt
 	\SetKwInOut{Output}{output}
 	\caption{Separate}
 	
-	\Input{approximation parameters of all particle data sets}
-	\Output{assignments to different clusters}
+	\Input{parameters of the approximations of all particles in all data sets}
+	\Output{assignments to different clusters for each particle, means and standard deviation of each cluster}
 	
 	\BlankLine
 	\Begin{
 		initialize Gaussian Mixture by specifying \texttt{n\_components} and \texttt{covariance\_type}\;
-		apply Gaussian Mixture to approximation parameters of all particle data sets\;
+		apply Gaussian Mixture to matrix of all parameters of the approximations of all particle data sets\;
 		assign particles to clusters according to Gaussian Mixture results\;
 		compare asignments from Gaussian Mixture to those of the data set the data stems from\;
+		\Return{assignments to clusters, means and standard deviations of every cluster}
 	}
 \end{algorithm}
 \vspace{1cm}
@@ -94,92 +95,105 @@ Using a diagonal covariance matrix we can now try to separate the four data sets
 
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_u}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_d}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_k1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_k2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_w2}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	
+	\caption{Visualization of the clustered data points. Each pair of images depicts the clustering according to positive and negative control on either humans of mouse t cells in the upper image and the clustering according to the algorithm proposed in the lower image. [TODO sort out figures].}
+\label{fig:vis_output_seperate1}
+\end{figure}
+	
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_d}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_k1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_k2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_w2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_k1}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\caption{Continuation of the visualization of the clustering restuls. [TODO sort out figures].}
+\label{fig:vis_output_seperate2}
+\end{figure}
+
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_k2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_w2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k1_k2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k1_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k1_w2}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\caption{Continuation of the visualization of the clustering restuls. [TODO sort out figures].}
+\label{fig:vis_output_seperate3}
+\end{figure}
+
+\begin{figure}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k2_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k2_w2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.3\textwidth}
+	\begin{subfigure}{0.45\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_w1_w2}
 	\end{subfigure}
 	
-	\caption{TODO [TODO sort out figures].}
-	\label{fig:vis_output_seperate}
+	\caption{Continuation of the visualization of the clustering restuls. [TODO sort out figures].}
+	\label{fig:vis_output_seperate4}
 \end{figure}
 
 By comparing which data points are from which data set and where they were assigned by the Gaussian Mixture we can find an assignment between the two.
@@ -213,4 +227,4 @@ Using the order of parameters $a, u, d, k_1, k_2, w_1$ and $w_2$ we get the mean
 	\end{matrix}\right).	
 \end{align*}
 
-When comparing these results to those of the average and standard deviation analysis done in table~\ref{tab:statistics_parameters} we can see similarities. However in comparison, to the approach focusing on outlier detection in section~\ref{sec:analysis_of_approximation} we now have an approach that is not only not dependent on parameters specified by a user, but can also be applied to a greater set of problems. A proposed way of answering the research questions from chapter~\ref{chapter:introduction} using these methods is described in [TODO].
+When comparing these results to those of the average and standard deviation analysis done in table~\ref{tab:statistics_parameters} we can see similarities. However in comparison, to the approach focusing on outlier detection in section~\ref{sec:analysis_of_approximation} we now have an approach that is not only not dependent on parameters specified by a user, but can also be applied to a greater set of problems. A proposed way of answering the research questions from chapter~\ref{chapter:introduction} using these methods is described in chapter~\ref{chapter:results}.

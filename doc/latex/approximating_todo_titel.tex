@@ -203,7 +203,7 @@ For our model to make sense we have to impose some conditions onto the parameter
 
 There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get a function similar to $f_{unac}$. If $w_1$ is very large or $u \approx d \approx a$ then $f_{ac}$ approaches a constant value of $u$, thus approximating $f_{unac}$. If the approximation of a cell has parameters with $w_1$ very large or $u \approx d \approx a$ we can therefore expect it to be of an unactivated cell. Otherwise, it is more probable to be activated.
 
-\section{Implementation}
+\section{Implementation of the Approximation}
 
 Now that we have defined our model functions we will implement a routine that fits such a $f_{ac}$-function through the data of a cell.
 
@@ -215,9 +215,10 @@ First we describe a routine which handles reading the data, some necessary prepr
 	\LinesNumbered
 	\SetKwInOut{Input}{input}
 	\SetKwInOut{Output}{output}
-	\caption{Main}
+	\caption{Approximation Loop}
 	
-	\Output{parameter matrix}
+	\Input{file containing data matrix as described in section \ref{sec:structure_of_data}}
+	\Output{parameters of the approximation of all particles as a matrix}
 	
 	\BlankLine
 	\Begin{
@@ -229,9 +230,10 @@ First we describe a routine which handles reading the data, some necessary prepr
 				skip\;
 			}
 			parameters := approximate(particle data)\;
-			show ratio data and approximation\;
+			optionally show ratio data and approximation\;
 			save parameters\;
 		}
+		\Return{matrix of all parameters}
 	}
 \end{algorithm}
 \vspace{1cm}
@@ -265,7 +267,7 @@ The above-mentioned approximation function is described in pseudocode below.
 	\caption{Approximate}
 	
 	\Input{particle data as (frame, ratio) matrix}
-	\Output{parameters}
+	\Output{parameters describing the approximation}
 	
 	\BlankLine
 	\Begin{
@@ -273,7 +275,7 @@ The above-mentioned approximation function is described in pseudocode below.
 		set start values for parameters\;
 		use Trust Region Reflective Algorithm with boundaries and start values to get parameters\;
 		calculate corresponding approximation and add as fit\_sigmoid columns to data matrix\;
-		return paramters\;
+		\Return{parameters}\;
 	}
 \end{algorithm}
 \vspace{1cm}
@@ -424,7 +426,7 @@ As we do not have information on what percentage of cells behaved correctly in t
 
 Naturally we can use the same outlier detection with different parameters to find particles where the approximation failed to yield a good result.
 
-These results will be used in [TODO] to remove wrongly-labelled data from the datasets.
+These results will be used in section~\ref{sec:proposed-algorithm} to remove wrongly-labelled data from the datasets.
 
 \section{Adding Oscillation in the Decrease}
 
