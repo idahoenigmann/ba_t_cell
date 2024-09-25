@@ -1,4 +1,5 @@
-\chapter{Clustering}
+\chapter{Clustering Algorithm and Application}
+\label{chapter:clustering}
 
 The objective of classification is to find assignments between data points and categories. For some applications this can be done by taking correctly labelled data and comparing a new data point to the data points in different categories to see which category best fits. One such algorithm is k-nearest-neighbour. In our context the issue with this approach is that the data is only labelled as to which experiment it came from, e.g. positive control in human cells, negative control in mouse cells. However, as noted before not all cells from these experiments behaved as we expected them to, e.g. some activated in the negative control or did not activate in the positive control. Therefore, we choose to use a clustering algorithm which does not have the need for classified training data.
 
@@ -95,104 +96,104 @@ Using a diagonal covariance matrix we can now try to separate the four data sets
 
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_u}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_d}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_k1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_a_k2}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_w1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_w2}
-	\end{subfigure}
 	
-	\caption{Visualization of the clustered data points. Each pair of images depicts the clustering according to positive and negative control on either humans of mouse t cells in the upper image and the clustering according to the algorithm proposed in the lower image. [TODO sort out figures].}
+	\caption{Visualization of the clustered data points. Each pair of images depicts the clustering according to positive and negative control on either humans of mouse t cells in the upper image and the clustering according to the algorithm proposed in the lower image.}
 \label{fig:vis_output_seperate1}
 \end{figure}
 	
 \begin{figure}
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{fig/seperate_a_w1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{fig/seperate_a_w2}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_d}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_k1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_k2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_u_w1}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_u_w2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_d_k1}
-	\end{subfigure}
-	\caption{Continuation of the visualization of the clustering restuls. [TODO sort out figures].}
+	\caption{Continuation of the visualization of the clustering results.}
 \label{fig:vis_output_seperate2}
 \end{figure}
 
 \begin{figure}
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{fig/seperate_u_w2}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{fig/seperate_d_k1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_k2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_d_w2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k1_k2}
 	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k1_w1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.45\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k1_w2}
-	\end{subfigure}
-	\caption{Continuation of the visualization of the clustering restuls. [TODO sort out figures].}
+	\caption{Continuation of the visualization of the clustering results.}
 \label{fig:vis_output_seperate3}
 \end{figure}
 
 \begin{figure}
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{fig/seperate_k1_w1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{fig/seperate_k1_w2}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k2_w1}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_k2_w2}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\textwidth}
+	\begin{subfigure}{0.49\textwidth}
 		\includegraphics[width=\textwidth]{fig/seperate_w1_w2}
 	\end{subfigure}
 	
-	\caption{Continuation of the visualization of the clustering restuls. [TODO sort out figures].}
+	\caption{Continuation of the visualization of the clustering results.}
 	\label{fig:vis_output_seperate4}
 \end{figure}
 

@@ -8,9 +8,9 @@ import pandas as pd
 import itertools
 
 
-def import_all_data():
+def import_all_data(files):
     all_data = []
-    for file in ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]:
+    for file in files:
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
             header = header.translate({ord(c): None for c in '# \n'}).split(',')
@@ -45,7 +45,7 @@ def index_term_to_data(data, term):
 
 
 def visualize_2d_compare(data, x_axis, y_axis):
-    fig, ax = plt.subplots(2)
+    fig, ax = plt.subplots(1, 2)
 
     for i, filtered in [[0, "file"], [1, "predicted_clusters"]]:
         for f in set(data[filtered]):
@@ -83,17 +83,18 @@ if __name__ == "__main__":
     """
 
     N_COMPONENTS = 4
+    files = ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]
 
-    data = import_all_data()
+    data = import_all_data(files)
     dim = 2
     tmp = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
+    # clustering
     gm = GaussianMixture(n_components=N_COMPONENTS, covariance_type="diag")
     gm.fit(data[tmp])
-
     data["predicted_clusters"] = gm.predict(data[tmp])
 
-    files = ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]
+    # find association between predicted clusters and files
     assign_matrix = np.zeros([len(files), N_COMPONENTS])
     for i in range(N_COMPONENTS):
         for f_idx in range(len(files)):
@@ -110,6 +111,7 @@ if __name__ == "__main__":
             res = per
             res_sum = tmp_sum
 
+    # print out means and std
     for i in range(N_COMPONENTS):
         print(files[res[i]])
         print(f"weigh: {gm.weights_[i]}")
@@ -117,6 +119,7 @@ if __name__ == "__main__":
         print(f"covariance: {gm.covariances_[i]}")
         print()
 
+    # do pca for visualization in 2d
     pca = PCA(n_components=2, whiten=True)
     pca.fit(data[tmp])
 
@@ -126,6 +129,7 @@ if __name__ == "__main__":
 
     visualize_2d_compare(new_data, "PCA1", "PCA2")
 
+    # visualization in all parameters
     if dim == 2:
         for x in range(len(tmp)):
             for y in range(x + 1, len(tmp)):
