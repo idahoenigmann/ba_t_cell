@@ -8,7 +8,7 @@ From section~\ref{sec:t-cell/activation}, we gather that analysing the intracell
 
 First we describe the structure of the data this work uses. 
 
-The data matrix has one row for each tracked particle and frame combination. In this context cells are called particles as the recording might feature non-cells that are detected as a cell and recorded in the data set. The information stored for each particle and frame combination is described in detail in table~\ref{tab:information_data_matrix}.
+The data matrix has one row for each combination of tracked particle and frame number. In this context cells are called particles as the recording might feature non-cells that are detected as a cell and recorded in the data set. The information stored for each particle and frame combination is described in detail in table~\ref{tab:information_data_matrix}.
 
 \begin{table}[h!]
 	\centering
@@ -24,12 +24,12 @@ The data matrix has one row for each tracked particle and frame combination. In 
 		\hline
 		mass short & float64 & Brightness of cell in 340nm channel \\
 		\hline
-		bg short & float64 & Background in 340nm channel \\
-		\hline
+		%bg short & float64 & Background in 340nm channel \\
+		%\hline
 		mass long & float64 & Brightness of cell in 380nm channel \\
 		\hline
-		bg long & float64 & Background in 380nm channel \\
-		\hline
+		%bg long & float64 & Background in 380nm channel \\
+		%\hline
 		ratio & float64 & Calculated as mass short divided by mass long \\
 		\hline
 		particle & int32 & Identification for each particle \\
@@ -47,9 +47,7 @@ Four recordings where generated, with two each from human and mouse cells. For e
 
 \section{Jurkat Cells, 5c.c7 Primary Mouse T Cells and Fura-2}
 
-The prototypical cell line to study T cell signalling is the Jurkat cell line.\cite{morgan2023} It was obtained from the blood of a boy with T cell leukaemia.\cite{schneider1977} Different cell lines within the Jurkat family are described by Abraham and Weiss.\cite{abraham2004} They provide a timeline of discoveries linked to Jurkat cells and t cell receptor signalling.
-
-Another type of T cells used in signalling studies are gathered from mice. [Additional information]
+The prototypical cell line to study T cell signalling is the Jurkat cell line.\cite{morgan2023} It was obtained from the blood of a boy with T cell leukaemia.\cite{schneider1977} Different cell lines within the Jurkat family are described by Abraham and Weiss.\cite{abraham2004} They provide a timeline of discoveries linked to Jurkat cells and t cell receptor signalling. Another type of t cells used in signalling studies are gathered from mice.
 
 In order to be able to measure the intracellular \Calcium concentration of cells they can be labelled with Fura-2. This method provides a way to record the \Calcium concentration of multiple cells over a time period.\cite{martinez2017} Challenges encountered when using Fura-2 on certain cell types are described by Roe, Lemasters and Herman along with their respective solutions.\cite{roe1990}
 

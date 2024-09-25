@@ -31,7 +31,7 @@ An iterative algorithm for finding the minimum of a differentiable function $f: 
 \end{algorithm}
 \vspace{1cm}
 
-If we consider a function with a local but not global minimum gradient descent might not converge to the optimum. An example of such a function can be seen in figure~\ref{fig:grad_descent_global_min_not_found} along with the first values $x_n$ of gradient descent for a starting value not converging to the global minimum.
+If we consider a function with a local minimum, that is not a global minimum, gradient descent might not converge to the optimum. An example of such a function can be seen in figure~\ref{fig:grad_descent_global_min_not_found} along with the first few values $x_n$ of gradient descent. The starting value was chosen to not have convergence to the global minimum. For a different starting value the global minimum can be reached.
 
 \begin{figure}[h]
 	\centering
@@ -63,13 +63,13 @@ Improvements can be made by choosing good step sizes, starting value or by start
 
 % https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html
 
-We now focus on the Least Square Problem and give an introduction into various algorithms used.
+We now focus on the Least Square Problem and give an introduction into various algorithms solving this problem.
 
-In the example dealt with in this work we are given some data points $((x_k, y_k))_{k \in \{1, 2, ..., n\}}$ and want to find a close approximation in the form of a function $g(x, a_1, a_2, ..., a_m)$ where for every $a = (a_1, ..., a_m)$ we have a function $g_a(x) : \mathbb{R} \rightarrow \mathbb{R}, x \mapsto g(x, a_1, ..., a_m)$. Searching for a good approximation can be reformulated as searching for the minimum of $r(a) := \sum_{k=1}^{n} |g_a(x_k) - b_k|^2$ or any other error function. This form of optimization problem is called the Least Square Problem.
+In the example dealt with in this work we are given some data points $((x_k, y_k))_{k \in \{1, 2, ..., n\}}$ and want to find a close approximation in the form of a function $g(x, a_1, a_2, ..., a_m)$ where for every list of function parameters $a = (a_1, ..., a_m)$ we have the function $g_a(x) : \mathbb{R} \rightarrow \mathbb{R}, x \mapsto g(x, a_1, ..., a_m)$. Searching for a good approximation can be reformulated as searching for the minimum of $r(a) := \sum_{k=1}^{n} |g_a(x_k) - y_k|^2$ or any other error function. This form of optimization problem is called the Least Square Problem.
 
-First we want to first think about some variations of the problem. Easiest to solve are linear problems. These can be formulated as minimize $||Ax - b||^2$ and solved using Calculus by $x=(A^TA)^{-1}A^Tb$ if the rank of $A$ is full.
+First we want to discuss some variations of the problem. Easiest to solve are linear problems. These can be formulated as the minimization of $||Ax - b||^2$, and solved using calculus by $x=(A^TA)^{-1}A^Tb$ provided the rank of $A$ is full.
 
-Often we want to constrain the search for a minimum under some property. For linear problems we can find a formulation as
+Often we want to constrain the search for a minimum under some properties. For linear problems we can find a formulation as
 
 \begin{align*}
 	\text{minimize } ||Ax-b||^2 \text{ subject to } Cx=d.
@@ -77,11 +77,15 @@ Often we want to constrain the search for a minimum under some property. For lin
 
 Finding a solution can be done by minimizing $||Ax-b||^2 + \lambda ||Cx-d||^2$ for very large $\lambda$.
 
-General least square problems are formally given a as a residual function $r_f(x)$ which tells us whether a function $f$ is a good approximation at the point $x$. We therefore want to find a way to minimize $||r(x)||^2$.
+General least square problems are formally given as a residual function $r_f(x)$ which tells us whether a function $f$ is a good approximation at the point $x$. We therefore want to find a way to minimize $||r_f(x)||^2$.
+
+As $||r_f(x)||^2 \geq 0$ we can turn to the simpler problem of finding a root. However, a root must not exist, in which case we want to find the value closest to zero. This is then the minimum of the function.
+
+Some algorithm for minimization are now discussed below.
 
 \subsection{Gauss–Newton Algorithm}
 
-The idea behind this algorithm is that it is easy to find the intersection with zero of a linear function. If we linearize $r:\mathbb{R}^n \rightarrow \mathbb{R}^m$ locally we can approximate the root by finding it of the linear approximating function. This is demonstrated in figure~\ref{fig:approx_root_with_lin}.
+The idea behind this algorithm is that it is easy to find the intersection with zero of a linear function. If we linearize $r:\mathbb{R}^n \rightarrow \mathbb{R}^m$ locally, we can approximate the root by finding it of the linear approximating function. This is demonstrated in figure~\ref{fig:approx_root_with_lin}.
 
 \begin{figure}[h]
 	\centering
@@ -174,7 +178,7 @@ Gauss-Newton is guaranteed to find a local minimum $x$ if $r$ is twice continuou
 
 For the example demonstrated in figure~\ref{fig:gauss_newton_fails_sin} we can see that choosing a particular starting value leads to a loop in which only two points are explored as possible roots. More extreme examples exists in which Gauss-Newton gets increasingly further away from the root, due to an increasingly flat incline the further we get from the root. One example of such a function can be seen in figure~\ref{fig:gauss_newton_fails_cubic_root}.
 
-\begin{figure}[h]
+\begin{figure}
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[xmin=-4.71238898, xmax=3.141592653, samples=100]
@@ -200,7 +204,7 @@ For the example demonstrated in figure~\ref{fig:gauss_newton_fails_sin} we can s
 	\label{fig:gauss_newton_fails_sin}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[xmin=-5, xmax=5, samples=257]
@@ -230,13 +234,13 @@ For the example demonstrated in figure~\ref{fig:gauss_newton_fails_sin} we can s
 	\label{fig:gauss_newton_fails_cubic_root}
 \end{figure}
 
-Gauss-Newton has two problems, the starting value being too far from the root and the $Dr$ not having full rank. This can be combated using the technique of dampening. Instead of moving the new guess all the way to the root of the linear approximation we only move part of the way. How much can be determined by a dampening factor $\lambda_n$ or a constant $\lambda$.
+Gauss-Newton has two problems, the starting value being too far from the root and $Dr$ not having full rank. This can be combated using the technique of dampening. Instead of moving the new guess all the way to the root of the linear approximation we only move part of the way. How far to move can be determined by a dampening factor $\lambda_n$ or a constant $\lambda$.
 
 \subsection{Levenberg-Marquardt Algorithm}
 
 This section is following section~18.3 of the book Introduction to Applied Linear Algebra by Stephen Boyd and Lieven Vandenberghe\cite{Boyd2018}.
 
-As stated above a shortcoming of Gauss-Newton is that for $x$ far from $x_n$ we must not have that $r(x) \approx r(x_n) + Dr(x_n)(x-x_n) =: \hat{r}(x, x_n)$. Levenberg-Marquardt addresses this by minimizing $||\hat{r}(x, x_n)||^2 + \lambda_n ||x-x_n||^2$. The first is the same as above, while the second objective expresses our desire to not stray away too much from the region where we trust the linear approximation. The parameter $\lambda_n$ is a positive parameter specifying how far the trusted region extends.
+As stated above, a shortcoming of Gauss-Newton is that for $x$ far from $x_n$ we must not have that $r(x) \approx r(x_n) + Dr(x_n)(x-x_n) =: \hat{r}(x, x_n)$. Levenberg-Marquardt addresses this by minimizing $||\hat{r}(x, x_n)||^2 + \lambda_n ||x-x_n||^2$. The first part is the same as above, while the second objective expresses our desire to not stray away too much from the region where we trust the linear approximation. The parameter $\lambda_n$ is a positive parameter specifying how far the trusted region extends.
 
 Writing the above idea as a single squared norm to minimize gives us the problem
 
