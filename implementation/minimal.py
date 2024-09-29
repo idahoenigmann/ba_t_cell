@@ -3,7 +3,10 @@ import scipy
 import numpy as np
 import pandas
 from sklearn.mixture import GaussianMixture
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 import pandas as pd
+import random
 
 
 def approximate(dataframe):
@@ -95,7 +98,7 @@ def approximation_loop(file_name):
         try:  # throws error if no best fit was found
             parameters = approximate(single_particle_data)
 
-            parameters["idx"] = particle_idx
+            parameters["idx"] = str(particle_idx) + file_name
             all_parameters.append([parameters[e] for e in parameters_saved])
 
         except Exception as e:
@@ -104,7 +107,7 @@ def approximation_loop(file_name):
     return all_parameters
 
 
-def separate(neg_par, pos_par):
+def separate(neg_par, pos_par, CLUSTERING_METHOD):
     prediction_parameters = ["a", "u", "d", "k1", "k2", "w1", "w2"]
 
     df_neg = pd.DataFrame(data=neg_par,
@@ -118,9 +121,17 @@ def separate(neg_par, pos_par):
     data = pd.concat([df_neg, df_pos])
 
     # clustering
-    gm = GaussianMixture(n_components=2, covariance_type="full", n_init=10)
-    gm.fit(data[prediction_parameters])
-    data["predicted_clusters"] = gm.predict(data[prediction_parameters])
+    if CLUSTERING_METHOD == "gaussian_mixture":
+        clustering = GaussianMixture(n_components=2, covariance_type="diag",
+                                     n_init=10)
+    elif CLUSTERING_METHOD == "kmeans":
+        clustering = KMeans(n_clusters=2, n_init=10)
+    else:
+        raise RuntimeError(f"Value of CLUSTERING_METHOD set to "
+                           f"{CLUSTERING_METHOD}, which is not "
+                           f"one of [gaussian_mixture, kmeans].")
+    data["predicted_clusters"] = clustering.fit_predict(
+        data[prediction_parameters])
 
     # find association between predicted clusters and files
     neg_0 = len(data[(data['predicted_clusters'] == 0) &
@@ -134,29 +145,51 @@ def separate(neg_par, pos_par):
 
     permutation = (0, 1) if neg_0 + pos_1 > neg_1 + pos_0 else (1, 0)
 
-    return permutation, gm
+    return permutation, clustering
 
 
 if __name__ == "__main__":
     FILE_NAME_NEG_CONTROL = "human_negative/human_negative.h5"
     FILE_NAME_POS_CONTROL = "human_positive/human_positive.h5"
-    FILE_NAME_EXPERIMENT = "human_negative/human_negative.h5"
+    FILE_NAME_EXPERIMENT = "human_positive/human_positive.h5"
 
     neg_con_par = approximation_loop(FILE_NAME_NEG_CONTROL)
     pos_con_par = approximation_loop(FILE_NAME_POS_CONTROL)
     experiment_par = approximation_loop(FILE_NAME_EXPERIMENT)
 
+    # center all paramters
+    neg = pandas.DataFrame(neg_con_par, columns=["idx", "start", "end",
+                                                 'w1', 't', 'w2', 'a',
+                                                 'd', 'u', 'k1', 'k2'])
+    pos = pandas.DataFrame(pos_con_par, columns=["idx", "start", "end",
+                                                 'w1', 't', 'w2', 'a',
+                                                 'd', 'u', 'k1', 'k2'])
+    exp = pandas.DataFrame(experiment_par, columns=["idx", "start", "end",
+                                                    'w1', 't', 'w2', 'a',
+                                                    'd', 'u', 'k1', 'k2'])
+
+    all_data = pd.concat([neg, pos, exp])
+
+    scaler = StandardScaler()
+    all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = (
+        scaler.fit_transform(all_data[["a", "u", "d", "k1",
+                                       "k2", "w1", "w2"]]))
+
+    neg = all_data[all_data["idx"].isin(neg["idx"])].values.tolist()
+    pos = all_data[all_data["idx"].isin(pos["idx"])].values.tolist()
+    exp = all_data[all_data["idx"].isin(exp["idx"])].values.tolist()
+
     # filter out outliers
 
-    per, gm = separate(neg_con_par, pos_con_par)
+    n = min(len(neg_con_par), len(pos_con_par))
+    per, clustering = separate(random.sample(neg_con_par, n),
+                               random.sample(pos_con_par, n), "kmeans")
 
     df_exp = pd.DataFrame(data=experiment_par,
                           columns=["idx", "start", "end", 'w1', 't', 'w2',
                                    'a', 'd', 'u', 'k1', 'k2'])
-    df_exp["predicted_clusters"] = gm.predict(df_exp[["a", "u", "d", "k1",
-                                                      "k2", "w1", "w2"]])
+    df_exp["predicted_clusters"] = clustering.predict(df_exp[["a", "u", "d",
+                                                              "k1", "k2",
+                                                              "w1", "w2"]])
 
-    print(per)
-    print(len(df_exp))
-    print(len(df_exp[df_exp['predicted_clusters'] == 0]))
-    print(len(df_exp[df_exp['predicted_clusters'] == 1]))
+    print(f"positive: {len(df_exp[df_exp['predicted_clusters'] == per[0]])} / {len(df_exp)}")
