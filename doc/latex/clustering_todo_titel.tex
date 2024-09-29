@@ -1,7 +1,7 @@
 \chapter{Clustering Algorithm and Application}
 \label{chapter:clustering}
 
-The objective of classification is to find assignments between data points and categories. For some applications this can be done by taking correctly labelled data and comparing a new data point to the data points in different categories to see which category best fits. One such algorithm is k-nearest-neighbour. In our context the issue with this approach is that the data is only labelled as to which experiment it came from, e.g. positive control in human cells, negative control in mouse cells. However, as noted before not all cells from these experiments behaved as we expected them to, e.g. some activated in the negative control or did not activate in the positive control. Therefore, we choose to use a clustering algorithm which does not have the need for classified training data.
+The objective of classification is to find assignments between data points and categories. For some applications this can be done by taking correctly labelled data and comparing a new data point to the data points in different categories to see which category best fits. One such algorithm is k-nearest-neighbour. In our context the issue with this approach is that the data is only labelled as to which experiment it came from, e.g. positive control in human cells, negative control in mouse cells. However, as noted before not all cells from these experiments behaved as we expected them to, e.g. some cells activated in the negative control or did not activate in the positive control. Therefore, we choose to use a clustering algorithm which does not have the need for classified training data.
 
 \section{Gaussian Mixture Model}
 \label{sec:gaussian_mixture_model}
@@ -12,9 +12,9 @@ Often gathered observations are distributed as a normal distribution. These dist
 \begin{align*}
 	g(x|\mu, \Sigma) = \frac{1}{(2\pi)^{D/2} |\Sigma|^{1/2}} exp\left( - \frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu) \right)
 \end{align*}
-with parameters $D$ as the dimension, $\mu$ as the mean vector and $\Sigma$ as the covariance matrix.
+with parameters $D$ called the dimension, $\mu$ called the mean vector and $\Sigma$ called the covariance matrix.
 
-As we are concerned with clustering data we expect the observed data from different clusters to have different parameters in the normal distribution they come from. Assuming we have $n$ different data sources gives us normal distributions $g_i(x|\mu_i, \Sigma_i)$ where $i=1, ..., n$. Additionally, we might have more data points being generated from some normal distributions while less from others. We can express this using another weight parameter $w_i$ with $i=1, ..., n$. To normalize the weights we set the constraint $\sum w_i = 1$.
+As we are concerned with clustering data points we expect the observed data points from different clusters to have different parameters in the normal distribution they come from. Assuming we have $n$ different data sources gives us normal distributions $g_i(x|\mu_i, \Sigma_i)$ where $i=1, ..., n$. Additionally, we might have more data points being generated from some normal distributions while less from others. We can express this using another weight parameter $w_i$ with $i=1, ..., n$. To normalize the weights we set the constraint $\sum w_i = 1$.
 
 The distribution describing the entire dataset now can be described with the distribution
 \begin{align}

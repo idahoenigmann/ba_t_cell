@@ -211,40 +211,7 @@ There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get
 
 Now that we have defined our model functions we will implement a routine that fits such a $f_{ac}$-function through the data points of a particle recording.
 
-First we describe a routine which handles reading the data, some necessary preprocessing steps and saving of the resulting parameter lists. The approximation itself is wrapped in the function \texttt{approximate}, which takes a (frame, ratio)-matrix of a single particle and returns the corresponding parameter list of the approximation.
-
-\begin{algorithm}[H] \label{alg:main}
-	\SetAlgoLined
-	\DontPrintSemicolon
-	\LinesNumbered
-	\SetKwInOut{Input}{input}
-	\SetKwInOut{Output}{output}
-	\caption{Approximation Loop}
-	
-	\Input{file containing data matrix as described in section \ref{sec:structure_of_data}}
-	\Output{parameters of the approximation of all particles as a matrix}
-	
-	\BlankLine
-	\Begin{
-		read data\;
-		filter data\;
-		\For{each single particle}{
-			particle data := (frame, ratio) columns of this particle\;
-			\If{length of particle data is too short}{
-				skip\;
-			}
-			parameters := approximate(particle data)\;
-			optionally show ratio data and approximation\;
-			save parameters\;
-		}
-		\Return{matrix of all parameters}
-	}
-\end{algorithm}
-\vspace{1cm}
-
-Filtering the data is necessary as the ratio can be very large if the denominator is small. Values are therefore bounded to lie within the interval $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors. Values below 0 are definitely incorrect, as both the denominator and enumerator are measured as the brightness of a pixel, which can not be negative.
-
-The above-mentioned approximation function is described in pseudocode below.
+First we give the pseudocode for approximating a single particles time series with the approximation function described above. It takes a (frame, ratio)-matrix of a single particle as input and returns the corresponding parameter list of the approximation.
 
 \begin{algorithm}[H] \label{alg:approximate}
 	\SetAlgoLined
@@ -329,6 +296,38 @@ The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2
 
 Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing the starting value of $w_1 - start$ as $0$, which corresponds to choosing $w_1 = start$, we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ will lie somewhere in the middle. Therefore we choose $(end - start)/2$ as the starting value for $w_2 - w_1$. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle. Experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
 
+Using algorithm~\ref{alg:approximate} we now describe a routine which handles reading the data, some necessary preprocessing steps and saving of the resulting parameter lists.
+
+\begin{algorithm}[H] \label{alg:main}
+	\SetAlgoLined
+	\DontPrintSemicolon
+	\LinesNumbered
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	\caption{Approximation Loop}
+	
+	\Input{file containing data matrix as described in section \ref{sec:structure_of_data}}
+	\Output{parameters of the approximation of all particles as a matrix}
+	
+	\BlankLine
+	\Begin{
+		read data\;
+		filter data\;
+		\For{each single particle}{
+			particle data := (frame, ratio) columns of this particle\;
+			\If{length of particle data is too short}{
+				skip\;
+			}
+			parameters := approximate(particle data)\;
+			optionally show ratio data and approximation\;
+			save parameters\;
+		}
+		\Return{matrix of all parameters}
+	}
+\end{algorithm}
+\vspace{1cm}
+
+Filtering the data is necessary as the ratio can be very large if the denominator is small. Values are therefore bounded to lie within the interval $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors. Values below 0 are definitely incorrect, as both the denominator and enumerator are measured as the brightness of a pixel, which can not be negative.
 
 The visualization in line 10 of algorithm~\ref{alg:main} generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}.
 
@@ -396,7 +395,7 @@ We now give data on the parameters found from the above approximation. Some stat
 	\label{tab:statistics_parameters}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\textwidth]{fig/parameter_violin_plot_human_pos}
@@ -443,11 +442,11 @@ These results will be used in section~\ref{sec:proposed-algorithm} to remove wro
 
 \section{Adding Oscillation in the Decrease}
 
-In order to answer the research questions concerned with the oscillations happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fourier Transformation.
+In order to answer the questions from chapter~\ref{chapter:introduction} concerned with the oscillations  happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fourier Transformation.
 
-Many applications are concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
+Fourier Transformation is used when an application is concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	
 	\begin{subfigure}[b]{\textwidth}
@@ -472,7 +471,7 @@ As the function of sound waves or oscillations in the \Calcium concentration in 
 
 As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can then filter out the 10 frequencies with the highest amplitudes and use them to further analyse the oscillations. This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{fig/particle_vis_fft_approx_pos}
 	

@@ -10,6 +10,7 @@ import itertools
 
 def import_all_data(files):
     all_data = []
+    weights = []
     for file in files:
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
@@ -20,6 +21,10 @@ def import_all_data(files):
         df2["activation"] = "positive" if file in ["human_positive", "mouse_positive"] else "negative"
         df2["cell_type"] = "human" if file in ["human_positive", "human_negative"] else "mouse"
         all_data.append(df2)
+        weights.append(len(df2))
+
+    for i in range(len(all_data)):
+        all_data[i] = all_data[i].sample(min(weights))
     return pd.concat(all_data)
 
 
@@ -82,42 +87,46 @@ if __name__ == "__main__":
     cluster the data
     """
 
-    N_COMPONENTS = 4
-    files = ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]
+    N_COMPONENTS = 2
+    # files = ["mouse_positive", "mouse_negative"]
+    files = ["human_positive", "human_negative"]
+    # files = ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]
 
     data = import_all_data(files)
     dim = 2
     tmp = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
     # clustering
-    gm = GaussianMixture(n_components=N_COMPONENTS, covariance_type="diag")
+    gm = GaussianMixture(n_components=N_COMPONENTS, covariance_type="diag", n_init=10)
     gm.fit(data[tmp])
     data["predicted_clusters"] = gm.predict(data[tmp])
 
+    res = range(N_COMPONENTS)
     # find association between predicted clusters and files
-    assign_matrix = np.zeros([len(files), N_COMPONENTS])
-    for i in range(N_COMPONENTS):
-        for f_idx in range(len(files)):
-            assign_matrix[f_idx, i] = len(data[(data['predicted_clusters'] == i) & (data['file'] == files[f_idx])])
-            print(f"{i} + {files[f_idx]}: {assign_matrix[f_idx, i]}")
-        print()
+    if N_COMPONENTS == len(files):
+        assign_matrix = np.zeros([len(files), N_COMPONENTS])
+        for i in range(N_COMPONENTS):
+            for f_idx in range(len(files)):
+                assign_matrix[f_idx, i] = len(data[(data['predicted_clusters'] == i) & (data['file'] == files[f_idx])])
+                print(f"{i} + {files[f_idx]}: {assign_matrix[f_idx, i]}")
+            print()
 
-    res_sum = 0
-    for per in itertools.permutations(range(len(files))):
-        tmp_sum = 0
-        for i in range(len(per)):
-            tmp_sum += assign_matrix[per[i], i]
-        if tmp_sum > res_sum:
-            res = per
-            res_sum = tmp_sum
+        res_sum = 0
+        for per in itertools.permutations(range(len(files))):
+            tmp_sum = 0
+            for i in range(len(per)):
+                tmp_sum += assign_matrix[per[i], i]
+            if tmp_sum > res_sum:
+                res = per
+                res_sum = tmp_sum
 
-    # print out means and std
-    for i in range(N_COMPONENTS):
-        print(files[res[i]])
-        print(f"weigh: {gm.weights_[i]}")
-        print(f"mean: {gm.means_[i]}")
-        print(f"covariance: {gm.covariances_[i]}")
-        print()
+        # print out means and std
+        for i in range(len(files)):
+            print(files[res[i]])
+            print(f"weigh: {gm.weights_[i]}")
+            print(f"mean: {gm.means_[i]}")
+            print(f"covariance: {gm.covariances_[i]}")
+            print()
 
     # do pca for visualization in 2d
     pca = PCA(n_components=2, whiten=True)
