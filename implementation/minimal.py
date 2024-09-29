@@ -10,7 +10,7 @@ import random
 
 
 def approximate(dataframe):
-    def calc_t(w, k, alpha = 0.99):
+    def calc_t(w, k, alpha=0.99):
         tmp = 1 / alpha - 1
         if tmp < 0.0001:
             return None
@@ -52,9 +52,9 @@ def approximate(dataframe):
     start, end = min(dataframe['frame']), max(dataframe['frame'])
 
     lower_bounds = (0, 0, 0, 0, min_val, 0.05, -1)
-    upper_bounds = (end-start, end-start, max_val, max_val,
+    upper_bounds = (end - start, end - start, max_val, max_val,
                     max_val, 3, -0.01)
-    p0 = (0, (end-start)/2, max_val-median_val, median_val-min_val,
+    p0 = (0, (end - start) / 2, max_val - median_val, median_val - min_val,
           min_val, 0.1, -0.03)
 
     popt, *_ = scipy.optimize.curve_fit(approx_func, dataframe['frame'],
@@ -73,7 +73,6 @@ def approximate(dataframe):
 
 
 def approximation_loop(file_name):
-
     # read data
     data = pandas.DataFrame(pd.read_hdf(f"../data/{file_name}"))
 
@@ -105,6 +104,30 @@ def approximation_loop(file_name):
             print(f"error in particle {particle_idx}: {e}")
 
     return all_parameters
+
+
+def normalize(neg_par, pos_par, exp_par):
+    neg = pandas.DataFrame(neg_par,
+                           columns=["idx", "start", "end", 'w1', 't', 'w2',
+                                    'a', 'd', 'u', 'k1', 'k2'])
+    pos = pandas.DataFrame(pos_par,
+                           columns=["idx", "start", "end", 'w1', 't', 'w2',
+                                    'a', 'd', 'u', 'k1', 'k2'])
+    exp = pandas.DataFrame(exp_par,
+                           columns=["idx", "start", "end", 'w1', 't', 'w2',
+                                    'a', 'd', 'u', 'k1', 'k2'])
+    all_data = pd.concat([neg, pos, exp])
+
+    scaler = StandardScaler()
+    all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = (
+        scaler.fit_transform(
+            all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]]))
+
+    neg = all_data[all_data["idx"].isin(neg["idx"])].values.tolist()
+    pos = all_data[all_data["idx"].isin(pos["idx"])].values.tolist()
+    exp = all_data[all_data["idx"].isin(exp["idx"])].values.tolist()
+
+    return neg, pos, exp
 
 
 def separate(neg_par, pos_par, CLUSTERING_METHOD):
@@ -151,33 +174,15 @@ def separate(neg_par, pos_par, CLUSTERING_METHOD):
 if __name__ == "__main__":
     FILE_NAME_NEG_CONTROL = "human_negative/human_negative.h5"
     FILE_NAME_POS_CONTROL = "human_positive/human_positive.h5"
-    FILE_NAME_EXPERIMENT = "human_positive/human_positive.h5"
+    FILE_NAME_EXPERIMENT = "human_negative/human_negative.h5"
 
     neg_con_par = approximation_loop(FILE_NAME_NEG_CONTROL)
     pos_con_par = approximation_loop(FILE_NAME_POS_CONTROL)
     experiment_par = approximation_loop(FILE_NAME_EXPERIMENT)
 
-    # center all paramters
-    neg = pandas.DataFrame(neg_con_par, columns=["idx", "start", "end",
-                                                 'w1', 't', 'w2', 'a',
-                                                 'd', 'u', 'k1', 'k2'])
-    pos = pandas.DataFrame(pos_con_par, columns=["idx", "start", "end",
-                                                 'w1', 't', 'w2', 'a',
-                                                 'd', 'u', 'k1', 'k2'])
-    exp = pandas.DataFrame(experiment_par, columns=["idx", "start", "end",
-                                                    'w1', 't', 'w2', 'a',
-                                                    'd', 'u', 'k1', 'k2'])
-
-    all_data = pd.concat([neg, pos, exp])
-
-    scaler = StandardScaler()
-    all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = (
-        scaler.fit_transform(all_data[["a", "u", "d", "k1",
-                                       "k2", "w1", "w2"]]))
-
-    neg = all_data[all_data["idx"].isin(neg["idx"])].values.tolist()
-    pos = all_data[all_data["idx"].isin(pos["idx"])].values.tolist()
-    exp = all_data[all_data["idx"].isin(exp["idx"])].values.tolist()
+    neg_con_par, pos_con_par, experiment_par = normalize(neg_con_par,
+                                                         pos_con_par,
+                                                         experiment_par)
 
     # filter out outliers
 
@@ -192,4 +197,5 @@ if __name__ == "__main__":
                                                               "k1", "k2",
                                                               "w1", "w2"]])
 
-    print(f"positive: {len(df_exp[df_exp['predicted_clusters'] == per[0]])} / {len(df_exp)}")
+    print(f"positive: {len(df_exp[df_exp['predicted_clusters'] == per[0]])}"
+          f" / {len(df_exp)}")
