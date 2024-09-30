@@ -47,13 +47,76 @@ with $X = (x_1, ..., x_n)$ being the recorded data. As $L(w_i, \mu_i, \Sigma_i|X
 
 for $w_i$, $\mu_i$ and $\sigma_i^2$ respectively. One can show that with this iteration rule we have $p(X|\bar{\lambda}) \geq p(X|\lambda)$. The value $Pr(i|x_t, \lambda)$ is known as the a posteriori probability for the i-th component.
 
-% https://scikit-learn.org/stable/modules/mixture.html#gmm
+From the parameters $w_i, \mu_i$ and $\sigma_i^2$ we can get the probability of a data point belonging to the $i$-th cluster. This data point can be either one of the ones used to get the parameters or a new one.
+
+\section{KMeans}
+
+We want to explore a second clustering algorithm. Like Gaussian Mixture Model this method assigns data points to clusters after having been trained with unlabelled data.
+
+Once again we assume to have $k$ different data sources from where the data stems. As the data from every of these resulting clusters will be close to each other, we have that the variance within the cluster is relatively small compared to the variance of data points from different clusters.
+
+The variance of data points $(x_n)_{n=1, ..., m}$ is calculated as
+\begin{align*}
+	Var((x_n)_{n=1, ..., m}) = \frac{1}{m} \sum_{n=1}^{m} ||x_n - \mu||^2, && \text{where} && \mu = \frac{1}{m} \sum_{n=1}^{m} x_n.
+\end{align*}
+
+We can therefore formulate the problem as a minimization problem. Using $k$ clusters $S_1, ..., S_k$, with $|S_l|$ data points in each, we want to minimize the sum of variants
+\begin{align*}
+	\sum_{l=1}^{k} \sum_{x \in S_l} ||x - \mu_l||^2 = \sum_{l=1}^{k} |S_l| Var(S_l).
+\end{align*}
+
+We want to show that this is equivalent to minimizing
+\begin{align*}
+	\sum_{l=1}^{k} \frac{1}{|S_l|} \sum_{x, y \in S_l} ||x-y||^2.
+\end{align*}
+
+This follows from the equality
+
+\begin{align*}
+	\frac{1}{|S_l|} \sum_{x, y \in S_l} ||x-y||^2 =\\
+	\frac{1}{|S_l|} \sum_{x, y \in S_l} ||x||^2 - 2||x||\cdot||y|| + ||y||^2 =\\
+	\frac{1}{|S_l|} (|S_l| \sum_{x\in S_l} ||x||^2 - 2\sum_{x, y \in S_l}||x|| ||y|| + |S_l| \sum_{y \in S_l}||y||^2) =\\
+	\frac{1}{|S_l|} (|S_l|^2 E(S_l^2) - 2(\sum_{x\in S_l}||x||)(\sum_{y \in S_l}||y||) + |S_l|^2 E(S_l^2)) =\\
+	2|S_l| E(S_l^2) - 2|S_l| E(S_l)^2 =\\
+	2 |S_l| Var(S_l).
+\end{align*}
+
+Minimizing is hard, but is typically solved by the approximation using the following algorithm consisting of two steps.
+
+\begin{itemize}
+	\item Assign all data points to clusters $S_1, ..., S_k$, by choosing the cluster $S_l$ with the closest mean $\mu_l$.
+	\item Update the means $\mu_l$ by calculating them as the mean of the data points assigned to $S_l$.
+\end{itemize}
+
+We formulate this mathematically as the successor $\hat{S}_l$ and $\mu_l$ of $S_l$ and $\mu_l$ respectively being
+
+\begin{align*}
+	\hat{S}_l := \{x: ||x-\mu_l|| \leq ||x-\mu_j|| \forall j \in \{1, ..., k\} \} &&
+	\hat{\mu}_l := \frac{1}{|\hat{S}_l|} \sum_{x \in \hat{S}_l} x.
+\end{align*}
+
+From the definition of $\hat{S}_l$ and $\hat{\mu}_i$ it follows that
+
+\begin{align*}
+	\sum_{l=1}^{k} \frac{1}{|\hat{S}_l|} \sum_{x, y \in \hat{S}_l} ||x-y||^2 \leq \sum_{l=1}^{k} \frac{1}{|S_l|} \sum_{x, y \in S_l} ||x-y||^2.
+\end{align*}
+
+The convergence of the algorithm towards a minimum seems likely. The choice of initial values can have a big impact on the result.
 
 \section{Implementation of the Clustering Algorithm}
 
-Python offers an implementation of Gaussian Mixture Model with the sklearn package. The function with parameters relevant to us is \texttt{sklearn.mixture.GaussianMixture(n\_components, covariance\_type)}. The number of components \texttt{n\_components} can be any positive integer. The \texttt{covariance\_type} can be one of \texttt{‘full’, ‘tied’, ‘diag’} or \texttt{‘spherical’} and describes what type of covariance matrix is used.
+Python offers an implementation of Gaussian Mixture Model and KMeans with the sklearn package. The function with parameters relevant to us is
 
-As the input of the Gaussian Mixture Model we use data points of the form \texttt{[a, u, d, k1, k2, w1, w2]}, where \texttt{a, u, ..., w2} are the parameters of the approximation from chapter~\ref{chapter:approximating}. As our goal is to separate data points from the four data sets mouse cells and human cells each with a negative and a positive control, we use all particles as input. The pseudo code below describes the steps performed to reach a clustering of the data.
+\noindent
+\texttt{sklearn.mixture.GaussianMixture(n\_components, covariance\_type, n\_init)} and
+
+\noindent
+\texttt{sklearn.cluster.KMeans(n\_clusters, n\_init)}. The number of components
+
+\noindent
+\texttt{n\_components} or \texttt{n\_clusters} can be any positive integer. The \texttt{covariance\_type} can be one of \texttt{‘full’, ‘tied’, ‘diag’} or \texttt{‘spherical’} and describes what type of covariance matrix is used. The parameter \texttt{n\_init} lets the algorithm run multiple times and returns the parameters of the best clustering achieved.
+
+As the input of the clustering we use data points of the form \texttt{[a, u, d, k1, k2, w1, w2]}, where \texttt{a, u, ..., w2} are the parameters of the approximation from chapter~\ref{chapter:approximating}. As our goal is to separate data points from the four data sets mouse cells and human cells each with a negative and a positive control, we use all particles as input. The pseudo code below describes the steps performed to reach a clustering of the data.
 
 \begin{algorithm}[H] \label{alg:separate}
 	\SetAlgoLined
@@ -64,15 +127,15 @@ As the input of the Gaussian Mixture Model we use data points of the form \textt
 	\caption{Separate}
 	
 	\Input{parameters of the approximations of all particles in all data sets}
-	\Output{assignments to different clusters for each particle, means and standard deviation of each cluster}
+	\Output{assignments to different clusters for each particle, parameters specifying each cluster}
 	
 	\BlankLine
 	\Begin{
-		initialize Gaussian Mixture by specifying \texttt{n\_components} and \texttt{covariance\_type}\;
-		apply Gaussian Mixture to matrix of all parameters of the approximations of all particle data sets\;
-		assign particles to clusters according to Gaussian Mixture results\;
-		compare asignments from Gaussian Mixture to those of the data set the data stems from\;
-		\Return{assignments to clusters, means and standard deviations of every cluster}
+		initialize Gaussian Mixture or KMeans by specifying the number of components and \texttt{covariance\_type} for Gaussian Mixture\;
+		apply clustering method to matrix of all parameters of the approximations of all particle data sets\;
+		assign particles to clusters according to clustering results\;
+		compare asignments from clustering to those of the data set the data stems from\;
+		\Return{assignments to clusters, parameters specifying every cluster}
 	}
 \end{algorithm}
 \vspace{1cm}
@@ -88,144 +151,50 @@ When comparing different covariance types in the Gaussian Mixture we see that us
 		\texttt{diag}: $7.17\%$ & \texttt{spherical}: $31.52\%$ \\
 		\hline
 	\end{tabular}
-	\label{tab:covariance_type_comparison}
 	\caption{Error as a percentage of particles being assigned the wrong component.}
+	\label{tab:covariance_type_comparison}
 \end{table}
 
-Using a diagonal covariance matrix we can now try to separate the four data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}. The results can be seen in figure~\ref{fig:vis_output_seperate}.
+Using a diagonal covariance matrix we can now try to separate the data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}.
+
+Choosing good axis for visualizing high dimensional data is tricky. One approach for minimizing the data lost by the lower dimensional representation is called Principal Component Analysis. Axis are specifically chosen to maximize variance along those axes, which we assume corresponds to information displayed along the axis. The drawback is that the new axis can are more difficult to intuitively understand. The results can be seen in figure~\ref{fig:vis_output_seperate_human_gaussian_mixture}, figure~\ref{fig:vis_output_seperate_human_kmeans}, figure~\ref{fig:vis_output_seperate_mouse_gaussian_mixture} and~\ref{fig:vis_output_seperate_mouse_kmeans}.
 
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_u}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_d}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_k1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_k2}
-	\end{subfigure}
+	\includegraphics[width=\textwidth]{fig/separate_human_gaussian_mixture}
 	
-	\caption{Visualization of the clustered data points. Each pair of images depicts the clustering according to positive and negative control on either humans of mouse t cells in the upper image and the clustering according to the algorithm proposed in the lower image.}
-\label{fig:vis_output_seperate1}
+	\caption{Visualization of the clustered data points. The left image depicts the clustering according to positive and negative control on humans t cells. The right image shows the clustering according to Gaussian Mixture.}
+	\label{fig:vis_output_seperate_human_gaussian_mixture}
 \end{figure}
 	
+	
 \begin{figure}
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_w1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_a_w2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_u_d}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_u_k1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_u_k2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_u_w1}
-	\end{subfigure}
-	\caption{Continuation of the visualization of the clustering results.}
-\label{fig:vis_output_seperate2}
+	\centering
+	\includegraphics[width=\textwidth]{fig/separate_human_kmeans}
+	
+	\caption{Visualization of the clustered data points. The left image depicts the clustering according to positive and negative control on humans t cells. The right image shows the clustering according to KMeans.}
+	\label{fig:vis_output_seperate_human_kmeans}
 \end{figure}
 
 \begin{figure}
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_u_w2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_d_k1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_d_k2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_d_w1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_d_w2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k1_k2}
-	\end{subfigure}
-	\caption{Continuation of the visualization of the clustering results.}
-\label{fig:vis_output_seperate3}
+	\centering
+	\includegraphics[width=\textwidth]{fig/separate_mouse_gaussian_mixture}
+	
+	\caption{Visualization of the clustered data points. The left image depicts the clustering according to positive and negative control on mouse t cells. The right image shows the clustering according to Gaussian Mixture.}
+	\label{fig:vis_output_seperate_mouse_gaussian_mixture}
 \end{figure}
+
 
 \begin{figure}
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k1_w1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k1_w2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k2_w1}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_k2_w2}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.49\textwidth}
-		\includegraphics[width=\textwidth]{fig/seperate_w1_w2}
-	\end{subfigure}
+	\centering
+	\includegraphics[width=\textwidth]{fig/separate_mouse_kmeans}
 	
-	\caption{Continuation of the visualization of the clustering results.}
-	\label{fig:vis_output_seperate4}
+	\caption{Visualization of the clustered data points. The left image depicts the clustering according to positive and negative control on mouse t cells. The right image shows the clustering according to KMeans.}
+	\label{fig:vis_output_seperate_mouse_kmeans}
 \end{figure}
 
-By comparing which data points are from which data set and where they were assigned by the Gaussian Mixture we can find an assignment between the two.
+By comparing which data points are from which data set and where they were assigned by the clustering method we can find an assignment between the two.
 
-\newpage
+The relevant information derived from the Gaussian Mixture clustering is the means and covariances of the four components. For KMeans clustering the means of the components are relevant. In both cases we can decide which cluster a new data point belongs to from this information. A use case might be to find percentages of activated cells in an experiment. Distinguishing between mouse and human cells does not have a clear use case. When specifying \texttt{n\_components=2} we assume to have a cluster for activated and a second for unactivated cells.
 
-The relevant information derived from the Gaussian Mixture clustering is the means and covariances of the four components. From this we can decide which cluster a new data point belongs to. A use case might be to find percentages of activated cells in an experiment. Distinguishing between mouse and human cells does not have a clear use case. When specifying \texttt{n\_components=2} we assume to have a cluster for activated and a second for unactivated cells.
-
-Using the order of parameters $a, u, d, k_1, k_2, w_1$ and $w_2$ we get the mean and covariances for each of the data sets used in this work as 
-
-\begin{align*}
-	\text{human positive} && w = 0.148 && \mu = \left(\begin{matrix}
-		2.429\\ 0.987\\ 1.703\\ 0.363\\	-0.275\\ 292.798\\ 587.26
-	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
-		0.541\\ 0.245\\ 0.276\\ 0.395\\	0.131\\ 37561.179\\ 74216.954
-	\end{matrix}\right),\\
-	\text{human negative} && w = 0.278 && \mu = \left(\begin{matrix}
-		0.735\\ 0.586\\ 0.612\\ 0.83\\ -0.267\\ 179.044\\ 491.68
-	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
-		0.061\\ 0.029\\ 0.032\\ 1.347\\	0.144\\ 24314.336\\ 59213.616
-	\end{matrix}\right),\\
-	\text{mouse positive} && w = 0.346 && \mu = \left(\begin{matrix}
-		3.111\\ 0.818\\ 1.676\\ 0.067\\ -0.038\\ 287.576\\ 480.405
-	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
-		0.478\\ 0.016\\ 0.128\\ 0.0005\\ 0.0006\\ 7147.489\\ 10182.191
-	\end{matrix}\right),\\
-	\text{mouse negative} && w = 0.228 && \mu = \left(\begin{matrix}
-		0.842\\ 0.762\\ 0.78\\ 1.335\\ -0.037\\ 56.052\\  285.085
-	\end{matrix}\right) && \Sigma = diag\left(\begin{matrix}
-	0.004\\ 0.002\\ 0.001\\ 1.513\\	0.002\\ 1149.598\\ 29471.53
-	\end{matrix}\right).	
-\end{align*}
-
-When comparing these results to those of the average and standard deviation analysis done in table~\ref{tab:statistics_parameters} we can see similarities. However in comparison, to the approach focusing on outlier detection in section~\ref{sec:analysis_of_approximation} we now have an approach that is not only not dependent on parameters specified by a user, but can also be applied to a greater set of problems. A proposed way of answering the research questions from chapter~\ref{chapter:introduction} using these methods is described in chapter~\ref{chapter:results}.
+In comparison, to the approach focusing on outlier detection in section~\ref{sec:analysis_of_approximation} we now have an approach that is not only not dependent on parameters specified by a user, but can also be applied to a greater set of problems. A proposed way of answering the research questions from chapter~\ref{chapter:introduction} using these methods is described in chapter~\ref{chapter:results}.

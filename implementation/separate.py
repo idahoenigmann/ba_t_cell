@@ -27,8 +27,8 @@ def import_all_data(files):
         all_data.append(df2)
         weights.append(len(df2))
 
-    for i in range(len(all_data)):
-        all_data[i] = all_data[i].sample(min(weights))
+    # for i in range(len(all_data)):
+    #     all_data[i] = all_data[i].sample(min(weights))
 
     all_data = pd.concat(all_data)
 
@@ -109,9 +109,9 @@ if __name__ == "__main__":
 
     # clustering
     if CLUSTERING_METHOD == "gaussian_mixture":
-        clustering = GaussianMixture(n_components=2, covariance_type="diag", n_init=10)
+        clustering = GaussianMixture(n_components=N_COMPONENTS, covariance_type="diag", n_init=10)
     elif CLUSTERING_METHOD == "kmeans":
-        clustering = KMeans(n_clusters=2, n_init=10)
+        clustering = KMeans(n_clusters=N_COMPONENTS, n_init=10)
     data["predicted_clusters"] = clustering.fit_predict(whiten(data[prediction_parameters]))
 
     res = range(N_COMPONENTS)

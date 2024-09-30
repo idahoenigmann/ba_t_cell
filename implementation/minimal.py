@@ -1,12 +1,10 @@
 import math
 import scipy
 import numpy as np
-import pandas
+import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-import pandas as pd
-import random
 
 
 def approximate(dataframe):
@@ -72,7 +70,7 @@ def approximate(dataframe):
 
 
 def approximation_loop(file_name):
-    data = pandas.DataFrame(pd.read_hdf(f"../data/{file_name}"))
+    data = pd.DataFrame(pd.read_hdf(f"../data/{file_name}"))
 
     # filter data
     data = data[np.isfinite(data["ratio"])]
@@ -99,7 +97,15 @@ def approximation_loop(file_name):
         except Exception as e:
             print(f"error in particle {particle_idx}: {e}")
 
-    return all_parameters
+    return pd.DataFrame(all_parameters, columns=parameters_saved)
+
+
+def remove_outliers(data, width, par_used):
+    for par in set(par_used):
+        mean, std = data[par].mean(), data[par].std()
+        data = data.drop(data[(data[par] <= mean - std * width) &
+                              (data[par] >= mean + std * width)].index)
+    return data
 
 
 def normalize(neg_df, pos_df, exp_df, normalized_columns):
@@ -151,25 +157,28 @@ def separate(neg_df, pos_df, prediction_parameters, clustering_method):
 if __name__ == "__main__":
     FILE_NAME_NEG_CONTROL = "human_negative/human_negative.h5"
     FILE_NAME_POS_CONTROL = "human_positive/human_positive.h5"
-    FILE_NAME_EXPERIMENT = "human_positive/human_positive.h5"
+    FILE_NAME_EXPERIMENT = "human_negative/human_negative.h5"
 
-    neg_par = approximation_loop(FILE_NAME_NEG_CONTROL)
-    pos_par = approximation_loop(FILE_NAME_POS_CONTROL)
-    exp_par = approximation_loop(FILE_NAME_EXPERIMENT)
+    USED_COLUMNS = ["a", "u", "d", "k1", "k2", "w1", "w2"]
+    CLUSTERING_METHOD = "gaussian_mixture"   #"gaussian_mixture" or "kmeans"
 
-    all_columns = ["idx", "a", "u", "d", "k1", "k2", "w1", "w2"]
-    used_columns = ["a", "u", "d", "k1", "k2", "w1", "w2"]
-    neg_df = pandas.DataFrame(neg_par, columns=all_columns)
-    pos_df = pandas.DataFrame(pos_par, columns=all_columns)
-    exp_df = pandas.DataFrame(exp_par, columns=all_columns)
+    neg_df = approximation_loop(FILE_NAME_NEG_CONTROL)
+    pos_df = approximation_loop(FILE_NAME_POS_CONTROL)
+    exp_df = approximation_loop(FILE_NAME_EXPERIMENT)
 
-    neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, used_columns)
+    n = min(len(neg_df), len(pos_df))
+    neg_df, pos_df = neg_df.sample(n), pos_df.sample(n)
 
-    # filter out outliers
+    neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, USED_COLUMNS)
 
-    per, clustering = separate(neg_df, pos_df, used_columns, "kmeans")
+    neg_df = remove_outliers(neg_df, 3, USED_COLUMNS)
+    pos_df = remove_outliers(pos_df, 3, USED_COLUMNS)
+    exp_df = remove_outliers(exp_df, 3, USED_COLUMNS)
 
-    exp_df["predicted"] = clustering.predict(exp_df[used_columns])
+    per, clustering = separate(neg_df, pos_df, USED_COLUMNS,
+                               CLUSTERING_METHOD)
+
+    exp_df["predicted"] = clustering.predict(exp_df[USED_COLUMNS])
 
     print(f"positive: {len(exp_df[exp_df['predicted'] == per[1]])} / "
           f"{len(exp_df)}")
