@@ -68,12 +68,10 @@ def approximate(dataframe):
     d = d_u + u
     a = a_d + d
     t = calc_t(w1, k1)
-    return {"start": start, "end": end, 'w1': w1, 't': t, 'w2': w2,
-            'e': end, 'a': a, 'd': d, 'u': u, 'k1': k1, 'k2': k2}
+    return {"a": a, "u": u, "d": d, "k1": k1, "k2": k2, "w1": w1, "w2": w2}
 
 
 def approximation_loop(file_name):
-    # read data
     data = pandas.DataFrame(pd.read_hdf(f"../data/{file_name}"))
 
     # filter data
@@ -82,11 +80,9 @@ def approximation_loop(file_name):
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
 
     all_parameters = list()
-    parameters_saved = ["idx", "start", "end", 'w1', 't', 'w2',
-                        'a', 'd', 'u', 'k1', 'k2']
+    parameters_saved = ["idx", "a", "u", "d", "k1", "k2", "w1", "w2"]
 
     for particle_idx in set(data['particle']):
-        # get data of a single particle
         single_particle_data = (
             data.loc)[data['particle'] == particle_idx][['frame', 'ratio']]
 
@@ -106,64 +102,45 @@ def approximation_loop(file_name):
     return all_parameters
 
 
-def normalize(neg_par, pos_par, exp_par):
-    neg = pandas.DataFrame(neg_par,
-                           columns=["idx", "start", "end", 'w1', 't', 'w2',
-                                    'a', 'd', 'u', 'k1', 'k2'])
-    pos = pandas.DataFrame(pos_par,
-                           columns=["idx", "start", "end", 'w1', 't', 'w2',
-                                    'a', 'd', 'u', 'k1', 'k2'])
-    exp = pandas.DataFrame(exp_par,
-                           columns=["idx", "start", "end", 'w1', 't', 'w2',
-                                    'a', 'd', 'u', 'k1', 'k2'])
-    all_data = pd.concat([neg, pos, exp])
+def normalize(neg_df, pos_df, exp_df, normalized_columns):
+    all_data = pd.concat([neg_df, pos_df, exp_df])
 
     scaler = StandardScaler()
-    all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = (
-        scaler.fit_transform(
-            all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]]))
+    all_data[normalized_columns] = (scaler.fit_transform(
+        all_data[normalized_columns]))
 
-    neg = all_data[all_data["idx"].isin(neg["idx"])].values.tolist()
-    pos = all_data[all_data["idx"].isin(pos["idx"])].values.tolist()
-    exp = all_data[all_data["idx"].isin(exp["idx"])].values.tolist()
+    neg_df = all_data[all_data["idx"].isin(neg_df["idx"])]
+    pos_df = all_data[all_data["idx"].isin(pos_df["idx"])]
+    exp_df = all_data[all_data["idx"].isin(exp_df["idx"])]
 
-    return neg, pos, exp
+    return neg_df, pos_df, exp_df
 
 
-def separate(neg_par, pos_par, CLUSTERING_METHOD):
-    prediction_parameters = ["a", "u", "d", "k1", "k2", "w1", "w2"]
-
-    df_neg = pd.DataFrame(data=neg_par,
-                          columns=["idx", "start", "end", 'w1', 't', 'w2',
-                                   'a', 'd', 'u', 'k1', 'k2'])
-    df_pos = pd.DataFrame(data=pos_par,
-                          columns=["idx", "start", "end", 'w1', 't', 'w2',
-                                   'a', 'd', 'u', 'k1', 'k2'])
-    df_neg["activation"] = "negative"
-    df_pos["activation"] = "negative"
-    data = pd.concat([df_neg, df_pos])
+def separate(neg_df, pos_df, prediction_parameters, clustering_method):
+    neg_df["activation"] = "negative"
+    pos_df["activation"] = "positive"
+    data = pd.concat([neg_df, pos_df])
 
     # clustering
-    if CLUSTERING_METHOD == "gaussian_mixture":
+    if clustering_method == "gaussian_mixture":
         clustering = GaussianMixture(n_components=2, covariance_type="diag",
                                      n_init=10)
-    elif CLUSTERING_METHOD == "kmeans":
+    elif clustering_method == "kmeans":
         clustering = KMeans(n_clusters=2, n_init=10)
     else:
         raise RuntimeError(f"Value of CLUSTERING_METHOD set to "
-                           f"{CLUSTERING_METHOD}, which is not "
-                           f"one of [gaussian_mixture, kmeans].")
-    data["predicted_clusters"] = clustering.fit_predict(
-        data[prediction_parameters])
+                           f"{clustering_method}, which is not one of "
+                           f"[gaussian_mixture, kmeans].")
+    data["predicted"] = clustering.fit_predict(data[prediction_parameters])
 
     # find association between predicted clusters and files
-    neg_0 = len(data[(data['predicted_clusters'] == 0) &
+    neg_0 = len(data[(data['predicted'] == 0) &
                      (data['activation'] == "negative")])
-    neg_1 = len(data[(data['predicted_clusters'] == 1) &
+    neg_1 = len(data[(data['predicted'] == 1) &
                      (data['activation'] == "negative")])
-    pos_0 = len(data[(data['predicted_clusters'] == 0) &
+    pos_0 = len(data[(data['predicted'] == 0) &
                      (data['activation'] == "positive")])
-    pos_1 = len(data[(data['predicted_clusters'] == 1) &
+    pos_1 = len(data[(data['predicted'] == 1) &
                      (data['activation'] == "positive")])
 
     permutation = (0, 1) if neg_0 + pos_1 > neg_1 + pos_0 else (1, 0)
@@ -174,28 +151,27 @@ def separate(neg_par, pos_par, CLUSTERING_METHOD):
 if __name__ == "__main__":
     FILE_NAME_NEG_CONTROL = "human_negative/human_negative.h5"
     FILE_NAME_POS_CONTROL = "human_positive/human_positive.h5"
-    FILE_NAME_EXPERIMENT = "human_negative/human_negative.h5"
+    FILE_NAME_EXPERIMENT = "human_positive/human_positive.h5"
 
-    neg_con_par = approximation_loop(FILE_NAME_NEG_CONTROL)
-    pos_con_par = approximation_loop(FILE_NAME_POS_CONTROL)
-    experiment_par = approximation_loop(FILE_NAME_EXPERIMENT)
+    neg_par = approximation_loop(FILE_NAME_NEG_CONTROL)
+    pos_par = approximation_loop(FILE_NAME_POS_CONTROL)
+    exp_par = approximation_loop(FILE_NAME_EXPERIMENT)
 
-    neg_con_par, pos_con_par, experiment_par = normalize(neg_con_par,
-                                                         pos_con_par,
-                                                         experiment_par)
+    all_columns = ["idx", "a", "u", "d", "k1", "k2", "w1", "w2"]
+    used_columns = ["a", "u", "d", "k1", "k2", "w1", "w2"]
+    neg_df = pandas.DataFrame(neg_par, columns=all_columns)
+    pos_df = pandas.DataFrame(pos_par, columns=all_columns)
+    exp_df = pandas.DataFrame(exp_par, columns=all_columns)
+
+    neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, used_columns)
 
     # filter out outliers
 
-    n = min(len(neg_con_par), len(pos_con_par))
-    per, clustering = separate(random.sample(neg_con_par, n),
-                               random.sample(pos_con_par, n), "kmeans")
+    per, clustering = separate(neg_df, pos_df, used_columns, "kmeans")
 
-    df_exp = pd.DataFrame(data=experiment_par,
-                          columns=["idx", "start", "end", 'w1', 't', 'w2',
-                                   'a', 'd', 'u', 'k1', 'k2'])
-    df_exp["predicted_clusters"] = clustering.predict(df_exp[["a", "u", "d",
-                                                              "k1", "k2",
-                                                              "w1", "w2"]])
+    exp_df["predicted"] = clustering.predict(exp_df[used_columns])
 
-    print(f"positive: {len(df_exp[df_exp['predicted_clusters'] == per[0]])}"
-          f" / {len(df_exp)}")
+    print(f"positive: {len(exp_df[exp_df['predicted'] == per[1]])} / "
+          f"{len(exp_df)}")
+    print(f"negative: {len(exp_df[exp_df['predicted'] == per[0]])} / "
+          f"{len(exp_df)}")
