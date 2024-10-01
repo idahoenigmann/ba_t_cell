@@ -1,12 +1,44 @@
 \chapter{Introduction}
 \label{chapter:introduction}
 
-Research questions:
+As part of the bodies' defence against viruses t cells can undergo activation in their lifetime. Whether and when a t cell activates is an interesting topic when studying immunology. However, measuring activation is often done indirectly by using the correlation between calcium concentration within the cell and activation. Measuring the calcium concentration leads to a time series that can be analysed by experts for activation.
+
+This work aims to provide an algorithm for automatic detection of activation. By using approximation algorithms the time series is fitted with sigmoid functions. This reduces the data from hundreds of values in a time series to few parameters of the approximation function. Additionally, the parameters are chosen to be valuable for interpretation by experts. This parameter representation of the data is then filtered and used for clustering the data into activated and unactivated cells.
+
+The provided algorithm can be used on any data set provided a positive control and negative control is provided. The most simple use case of finding the number of activated cells in the data set is described in more detail.
+
+The proposed algorithm is tested with two of the most common types of t cells, human Jurkat cells and mouse 5c.c7 cells.
+
+\vspace*{0.7cm}
+\noindent
+The main question this work aims to answer is which criteria can distinguish between unactivated and activated cells. Additionally, a criterion for detecting cells which activated before the experiment began will be investigated.
+
+When only looking at activated cells some interesting questions are whether there are different types of activated cells and how they are different. A typical pattern observed in activated cells is that they show oscillations of the calcium concentration. Analysing the frequencies of these oscillations might be interesting.
+
+Lastly differences between mouse and human cells show whether the proposed algorithm is applicable to the two most common types of t cells studied.
+
+To summarize the questions are
 \begin{itemize}
 	\item Which criteria can distinguish between unactivated, activated and pre-activated cells?
 	\item Do different types of activated cells exists? How are they different?
 	\item With which frequencies does the Calcium concentration repeat after activation?
-	\item Is there a difference in frequencies between mouse and human cells?
+	\item Is there a difference between mouse and human cells?
 \end{itemize}
 
-% To better understand the mode of action of t cells, the calcium concentration of single cells are measured. The resulting time series can then be analyzed for activation. This work aims to provide an algorithm for automatic detection of activation. To achieve this, the calcium concentration is approximated with sigmoid functions reducing the data set to few parameters, making it easy to study.
+with the first question being the most relevant.
+
+\newpage
+\noindent
+This work starts with a chapter on optimization algorithms. In chapter~\ref{chapter:optimization} the relevant algorithm, Trust Region Reflective Algorithm, is attained from other algorithms, which are described as well.
+
+Following is chapter~\ref{chapter:t-cell} focusing on the biology of t cells. All relevant components of t cells for changes in calcium concentration are described. Their interconnections are described.
+
+Next chapter~\ref{chapter:data} describes the structure and experimental setup for retrieving the data. Some processing steps performed on the data are outlined.
+
+The main focus of this work, approximating the calcium concentration, are described in chapter~\ref{chapter:approximating}. Here the approximation function is inferred and described. Parameter descriptions are provided. Pseudocode for the approximation algorithms are given and described. The parameters found from the approximation of the data sets used in this work are analysed. Oscillations are approximated in this chapter as well.
+
+In chapter~\ref{chapter:clustering} the clustering algorithms Gaussian Mixture Model and KMeans are described and applied to the output of the approximation. Visual representation of the clustering is shown.
+
+Chapter~\ref{chapter:results} aims to answer the questions posed above by using the approximation and clustering described in the other chapters.
+
+A final discussion of the results provided in this work is provided in chapter~\ref{chapter:conclusion}. The outlook is featured here as well.

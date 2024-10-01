@@ -3,7 +3,7 @@
 
 If we have a look at the typical trajectory of the calcium concentration in activated and unactivated cells, shown in figure~\ref{fig:all_cells_overlayed}, we can see differences emerging. For one the maximum concentration value reached by most activated cells is higher. Another distinguishing feature is the presence of a steep incline at the moment of activation.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\textwidth]{fig/all_cells_overlayed_mouse_neg}
@@ -17,7 +17,9 @@ If we have a look at the typical trajectory of the calcium concentration in acti
 	\label{fig:all_cells_overlayed}
 \end{figure}
 
-By modelling the time series with a function incorporating features such as the increase, maximum value and oscillations present in the decrease afterwards, we can extract these features more easily. By doing this, using approximation methods from chapter~\ref{chapter:optimization}, we want to answer the research questions from the introduction.
+By modelling the time series with a function incorporating features such as the increase, maximum value and oscillations present in the decrease afterwards, we can extract these features more easily. By doing this, using approximation methods from chapter~\ref{chapter:optimization}, we hope to have an easier method to answer the questions from the introduction.
+
+\section{Approximation Function}
 
 From studying the data in the two control groups we find to expect a function close to
 \begin{align}
@@ -55,15 +57,15 @@ for activated cells. The parameters can be understood as described in table~\ref
 		$t$ ... & time point at which the increase ends, and the decrease starts, \\
 		\hline
 	\end{tabular}
-	\label{tab:parameters}
 	\caption{List of parameters and their interpretation.}
+	\label{tab:parameters}
 \end{table}
 
-Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell} look and how the relations to the parameters are in unactivated and activated cells.
+Figure~\ref{fig:typical_time_series_with_parameters} shows the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell}, and shows the relations to the parameters in unactivated and activated cells. The similarity between these functions and figure~\ref{fig:all_cells_overlayed} can be observed.
 
 % start = 50, u = 0.9, a = 4, k1 = 0.075, k2 = -0.04, w1 = 300, w2 = 520, t = 400, d = 2, z = 800
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 	  \begin{tikzpicture}
@@ -197,62 +199,19 @@ Figure~\ref{fig:typical_time_series_with_parameters} shows how the above functio
 	\label{fig:typical_time_series_with_parameters}
 \end{figure}
 
-For our model to make sense we have to impose some conditions onto the parameters. We expect $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$.
+For our model to make sense we have to impose some conditions onto the parameters. We expect
+
+\begin{align*}
+	0 \leq u \leq d \leq a, && w_1 \leq t \leq w_2, && k_1 > 0 && \text{and} && k_2 < 0.
+\end{align*}
 
 There are multiple ways in which the parameters of $f_{ac}$ can be chosen to get a function similar to $f_{unac}$. If $w_1$ is very large or $u \approx d \approx a$ then $f_{ac}$ approaches a constant value of $u$, thus approximating $f_{unac}$. If the approximation of a cell has parameters with $w_1$ very large or $u \approx d \approx a$ we can therefore expect it to be of an unactivated cell. Otherwise, it is more probable to be activated.
 
-\section{Implementation}
+\section{Implementation of the Approximation}
 
-Now that we have defined our model functions we will implement a routine that fits such a $f_{ac}$-function through the data of a cell.
+Now that we have defined our model functions we will implement a routine that fits such a $f_{ac}$-function through the data points of a particle recording.
 
-First we describe a routine which handles reading the data, some necessary preprocessing steps and saving of the resulting parameter lists. The approximation itself is wrapped in the function \texttt{particle\_to\_parameters}, which takes a (frame, ratio)-matrix and returns a parameter list.
-
-\begin{algorithm}[H] \label{alg:main}
-	\SetAlgoLined
-	\DontPrintSemicolon
-	\LinesNumbered
-	\SetKwInOut{Input}{input}
-	\SetKwInOut{Output}{output}
-	\caption{Main}
-	
-	\Output{parameter matrix}
-	
-	\BlankLine
-	\Begin{
-		read data\;
-		filter data\;
-		\For{each single particle}{
-			particle data := (frame, ratio) columns of this particle\;
-			\If{length of particle data is too short}{
-				skip\;
-			}
-			parameters := approximate(particle data)\;
-			show ratio data and approximation\;
-			save parameters\;
-		}
-	}
-\end{algorithm}
-\vspace{1cm}
-
-Filtering the data is necessary as the ratio can be very large if the denominator can be small. Values are therefore cropped to lie within $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors.
-
-The visualization of line 10 generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}.
-
-\begin{figure}
-	\centering
-	\begin{subfigure}{0.69\linewidth}
-		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_pos}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.69\linewidth}
-		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_neg}
-	\end{subfigure}
-	
-	\caption{The upper plot shows the data in black and approximation in orange of an activated cell. The first plot is scaled from 0 to 5, the second one is scaled to fit the data. The lower plot shows the same of an unactivated cell.}
-	\label{fig:particle_vis_sigmoid_approx}
-\end{figure}
-
-The above-mentioned approximation function is described in pseudocode below.
+First we give the pseudocode for approximating a single particles time series with the approximation function described above. It takes a (frame, ratio)-matrix of a single particle as input and returns the corresponding parameter list of the approximation.
 
 \begin{algorithm}[H] \label{alg:approximate}
 	\SetAlgoLined
@@ -263,7 +222,7 @@ The above-mentioned approximation function is described in pseudocode below.
 	\caption{Approximate}
 	
 	\Input{particle data as (frame, ratio) matrix}
-	\Output{parameters}
+	\Output{parameters describing the approximation}
 	
 	\BlankLine
 	\Begin{
@@ -271,12 +230,18 @@ The above-mentioned approximation function is described in pseudocode below.
 		set start values for parameters\;
 		use Trust Region Reflective Algorithm with boundaries and start values to get parameters\;
 		calculate corresponding approximation and add as fit\_sigmoid columns to data matrix\;
-		return paramters\;
+		\Return{parameters}\;
 	}
 \end{algorithm}
 \vspace{1cm}
 
-The parameters of $f_{ac}$ used in the approximation are not independent of each other if we choose $t$ to be the point at which $(a-u)/(1+e^{-k_1(x-w_1)})$ almost reaches the value $a$. We choose $t := w_1 - log(1/0.99-1) / k_1 = w_1 - log(1/99) / k_1$ as the function has had $99\%$ of the increase of the sigmoid curve up to this point.
+The parameters of $f_{ac}$ used in the approximation are not independent of each other as we want to choose $t$ to be the point at which the increasing part of the function, $(a-u)/(1+e^{-k_1(x-w_1)})$, almost reaches the value $a$. We choose
+
+\begin{align*}
+	t := w_1 - log(1/0.99-1) / k_1 = w_1 - log(1/99) / k_1
+\end{align*}
+
+as the function has had $99\%$ of the increase of the sigmoid curve up to this point.
 
 Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by changing the parameters to be relative to each other. As $u \leq d \leq a$ we choose to use the three parameters $u, d-u$ and $a-d$. We can then set the lower boundary to be $0$ which ensures
 
@@ -325,17 +290,69 @@ The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2
 		$w_2$ & start & 2 end - 2 start & (start + end)/2\\
 		\hline
 	\end{tabular}
-	\label{tab:boundaries_and_starting_vals}
 	\caption{Upper and lower bounds as well as starting value for each of the parameters. The boundaries and starting values of $d, a, w_1$ and $w_2$ are derived from the parameters used in the implementation of the approximation, shown above the double line.}
+	\label{tab:boundaries_and_starting_vals}
 \end{table}
 
 Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing the starting value of $w_1 - start$ as $0$, which corresponds to choosing $w_1 = start$, we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ will lie somewhere in the middle. Therefore we choose $(end - start)/2$ as the starting value for $w_2 - w_1$. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle. Experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
 
+Using algorithm~\ref{alg:approximate} we now describe a routine which handles reading the data, some necessary preprocessing steps and saving of the resulting parameter lists.
+
+\begin{algorithm}[H] \label{alg:main}
+	\SetAlgoLined
+	\DontPrintSemicolon
+	\LinesNumbered
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	\caption{Approximation Loop}
+	
+	\Input{file containing data matrix as described in section \ref{sec:structure_of_data}}
+	\Output{parameters of the approximation of all particles as a matrix}
+	
+	\BlankLine
+	\Begin{
+		read data\;
+		filter data\;
+		\For{each single particle}{
+			particle data := (frame, ratio) columns of this particle\;
+			\If{length of particle data is too short}{
+				skip\;
+			}
+			parameters := approximate(particle data)\;
+			optionally show ratio data and approximation\;
+			save parameters\;
+		}
+		\Return{matrix of all parameters}
+	}
+\end{algorithm}
+\vspace{1cm}
+
+Filtering the data is necessary as the ratio can be very large if the denominator is small. Values are therefore bounded to lie within the interval $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors. Values below 0 are definitely incorrect, as both the denominator and enumerator are measured as the brightness of a pixel, which can not be negative.
+
+The visualization in line 10 of algorithm~\ref{alg:main} generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_pos}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_neg}
+	\end{subfigure}
+	
+	\caption{The left plot shows the data in black and approximation in orange of an activated cell. The first plot is scaled from 0 to 5, the second one is scaled to fit the data. The right plot shows the same of an unactivated cell.}
+	\label{fig:particle_vis_sigmoid_approx}
+\end{figure}
+
+
 This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(function, xdata, ydata, p0=starting\_values, method='trf', bounds=(lower\_bounds, upper\_bounds))} as it provides all the necessary functionality. The method parameter \texttt{trf} stands for Trust Region Reflective, as described in section~\ref{subsec:algorithms_bounded_lsp}.
 
+\newpage
 \section{Analysis of the Approximation}
+\label{sec:analysis_of_approximation}
 
-We now give data on the parameters found from the above approximation. Some statistics are found in table~\ref{tab:statistics_parameters}. Figure~\ref{fig:parameter_violin_plot} shows the distribution of the resulting parameters of the approximation. From the figure it seems the differences between activated and unactivated cells is biggest in the parameters activated value $a$ and decreased value $d$ and the steepness of increase $k_1$.
+We now give data on the parameters found from the above approximation. Some statistics are found in table~\ref{tab:statistics_parameters}. Figure~\ref{fig:parameter_violin_plot} shows the distribution of the resulting parameters of the approximation. From the figure it seems the differences between activated and unactivated cells is biggest in the parameters activated value $a$, decreased value $d$ as well as the steepness of increase $k_1$.
 
 \begin{table}[h!]
 	\centering
@@ -345,40 +362,40 @@ We now give data on the parameters found from the above approximation. Some stat
 		\hline
 		& Parameter & Average & Standard Deviation & Average & Standard Deviation & Difference \\ 
 		\hline
-		\multirow{7}{*}{\rotatebox[origin=c]{90}{human cells}} & $u$ & 0.663 & 0.521 & 0.613 & 0.311 & 0.05\\
+		\multirow{7}{*}{\rotatebox[origin=c]{90}{human cells}} & $a$ & 2.808 & 0.461 & 0.923 & 0.669 & 1.885\\
 		\cline{2-7}
-		& $a$ & 2.808 & 0.461 & 0.923 & 0.669 & 1.885\\
+		& $u$ & 0.663 & 0.521 & 0.613 & 0.311 & 0.05\\
 		\cline{2-7}
 		& $d$ & 1.937 & 0.491 & 0.685 & 0.412 & 1.252\\
-		\cline{2-7}
-		& $w_1$ & 142.228 & 124.012 & 171.062 & 131.563 & -28.834 \\
-		\cline{2-7}
-		& $w_2$ & 445.386 & 185.971 & 478.843 & 190.792 & -33.457 \\
 		\cline{2-7}
 		& $k_1$ & 0.263 & 0.428 & 0.524 & 0.963 & -0.261 \\
 		\cline{2-7}
 		& $k_2$ & -0.059 & 0.164 & -0.163 & 0.292 & 0.104 \\
-		\hline
-		\multirow{7}{*}{\rotatebox[origin=c]{90}{mouse cells}} & $u$ & 0.889 & 0.27 & 0.79 & 0.093 & 0.099 \\
 		\cline{2-7}
-		& $a$ & 2.9 & 0.907 & 0.876 & 0.186 & 2.024 \\
+		& $w_1$ & 142.228 & 124.012 & 171.062 & 131.563 & -28.834 \\
+		\cline{2-7}
+		& $w_2$ & 445.386 & 185.971 & 478.843 & 190.792 & -33.457 \\
+		\hline
+		\multirow{7}{*}{\rotatebox[origin=c]{90}{mouse cells}} & $a$ & 2.9 & 0.907 & 0.876 & 0.186 & 2.024 \\
+		\cline{2-7}
+		& $u$ & 0.889 & 0.27 & 0.79 & 0.093 & 0.099 \\
 		\cline{2-7}
 		& $d$ & 1.749 & 0.407 & 0.804 & 0.129 & 0.945 \\
-		\cline{2-7}
-		& $w_1$ & 295.809 & 77.207 & 100.712 & 112.352 & 195.097 \\
-		\cline{2-7}
-		& $w_2$ & 469.952 & 105.375 & 304.283 & 179.834 & 165.669 \\
 		\cline{2-7}
 		& $k_1$ & 0.15 & 0.409 & 1.161 & 1.235 & -1.011 \\
 		\cline{2-7}
 		& $k_2$ & -0.1 & 0.195 & -0.133 & 0.267 & 0.033 \\
+		\cline{2-7}
+		& $w_1$ & 295.809 & 77.207 & 100.712 & 112.352 & 195.097 \\
+		\cline{2-7}
+		& $w_2$ & 469.952 & 105.375 & 304.283 & 179.834 & 165.669 \\
 		\hline
 	\end{tabular}
-	\label{tab:statistics_parameters}
 	\caption{Statistics of the parameters retrieved from approximating the human cell data.}
+	\label{tab:statistics_parameters}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\textwidth]{fig/parameter_violin_plot_human_pos}
@@ -394,15 +411,42 @@ We now give data on the parameters found from the above approximation. Some stat
 
 As the datasets are not perfectly labelled, meaning there are activated cells in the negative control and vice versa, we have relatively high standard deviation.
 
-[TODO discuss outliers + analysis done to derive outliers]
+We can use the mean and standard deviation of each of the parameters to find data points that can be considered outliers. We expect wrongly-labelled data, e.g. activated cells in the negative control, to be an outlier in the parameters $a$ and $d$. However, activated cells in the positive control might have a decreased value $d$ that is very low, around $u$. This makes it difficult to distinguish activated from unactivated cells when looking at the parameter $d$. Therefore, we choose $a$ as the only parameter when filtering for these kinds of outliers.
+
+A particle from the positive control dataset that has a value in parameter $a$ higher than the median should still be classified as activated. Only a value lower than some threshold indicates an unactivated cell. The same holds for values of $a$ lower than the median in the negative control dataset. In short, we want to filter out particles with a high value of $a$ in the negative control and those with a low value of $a$ in the positive control dataset. The question of how to choose the threshold will be discussed next.
+
+As we do not have information on what percentage of cells behaved correctly in the positive and negative control we do not have enough information to choose threshold values without guessing. Instead, we can manipulate the threshold as a multiple of the standard deviation until we filter out incorrectly labelled data, but would filter out correctly labelled data points if we increase the value. This trial and error approach led to different values for each of the four control datasets, which can be seen in table~\ref{tab:threshold_outlier}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		dataset & lower bound & upper bound \\
+		\hline
+		human positive & mean $ - 3$ std $ = 1.582$ & $\infty$ \\
+		\hline
+		human negative & $-\infty$ & mean $ + 0.5$ std $ = 1.306$ \\
+		\hline
+		mouse positive & mean $ - 2$ std $ = 1.41$ & $\infty$ \\
+		\hline
+		mouse negative & $-\infty$ & mean $ + 3$ std $ = 1.445$ \\
+		\hline
+	\end{tabular}
+	\caption{Thresholds in outlier detection in the different datasets.}
+	\label{tab:threshold_outlier}
+\end{table}
+
+Naturally we can use the same outlier detection with different parameters to find particles where the approximation failed to yield a good result.
+
+These results will be used in section~\ref{sec:proposed-algorithm} to remove wrongly-labelled data from the datasets.
 
 \section{Adding Oscillation in the Decrease}
 
-In order to answer the research questions concerned with the oscillations happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fourier Transformation.
+In order to answer the questions from chapter~\ref{chapter:introduction} concerned with the oscillations  happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fourier Transformation.
 
-Many applications are concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
+Fourier Transformation is used when an application is concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	
 	\begin{subfigure}[b]{\textwidth}
@@ -427,7 +471,7 @@ As the function of sound waves or oscillations in the \Calcium concentration in 
 
 As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can then filter out the 10 frequencies with the highest amplitudes and use them to further analyse the oscillations. This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{fig/particle_vis_fft_approx_pos}
 	

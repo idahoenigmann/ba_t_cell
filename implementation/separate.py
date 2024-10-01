@@ -1,13 +1,21 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas
+import sklearn.cluster
 from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
+from scipy.cluster.vq import kmeans, whiten
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 import pandas as pd
+import itertools
 
 
-def import_all_data():
+def import_all_data(files):
     all_data = []
-    for file in ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]:
+    weights = []
+    for file in files:
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
             header = header.translate({ord(c): None for c in '# \n'}).split(',')
@@ -15,8 +23,19 @@ def import_all_data():
                            columns=header)
         df2["file"] = file
         df2["activation"] = "positive" if file in ["human_positive", "mouse_positive"] else "negative"
+        df2["cell_type"] = "human" if file in ["human_positive", "human_negative"] else "mouse"
         all_data.append(df2)
-    return pd.concat(all_data)
+        weights.append(len(df2))
+
+    # for i in range(len(all_data)):
+    #     all_data[i] = all_data[i].sample(min(weights))
+
+    all_data = pd.concat(all_data)
+
+    scaler = StandardScaler()
+    all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = scaler.fit_transform(all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]])
+
+    return all_data
 
 
 def index_term_to_data(data, term):
@@ -41,7 +60,7 @@ def index_term_to_data(data, term):
 
 
 def visualize_2d_compare(data, x_axis, y_axis):
-    fig, ax = plt.subplots(2)
+    fig, ax = plt.subplots(1, 2)
 
     for i, filtered in [[0, "file"], [1, "predicted_clusters"]]:
         for f in set(data[filtered]):
@@ -50,6 +69,9 @@ def visualize_2d_compare(data, x_axis, y_axis):
         ax[i].set_xlabel(x_axis)
         ax[i].set_ylabel(y_axis)
         ax[i].legend()
+        ax[i].xaxis.label.set_size(12)
+        ax[i].yaxis.label.set_size(12)
+        ax[i].tick_params(axis='both', labelsize=12)
     plt.show()
 
 
@@ -75,31 +97,70 @@ if __name__ == "__main__":
     cluster the data
     """
 
-    data = import_all_data()
+    N_COMPONENTS = 2
+    CLUSTERING_METHOD = "kmeans"    # "gaussian_mixture
+    # files = ["mouse_positive", "mouse_negative"]
+    files = ["human_positive", "human_negative"]
+    # files = ["human_positive", "human_negative", "mouse_positive", "mouse_negative"]
+
+    data = import_all_data(files)
     dim = 2
-    tmp = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
+    prediction_parameters = ["a", "u", "d", "k1", "k2", "w1", "w2"]   # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
-    gm = GaussianMixture(n_components=2, covariance_type="diag")
-    gm.fit(data[tmp])
+    # clustering
+    if CLUSTERING_METHOD == "gaussian_mixture":
+        clustering = GaussianMixture(n_components=N_COMPONENTS, covariance_type="diag", n_init=10)
+    elif CLUSTERING_METHOD == "kmeans":
+        clustering = KMeans(n_clusters=N_COMPONENTS, n_init=10)
+    data["predicted_clusters"] = clustering.fit_predict(whiten(data[prediction_parameters]))
 
-    for i in range(dim):
-        print(f"weigh: {gm.weights_[0]}")
-        print(f"mean: {gm.means_[0]}")
-        print(f"covariance: {gm.covariances_[0]}")
-        print()
+    res = range(N_COMPONENTS)
+    # find association between predicted clusters and files
+    if N_COMPONENTS == len(files):
+        assign_matrix = np.zeros([len(files), N_COMPONENTS])
+        for i in range(N_COMPONENTS):
+            for f_idx in range(len(files)):
+                assign_matrix[f_idx, i] = len(data[(data['predicted_clusters'] == i) & (data['file'] == files[f_idx])])
+                print(f"{i} + {files[f_idx]}: {assign_matrix[f_idx, i]}")
+            print()
 
-    data["predicted_clusters"] = gm.predict(data[tmp])
-    print(f"0 + positive: {len(data[(data['predicted_clusters'] == 0) & (data['activation'] == 'positive')])}")
-    print(f"1 + positive: {len(data[(data['predicted_clusters'] == 1) & (data['activation'] == 'positive')])}")
-    print(f"0 + negative: {len(data[(data['predicted_clusters'] == 0) & (data['activation'] == 'negative')])}")
-    print(f"1 + negative: {len(data[(data['predicted_clusters'] == 1) & (data['activation'] == 'negative')])}")
+        res_sum = 0
+        for per in itertools.permutations(range(len(files))):
+            tmp_sum = 0
+            for i in range(len(per)):
+                tmp_sum += assign_matrix[per[i], i]
+            if tmp_sum > res_sum:
+                res = per
+                res_sum = tmp_sum
 
+        # print out means and std
+        for i in range(len(files)):
+            print(files[res[i]])
+            if CLUSTERING_METHOD == "gaussian_mixture":
+                print(f"weigh: {clustering.weights_[i]}")
+                print(f"mean: {clustering.means_[i]}")
+                print(f"covariance: {clustering.covariances_[i]}")
+            elif CLUSTERING_METHOD == "kmeans":
+                print(f"centre: {clustering.cluster_centers_[i]}")
+            print()
+
+    # do pca for visualization in 2d
+    pca = PCA(n_components=2, whiten=True)
+    pca.fit(data[prediction_parameters])
+
+    new_data = pandas.DataFrame(pca.transform(data[prediction_parameters]), columns=["PCA1", "PCA2"], index=data[prediction_parameters].index)
+    new_data["file"] = data["file"]
+    new_data["predicted_clusters"] = data["predicted_clusters"]
+
+    visualize_2d_compare(new_data, "PCA1", "PCA2")
+
+    # visualization in all parameters
     if dim == 2:
-        for x in range(len(tmp)):
-            for y in range(x + 1, len(tmp)):
-                visualize_2d_compare(data, tmp[x], tmp[y])
+        for x in range(len(prediction_parameters)):
+            for y in range(x + 1, len(prediction_parameters)):
+                visualize_2d_compare(data, prediction_parameters[x], prediction_parameters[y])
     elif dim == 3:
-        for x in range(len(tmp)):
-            for y in range(x + 1, len(tmp)):
-                for z in range(y + 1, len(tmp)):
-                    visualize_3d_compare(data, tmp[x], tmp[y], tmp[z])
+        for x in range(len(prediction_parameters)):
+            for y in range(x + 1, len(prediction_parameters)):
+                for z in range(y + 1, len(prediction_parameters)):
+                    visualize_3d_compare(data, prediction_parameters[x], prediction_parameters[y], prediction_parameters[z])

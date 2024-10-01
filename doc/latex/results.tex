@@ -1,2 +1,39 @@
 \chapter{Results}
 \label{chapter:results}
+
+\section{Proposed algorithm for Detecting Activated T Cells}
+\label{sec:proposed-algorithm}
+
+Question: Which criteria can distinguish between unactivated, activated and pre-activated cells?
+
+Answer for activated and unactivated cells:
+
+\begin{enumerate}
+	\item get positive control, negative control and experiment recordings
+	\item get parameters of each particle in all data sets using approximation described above
+	\item use outlier detection to filter out non-conforming cells form both the positive and negative control
+	\item use Gaussian Mixture Model with input parameters of filtered negative and positive control to get means and covariances of two clusters
+	\item predict the zugehörigkeit of the experiment particle parameters to the clusters to get a prediction of activation
+\end{enumerate}
+
+For pre-activated cell detection:
+
+Filter out those with too high $u$ or to small $w_1$ using the outlier detection.
+
+\section{Types of Activated Cells}
+
+Question: Do different types of activated cells exists? How are they different?
+
+Answer: Apply Gaussian Mixture Clustering to activated cells only. (Separate human and mouse cells, otherwise two clusters of eben das)
+
+\section{Oscillation in Decrease}
+
+Question: With which frequencies does the Calcium concentration repeat after activation?
+
+Answer: Results from frequency analysis
+
+\section{Difference between Mouse and Human Cells}
+
+Question: Is there a difference in frequencies between mouse and human cells?
+
+Answer: Compare mean and covariance between the two.

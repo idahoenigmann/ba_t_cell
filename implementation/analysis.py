@@ -105,7 +105,7 @@ def find_outlier(values: np.ndarray, width: list, par_indices: list, par_used: l
 def main(file, width, par_used):
     # matplotlib.use('TkAgg')
 
-    SAVE_PDF = True
+    SAVE_PDF = False
 
     # read parameters from file
     all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
@@ -165,6 +165,8 @@ def main(file, width, par_used):
     data = read_data(file)
 
     for particle_idx in list(set([item for sublist in outliers.values() for item in sublist])):
+        outlier_params = [key for key, val in outliers.items() if particle_idx in val]
+
         try:
             row_number = all_parameters[:, indices.index("idx")].tolist().index(particle_idx)
             w1 = all_parameters[row_number][indices.index("w1")]
@@ -178,9 +180,11 @@ def main(file, width, par_used):
             single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
             single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2,
                                                                                 a, d, u, k1, k2)
-            fig = visualize(single_particle_data, titel=f"particle {int(particle_idx)}", return_fig=True)
+            fig = visualize(single_particle_data, titel=f"particle {int(particle_idx)}: {str(outlier_params)}", return_fig=True)
             if SAVE_PDF:
                 pp.savefig(fig)
+            else:
+                plt.show()
             plt.close(fig)
 
         except RuntimeError as e:
@@ -197,7 +201,7 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("human_positive", [3, np.infty], ["a"])
+    main("human_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
     # main("human_negative", [np.infty, 0.5], ["a"])
     # main("mouse_positive", [2, np.infty], ["a"])
     # main("mouse_negative", [np.infty, 3], ["a"])
