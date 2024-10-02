@@ -201,7 +201,14 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    main("human_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    # filter out activated in neg control and unactivated in pos control
+    # main("human_positive", [3, np.infty], ["a"])
     # main("human_negative", [np.infty, 0.5], ["a"])
     # main("mouse_positive", [2, np.infty], ["a"])
     # main("mouse_negative", [np.infty, 3], ["a"])
+
+    # filter out all outliers
+    main("human_positive", [3, 3], ["a", "u", "d", "k1"])
+    main("human_negative", [3, 3], ["a", "u", "d", "k1"])
+    main("mouse_positive", [3, 3], ["a", "u", "d", "k1"])
+    main("mouse_negative", [3, 3], ["a", "u", "d", "k1"])
