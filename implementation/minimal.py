@@ -1,3 +1,4 @@
+import time
 import math
 import scipy
 import numpy as np
@@ -5,6 +6,15 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+
+
+def progress_bar(iterable, prefix=""):
+    start = time.time()
+    for i, item in enumerate(iterable):
+        yield item
+        print(f'\r{prefix}{i}/{len(iterable)}', end='', flush=True)
+    min, sec = divmod(time.time()-start, 60)
+    print(f"\r{prefix} took {int(min): 02}min {sec: 03.1f}s")
 
 
 def approximate(dataframe):
@@ -80,7 +90,8 @@ def approximation_loop(file_name):
     all_parameters = list()
     parameters_saved = ["idx", "a", "u", "d", "k1", "k2", "w1", "w2"]
 
-    for particle_idx in set(data['particle']):
+    for particle_idx in progress_bar(set(data['particle']),
+                                     f"approx {file_name}: "):
         single_particle_data = (
             data.loc)[data['particle'] == particle_idx][['frame', 'ratio']]
 
@@ -95,17 +106,9 @@ def approximation_loop(file_name):
             all_parameters.append([parameters[e] for e in parameters_saved])
 
         except Exception as e:
-            print(f"error in particle {particle_idx}: {e}")
+            print(f"\nerror in particle {particle_idx}: {e}")
 
     return pd.DataFrame(all_parameters, columns=parameters_saved)
-
-
-def remove_outliers(data, width, par_used):
-    for par in set(par_used):
-        mean, std = data[par].mean(), data[par].std()
-        data = data.drop(data[(data[par] <= mean - std * width) &
-                              (data[par] >= mean + std * width)].index)
-    return data
 
 
 def normalize(neg_df, pos_df, exp_df, normalized_columns):
@@ -120,6 +123,14 @@ def normalize(neg_df, pos_df, exp_df, normalized_columns):
     exp_df = all_data[all_data["idx"].isin(exp_df["idx"])]
 
     return neg_df, pos_df, exp_df
+
+
+def remove_outliers(data, width, par_used):
+    for par in set(par_used):
+        mean, std = data[par].mean(), data[par].std()
+        data = data.drop(data[(data[par] <= mean - std * width) &
+                              (data[par] >= mean + std * width)].index)
+    return data
 
 
 def separate(neg_df, pos_df, prediction_parameters, clustering_method):
@@ -162,6 +173,10 @@ if __name__ == "__main__":
     USED_COLUMNS = ["a", "u", "d", "k1", "k2", "w1", "w2"]
     CLUSTERING_METHOD = "gaussian_mixture"   # gaussian_mixture or kmeans
 
+    print(f"Using {CLUSTERING_METHOD} on files {FILE_NAME_NEG_CONTROL}, "
+          f"{FILE_NAME_POS_CONTROL} and {FILE_NAME_EXPERIMENT} with "
+          f"parameters {USED_COLUMNS}.\n")
+
     neg_df = approximation_loop(FILE_NAME_NEG_CONTROL)
     pos_df = approximation_loop(FILE_NAME_POS_CONTROL)
     exp_df = approximation_loop(FILE_NAME_EXPERIMENT)
@@ -187,7 +202,7 @@ if __name__ == "__main__":
     exp_act = len(exp_df[exp_df['predicted'] == per[1]])
     neg_len, pos_len, exp_len = len(neg_df), len(pos_df), len(exp_df)
 
-    print("file: activated     out of     percentage")
+    print("\nfile: activated     out of     percentage")
     print(f"neg:  {neg_act:<13} {neg_len:<10} {neg_act/neg_len * 100:.3f}")
     print(f"pos:  {pos_act:<13} {pos_len:<10} {pos_act/pos_len * 100:.3f}")
     print(f"exp:  {exp_act:<13} {exp_len:<10} {exp_act/exp_len * 100:.3f}")
