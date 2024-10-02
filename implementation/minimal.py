@@ -155,12 +155,12 @@ def separate(neg_df, pos_df, prediction_parameters, clustering_method):
 
 
 if __name__ == "__main__":
-    FILE_NAME_NEG_CONTROL = "human_negative/human_negative.h5"
-    FILE_NAME_POS_CONTROL = "human_positive/human_positive.h5"
-    FILE_NAME_EXPERIMENT = "human_negative/human_negative.h5"
+    FILE_NAME_NEG_CONTROL = "mouse_negative/mouse_negative.h5"
+    FILE_NAME_POS_CONTROL = "mouse_positive/mouse_positive.h5"
+    FILE_NAME_EXPERIMENT = "mouse_experiment/mouse_experiment.h5"
 
     USED_COLUMNS = ["a", "u", "d", "k1", "k2", "w1", "w2"]
-    CLUSTERING_METHOD = "gaussian_mixture"   #"gaussian_mixture" or "kmeans"
+    CLUSTERING_METHOD = "gaussian_mixture"   # gaussian_mixture or kmeans
 
     neg_df = approximation_loop(FILE_NAME_NEG_CONTROL)
     pos_df = approximation_loop(FILE_NAME_POS_CONTROL)
@@ -178,9 +178,16 @@ if __name__ == "__main__":
     per, clustering = separate(neg_df, pos_df, USED_COLUMNS,
                                CLUSTERING_METHOD)
 
+    neg_df["predicted"] = clustering.predict(neg_df[USED_COLUMNS])
+    pos_df["predicted"] = clustering.predict(pos_df[USED_COLUMNS])
     exp_df["predicted"] = clustering.predict(exp_df[USED_COLUMNS])
 
-    print(f"positive: {len(exp_df[exp_df['predicted'] == per[1]])} / "
-          f"{len(exp_df)}")
-    print(f"negative: {len(exp_df[exp_df['predicted'] == per[0]])} / "
-          f"{len(exp_df)}")
+    neg_act = len(neg_df[neg_df['predicted'] == per[1]])
+    pos_act = len(pos_df[pos_df['predicted'] == per[1]])
+    exp_act = len(exp_df[exp_df['predicted'] == per[1]])
+    neg_len, pos_len, exp_len = len(neg_df), len(pos_df), len(exp_df)
+
+    print("file: activated     out of     percentage")
+    print(f"neg:  {neg_act:<13} {neg_len:<10} {neg_act/neg_len * 100:.3f}")
+    print(f"pos:  {pos_act:<13} {pos_len:<10} {pos_act/pos_len * 100:.3f}")
+    print(f"exp:  {exp_act:<13} {exp_len:<10} {exp_act/exp_len * 100:.3f}")

@@ -102,7 +102,7 @@ def find_outlier(values: np.ndarray, width: list, par_indices: list, par_used: l
     return outliers
 
 
-def main(file, width, par_used):
+def main(file, width, par_used, ignore_file=True):
     # matplotlib.use('TkAgg')
 
     SAVE_PDF = False
@@ -193,8 +193,9 @@ def main(file, width, par_used):
     if SAVE_PDF:
         pp.close()
 
-    ignore = [list(out)[e] for out in outliers.values() for e in range(len(out))]
-    np.savetxt(f"intermediate/ignore_{file}.csv", list(set(ignore)))
+    if ignore_file:
+        ignore = [list(out)[e] for out in outliers.values() for e in range(len(out))]
+        np.savetxt(f"intermediate/ignore_{file}.csv", list(set(ignore)))
 
 
 if __name__ == '__main__':
@@ -202,13 +203,22 @@ if __name__ == '__main__':
     statistical analysis of parameters, plots and prints information
     """
     # filter out activated in neg control and unactivated in pos control
-    # main("human_positive", [3, np.infty], ["a"])
-    # main("human_negative", [np.infty, 0.5], ["a"])
-    # main("mouse_positive", [2, np.infty], ["a"])
-    # main("mouse_negative", [np.infty, 3], ["a"])
+    """
+    main("human_positive", [3, np.infty], ["a"])
+    main("human_negative", [np.infty, 0.5], ["a"])
+    main("mouse_positive", [2, np.infty], ["a"])
+    main("mouse_negative", [np.infty, 3], ["a"])
+    """
 
     # filter out all outliers
+    """
     main("human_positive", [3, 3], ["a", "u", "d", "k1"])
     main("human_negative", [3, 3], ["a", "u", "d", "k1"])
     main("mouse_positive", [3, 3], ["a", "u", "d", "k1"])
     main("mouse_negative", [3, 3], ["a", "u", "d", "k1"])
+    main("mouse_experiment", [3, 3], ["a", "u", "d", "k1"], ignore_file=False)
+    """
+
+    # filter out pre-activated cells
+    # main("human_positive", [np.infty, 0.5], ["u"], ignore_file=False)
+    # main("mouse_positive", [np.infty, 1], ["u"], ignore_file=False)

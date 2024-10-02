@@ -2,10 +2,9 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas
-import sklearn.cluster
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
-from scipy.cluster.vq import kmeans, whiten
+from scipy.cluster.vq import whiten
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import pandas as pd
@@ -16,7 +15,10 @@ def import_all_data(files, normalize=True, equalize_weights=False):
     all_data = []
     weights = []
     for file in files:
-        ignore = np.loadtxt(f"intermediate/ignore_{file}.csv")
+        try:
+            ignore = np.loadtxt(f"intermediate/ignore_{file}.csv")
+        except FileNotFoundError:
+            ignore = []
 
         with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
             header = f_in.readline()
@@ -98,6 +100,8 @@ def visualize_3d_compare(data, x_axis, y_axis, z_axis):
 
 
 def main(n_components, clustering_method, files, normalize, equalize_weights, vis_individual):
+    print(f"{n_components} components on files {files} with {clustering_method}")
+
     data = import_all_data(files, normalize, equalize_weights)
     dim = 2
     prediction_parameters = ["a", "u", "d", "k1", "k2", "w1", "w2"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
@@ -172,10 +176,11 @@ if __name__ == "__main__":
     cluster the data
     """
 
-    main(2, "kmeans", ["human_positive", "human_negative"], True, True, False)
-    main(2, "gaussian_mixture", ["human_positive", "human_negative"], True, False, False)
+    # main(2, "kmeans", ["human_positive", "human_negative"], True, True, False)
+    # main(2, "gaussian_mixture", ["human_positive", "human_negative"], True, False, False)
 
-    main(2, "kmeans", ["mouse_positive", "mouse_negative"], True, True, False)
-    main(2, "gaussian_mixture", ["mouse_positive", "mouse_negative"], True, False, False)
+    # main(2, "kmeans", ["mouse_positive", "mouse_negative"], True, True, False)
+    # main(2, "gaussian_mixture", ["mouse_positive", "mouse_negative"], True, False, False)
 
-    main(4, "kmeans", ["mouse_positive"], True, False, True)
+    main(2, "kmeans", ["mouse_positive", "mouse_negative", "mouse_experiment"], True, False, True)
+    main(2, "gaussian_mixture", ["mouse_positive", "mouse_negative", "mouse_experiment"], True, False, True)

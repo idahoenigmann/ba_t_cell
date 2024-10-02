@@ -1,24 +1,31 @@
 \chapter{Results}
 \label{chapter:results}
 
+This chapter gives answers to the questions from chapter~\ref{chapter:introduction}. To answer the methods described in this work, such as approximation, clustering and outlier detection, are combined and used.
+
 \section{Proposed algorithm for Detecting Activated T Cells}
 \label{sec:proposed-algorithm}
 
-Question: Which criteria can distinguish between unactivated, activated and pre-activated cells?
+The first and most relevant question was ''Which criteria can distinguish between unactivated, activated and pre-activated cells?''.
 
-Answer for activated and unactivated cells:
+First we give a method for filtering the pre-activated cells from a dataset. From their nature we expect a high value in \Calcium concentration at the start of the recording. Using the approximation from chapter~\ref{chapter:approximating} it is easy to get the approximate \Calcium concentration value at the start of the recording, as it is the parameter $u$. Using the algorithm~\ref{alg:outlier_detection} with parameters threshold as $[\infty, 0.5]$ and parameters\_used as [$u$] gives good results. It returns the indices of particles, which are pre-activated in the data sets of the positive controls.
+
+After having filtered out pre-activated particles, we want to distinguish between unactivated and activated particles. For this we propose the following steps:
 
 \begin{enumerate}
 	\item get positive control, negative control and experiment recordings
-	\item get parameters of each particle in all data sets using approximation described above
-	\item use outlier detection to filter out non-conforming cells form both the positive and negative control
-	\item use Gaussian Mixture Model with input parameters of filtered negative and positive control to get means and covariances of two clusters
-	\item predict the zugehörigkeit of the experiment particle parameters to the clusters to get a prediction of activation
+	\item transform each particle time series of all three data sets to the parameter list by approximating it with a combination of sigmoid functions, according to chapter~\ref{chapter:approximating}, using the algorithm \ref{alg:main}
+	\item use outlier detection, which is described in algorithm~\ref{alg:outlier_detection}, to filter out non-conforming cells from both the positive and negative control, as well as pre-activated cells, and particles where the approximation yielded suboptimal results
+	\item use clustering method, as one described in chapter~\ref{chapter:clustering}, with parameters of filtered negative and positive control as input to get the clustering parameters
+	\item predict the membership of the experiment particle parameters to the clusters to get a prediction of activation
 \end{enumerate}
 
-For pre-activated cell detection:
+This algorithm is implemented in Python and shown in appendix~\ref{chapter:python_implementation}.
 
-Filter out those with too high $u$ or to small $w_1$ using the outlier detection.
+[TODO results of applying it to experiment data]
+
+The algorithm can be adapted by using different clustering methods, or specifying other methods of separating the particles based on the parameters derived.
+
 
 \section{Types of Activated Cells}
 
