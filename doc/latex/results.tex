@@ -29,9 +29,11 @@ The algorithm can be adapted by using different clustering methods, or specifyin
 
 \section{Types of Activated Cells}
 
-Question: Do different types of activated cells exists? How are they different?
+Now that we have an algorithm for detecting activated cells, we might ask whether there are different types of activated cells. The question formulated in chapter~\ref{chapter:introduction} is ''Do different types of activated cells exists? How are they different?''
 
-Answer: Apply Gaussian Mixture Clustering to activated cells only. (Separate human and mouse cells, otherwise two clusters of eben das)
+We find an answer by applying a clustering to the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. Interesting however is how they differ. Additionally, we might look at clustering performed on only one filtered positive control dataset.
+
+[TODO results of applying clustering to both pos controls and each one individually]
 
 \section{Oscillation in Decrease}
 
