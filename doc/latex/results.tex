@@ -15,23 +15,43 @@ After having filtered out pre-activated particles, we want to distinguish betwee
 \begin{enumerate}
 	\item get positive control, negative control and experiment recordings
 	\item transform each particle time series of all three data sets to the parameter list by approximating it with a combination of sigmoid functions, according to chapter~\ref{chapter:approximating}, using the algorithm \ref{alg:main}
+	\item normalize each of the parameters of all data sets
 	\item use outlier detection, which is described in algorithm~\ref{alg:outlier_detection}, to filter out non-conforming cells from both the positive and negative control, as well as pre-activated cells, and particles where the approximation yielded suboptimal results
-	\item use clustering method, as one described in chapter~\ref{chapter:clustering}, with parameters of filtered negative and positive control as input to get the clustering parameters
+	\item sample particles from the filtered positive and negative control groups to match the number of particles in the both groups
+	\item use clustering method, as one described in chapter~\ref{chapter:clustering}, with parameters of selected negative and positive control as input to get the clustering parameters
 	\item predict the membership of the experiment particle parameters to the clusters to get a prediction of activation
 \end{enumerate}
 
-This algorithm is implemented in Python and shown in appendix~\ref{chapter:python_implementation}.
+The third and fifth step is beneficial when clustering, as many clustering methods expect equally sized clusters that are centred and have equal standard deviation. 
 
-[TODO results of applying it to experiment data]
+This algorithm is implemented in Python and shown in appendix~\ref{chapter:python_implementation}. Applying this to three data sets of mouse t cells gives the exemplary results shown in table~\ref{tab:results_main_algorithm}. The number of activated cells detected in the positive and negative control are shown as a reference point. Comparing them in the case illustrated suggests that in this case Gaussian Mixture Model is the better clustering algorithm.
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|}
+		\hline
+		 & file & activated & out of & percentage\\
+		 \hline
+		  & negative control & 47 & 969 & 4.850\\
+		 gaussian mixture & positive control & 932 & 969 & 96.182\\
+		  & experiment & 716 & 890 & 80.449\\
+		 \hline
+		  & negative control & 53 & 969 & 5.470\\
+		 kmeans & positive control & 926 & 969 & 95.562\\
+		  & experiment & 687 & 890 & 77.191\\
+		 \hline
+	\end{tabular}
+	\caption{Output of the proposed algorithm applied to three files of mouse t cells.}
+	\label{tab:results_main_algorithm}
+\end{table}
 
 The algorithm can be adapted by using different clustering methods, or specifying other methods of separating the particles based on the parameters derived.
-
 
 \section{Types of Activated Cells}
 
 Now that we have an algorithm for detecting activated cells, we might ask whether there are different types of activated cells. The question formulated in chapter~\ref{chapter:introduction} is ''Do different types of activated cells exists? How are they different?''
 
-We find an answer by applying a clustering to the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. Interesting however is how they differ. Additionally, we might look at clustering performed on only one filtered positive control dataset.
+We find an answer by applying a clustering to the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. Interesting however is how they differ. This will be explored in section~\ref{sec:differences_between_mouse_and_human_cells}. Instead, we might look at clustering performed on only one filtered positive control dataset.
 
 [TODO results of applying clustering to both pos controls and each one individually]
 
@@ -42,6 +62,7 @@ Question: With which frequencies does the Calcium concentration repeat after act
 Answer: Results from frequency analysis
 
 \section{Difference between Mouse and Human Cells}
+\label{sec:differences_between_mouse_and_human_cells}
 
 Question: Is there a difference in frequencies between mouse and human cells?
 

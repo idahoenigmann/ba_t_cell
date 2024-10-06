@@ -6,15 +6,18 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from joblib import Parallel, delayed
 
 
 def progress_bar(iterable, prefix=""):
     start = time.time()
     for i, item in enumerate(iterable):
         yield item
-        print(f'\r{prefix}{i}/{len(iterable)}', end='', flush=True)
-    min, sec = divmod(time.time()-start, 60)
-    print(f"\r{prefix} took {int(min): 02}min {sec: 03.1f}s")
+        x = i * 10 // len(iterable)
+        print(f'\r{prefix}|{x * "*"}{(10 - x) * " "}| {i}/{len(iterable)}',
+              end='', flush=True)
+    minutes, sec = divmod(time.time() - start, 60)
+    print(f"\r{prefix} took {int(minutes): 02}min {sec: 03.1f}s")
 
 
 def approximate(dataframe):
@@ -133,21 +136,11 @@ def remove_outliers(data, width, par_used):
     return data
 
 
-def separate(neg_df, pos_df, prediction_parameters, clustering_method):
+def separate(neg_df, pos_df, prediction_parameters, clustering):
     neg_df["activation"] = "negative"
     pos_df["activation"] = "positive"
     data = pd.concat([neg_df, pos_df])
 
-    # clustering
-    if clustering_method == "gaussian_mixture":
-        clustering = GaussianMixture(n_components=2, covariance_type="diag",
-                                     n_init=10)
-    elif clustering_method == "kmeans":
-        clustering = KMeans(n_clusters=2, n_init=10)
-    else:
-        raise RuntimeError(f"Value of CLUSTERING_METHOD set to "
-                           f"{clustering_method}, which is not one of "
-                           f"[gaussian_mixture, kmeans].")
     data["predicted"] = clustering.fit_predict(data[prediction_parameters])
 
     # find association between predicted clusters and files
@@ -171,18 +164,18 @@ if __name__ == "__main__":
     FILE_NAME_EXPERIMENT = "mouse_experiment/mouse_experiment.h5"
 
     USED_COLUMNS = ["a", "u", "d", "k1", "k2", "w1", "w2"]
-    CLUSTERING_METHOD = "gaussian_mixture"   # gaussian_mixture or kmeans
+    CLUSTERING_METHODS = [GaussianMixture(covariance_type="diag",
+                                          n_components=2, n_init=10),
+                          KMeans(n_clusters=2, n_init=10)]
 
-    print(f"Using {CLUSTERING_METHOD} on files {FILE_NAME_NEG_CONTROL}, "
+    print(f"Clustering files {FILE_NAME_NEG_CONTROL}, "
           f"{FILE_NAME_POS_CONTROL} and {FILE_NAME_EXPERIMENT} with "
           f"parameters {USED_COLUMNS}.\n")
 
-    neg_df = approximation_loop(FILE_NAME_NEG_CONTROL)
-    pos_df = approximation_loop(FILE_NAME_POS_CONTROL)
-    exp_df = approximation_loop(FILE_NAME_EXPERIMENT)
-
-    n = min(len(neg_df), len(pos_df))
-    neg_df, pos_df = neg_df.sample(n), pos_df.sample(n)
+    neg_df, pos_df, exp_df = Parallel(n_jobs=3)(
+        delayed(approximation_loop)(file) for file in
+        [FILE_NAME_NEG_CONTROL, FILE_NAME_POS_CONTROL,
+         FILE_NAME_EXPERIMENT])
 
     neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, USED_COLUMNS)
 
@@ -190,19 +183,28 @@ if __name__ == "__main__":
     pos_df = remove_outliers(pos_df, 3, USED_COLUMNS)
     exp_df = remove_outliers(exp_df, 3, USED_COLUMNS)
 
-    per, clustering = separate(neg_df, pos_df, USED_COLUMNS,
-                               CLUSTERING_METHOD)
+    n = min(len(neg_df), len(pos_df))
+    neg_df, pos_df = neg_df.sample(n), pos_df.sample(n)
 
-    neg_df["predicted"] = clustering.predict(neg_df[USED_COLUMNS])
-    pos_df["predicted"] = clustering.predict(pos_df[USED_COLUMNS])
-    exp_df["predicted"] = clustering.predict(exp_df[USED_COLUMNS])
+    for clustering_method in CLUSTERING_METHODS:
+        print(f"CLUSTERING_METHOD: {clustering_method}")
 
-    neg_act = len(neg_df[neg_df['predicted'] == per[1]])
-    pos_act = len(pos_df[pos_df['predicted'] == per[1]])
-    exp_act = len(exp_df[exp_df['predicted'] == per[1]])
-    neg_len, pos_len, exp_len = len(neg_df), len(pos_df), len(exp_df)
+        per, clustering = separate(neg_df, pos_df, USED_COLUMNS,
+                                   clustering_method)
 
-    print("\nfile: activated     out of     percentage")
-    print(f"neg:  {neg_act:<13} {neg_len:<10} {neg_act/neg_len * 100:.3f}")
-    print(f"pos:  {pos_act:<13} {pos_len:<10} {pos_act/pos_len * 100:.3f}")
-    print(f"exp:  {exp_act:<13} {exp_len:<10} {exp_act/exp_len * 100:.3f}")
+        neg_df["predicted"] = clustering.predict(neg_df[USED_COLUMNS])
+        pos_df["predicted"] = clustering.predict(pos_df[USED_COLUMNS])
+        exp_df["predicted"] = clustering.predict(exp_df[USED_COLUMNS])
+
+        neg_act = len(neg_df[neg_df['predicted'] == per[1]])
+        pos_act = len(pos_df[pos_df['predicted'] == per[1]])
+        exp_act = len(exp_df[exp_df['predicted'] == per[1]])
+        neg_len, pos_len, exp_len = len(neg_df), len(pos_df), len(exp_df)
+
+        print("file: activated     out of     percentage")
+        print(f"neg:  {neg_act:<13} {neg_len:<10} "
+              f"{neg_act / neg_len * 100:.3f}")
+        print(f"pos:  {pos_act:<13} {pos_len:<10} "
+              f"{pos_act / pos_len * 100:.3f}")
+        print(f"exp:  {exp_act:<13} {exp_len:<10} "
+              f"{exp_act / exp_len * 100:.3f}\n")
