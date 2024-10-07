@@ -176,4 +176,4 @@ if __name__ == "__main__":
     cluster the data
     """
 
-    main(2, "gaussian_mixture", ["mouse_positive", "mouse_negative", "mouse_experiment"], True, False, True)
+    main(2, "gaussian_mixture", ["human_positive", "human_negative"], True, True, True)

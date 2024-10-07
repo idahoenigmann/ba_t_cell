@@ -47,13 +47,54 @@ This algorithm is implemented in Python and shown in appendix~\ref{chapter:pytho
 
 The algorithm can be adapted by using different clustering methods, or specifying other methods of separating the particles based on the parameters derived.
 
-\section{Types of Activated Cells}
+\section{Difference between Mouse and Human Cells}
+\label{sec:differences_between_mouse_and_human_cells}
 
-Now that we have an algorithm for detecting activated cells, we might ask whether there are different types of activated cells. The question formulated in chapter~\ref{chapter:introduction} is ''Do different types of activated cells exists? How are they different?''
+Now that we have an algorithm for detecting activated cells, we might ask whether there are notable differences between mouse and human cells. Plotting all data points in a single plot, as seen in figure~\ref{fig:all_cells}, shows whether differences are to be expected.
 
-We find an answer by applying a clustering to the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. Interesting however is how they differ. This will be explored in section~\ref{sec:differences_between_mouse_and_human_cells}. Instead, we might look at clustering performed on only one filtered positive control dataset.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{fig/all_cells}
+	
+	\caption{All data points from the four control data sets plotted along the axes activated value $a$ and unactivated values $u$.}
+	\label{fig:all_cells}
+\end{figure}
 
-[TODO results of applying clustering to both pos controls and each one individually]
+This shows differences in the axes $a$ and $u$ are present. On average the unactivated value $u$ and activated value $a$ are bigger in mouse t cells than the human counterparts.
+
+[TODO explain table below]
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		& & & a & u & d & k1 & k2 & w1 & w2\\
+		\hline
+		\multirow{4}{*}{\rotatebox[origin=c]{90}{mouse}} & \multirow{2}{*}{\rotatebox[origin=c]{90}{pos}} & $\mu$ & 0.94 & 0.333 & 0.92 & -0.569 & 0.12 & 0.778 & 0.535\\
+		\cline{3-10}
+		& & $\sigma$ & 0.298 & 1.614 & 0.37 & 0.004 & 0.303 & 0.315 & 0.336\\
+		\cline{2-10}
+		& \multirow{2}{*}{\rotatebox[origin=c]{90}{neg}} & $\mu$ & -0.904 & -0.32 & -0.884 & 0.546 & -0.115 & -0.747 & -0.514\\
+		\cline{3-10}
+		& & $\sigma$ & 0.007 & 0.201 & 0.012 & 1.348 & 1.642 & 0.519 & 1.098\\
+		\hline
+		\multirow{4}{*}{\rotatebox[origin=c]{90}{human}} & \multirow{2}{*}{\rotatebox[origin=c]{90}{pos}} & $\mu$ & 0.826 & 0.173 &  0.75 & -0.271 & 0.259 & -0.201 &	-0.252\\
+		\cline{3-10}
+		& & $\sigma$ & 0.167 & 1.54 & 0.456 & 0.073 & 0.097 & 0.311 & 0.677\\
+		\cline{2-10}
+		& \multirow{2}{*}{\rotatebox[origin=c]{90}{neg}} & $\mu$ & -1.069 & -0.224 & -0.97 & 0.351 & -0.336 & 0.26 &	0.327 \\
+		\cline{3-10}
+		& & $\sigma$ & 0.052 & 0.212 & 0.036 & 1.982 & 1.969 & 1.772 & 1.229\\
+		\hline
+	\end{tabular}
+	\caption{Means and standard deviations of the positive and negative controls in human and mouse cells output from using Gaussian Mixture Model. The values in the rows marked with $\sigma$ are the values in the diagonal of the covariance matrix.}
+	\label{tab:mean_std_clustering}
+\end{table}
+
+[TODO Compare mean and covariance between the mouse and human.]
+
+[TODO same with kmeans instad of gaussian mixture model]
+
 
 \section{Oscillation in Decrease}
 
@@ -61,9 +102,26 @@ Question: With which frequencies does the Calcium concentration repeat after act
 
 Answer: Results from frequency analysis
 
-\section{Difference between Mouse and Human Cells}
-\label{sec:differences_between_mouse_and_human_cells}
+\section{Types of Activated Cells}
 
-Question: Is there a difference in frequencies between mouse and human cells?
+We are interested in whether there are different types of activated cells. The question formulated in chapter~\ref{chapter:introduction} is ''Do different types of activated cells exists? How are they different?''
 
-Answer: Compare mean and covariance between the two.
+We find an answer by looking at the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. This was further explored in section~\ref{sec:differences_between_mouse_and_human_cells}. By looking at only one data set of the positive control at a time we generate the images seen in figure~\ref{fig:positive_control}. To reduce the dimensionality once again Principal Component Analysis is used.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49\linewidth}
+		\includegraphics[width=\textwidth]{fig/positive_control_human}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.49\linewidth}
+		\includegraphics[width=\textwidth]{fig/positive_control_mouse}
+	\end{subfigure}
+	
+	\caption{First two axes of the Principal Component Analysis of activated human and mouse t cells.}
+	\label{fig:positive_control}
+\end{figure}
+
+From figure~\ref{fig:positive_control}, it is not apparent that there are different types of activated cells.
+
+[TODO see if using oscillations shows differences]

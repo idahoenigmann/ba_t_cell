@@ -115,7 +115,7 @@ def approximation_loop(file_name):
 
 
 def normalize(neg_df, pos_df, exp_df, normalized_columns):
-    all_data = pd.concat([neg_df, pos_df, exp_df])
+    all_data = pd.concat([neg_df, pos_df])
 
     scaler = StandardScaler()
     all_data[normalized_columns] = (scaler.fit_transform(
@@ -123,7 +123,7 @@ def normalize(neg_df, pos_df, exp_df, normalized_columns):
 
     neg_df = all_data[all_data["idx"].isin(neg_df["idx"])]
     pos_df = all_data[all_data["idx"].isin(pos_df["idx"])]
-    exp_df = all_data[all_data["idx"].isin(exp_df["idx"])]
+    exp_df = scaler.transform(exp_df)
 
     return neg_df, pos_df, exp_df
 

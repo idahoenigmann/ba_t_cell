@@ -211,13 +211,13 @@ if __name__ == '__main__':
     """
 
     # filter out all outliers
-    """
-    main("human_positive", [3, 3], ["a", "u", "d", "k1"])
-    main("human_negative", [3, 3], ["a", "u", "d", "k1"])
-    main("mouse_positive", [3, 3], ["a", "u", "d", "k1"])
-    main("mouse_negative", [3, 3], ["a", "u", "d", "k1"])
-    main("mouse_experiment", [3, 3], ["a", "u", "d", "k1"], ignore_file=False)
-    """
+
+    main("human_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    main("human_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    main("mouse_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    main("mouse_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    # main("mouse_experiment", [3, 3], ["a", "u", "d", "k1"], ignore_file=False)
+
 
     # filter out pre-activated cells
     # main("human_positive", [np.infty, 0.5], ["u"], ignore_file=False)
