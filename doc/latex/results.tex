@@ -60,9 +60,7 @@ Now that we have an algorithm for detecting activated cells, we might ask whethe
 	\label{fig:all_cells}
 \end{figure}
 
-This shows differences in the axes $a$ and $u$ are present. On average the unactivated value $u$ and activated value $a$ are bigger in mouse t cells than the human counterparts.
-
-[TODO explain table below]
+This shows differences in the axes $a$ and $u$ are present. On average the unactivated value $u$ and activated value $a$ are bigger in mouse t cells than the human counterparts. Looking at each of the parameters gathered from the approximation is possible by using the means and standard deviation of each parameter. These values are displayed in table~\ref{tab:mean_std_parameters}. It shows the mean $\mu$ and standard deviation $\sigma$ of the negative and positive control of mouse and human t cells.
 
 \begin{table}[h]
 	\centering
@@ -70,33 +68,32 @@ This shows differences in the axes $a$ and $u$ are present. On average the unact
 		\hline
 		& & & a & u & d & k1 & k2 & w1 & w2\\
 		\hline
-		\multirow{4}{*}{\rotatebox[origin=c]{90}{mouse}} & \multirow{2}{*}{\rotatebox[origin=c]{90}{pos}} & $\mu$ & 0.94 & 0.333 & 0.92 & -0.569 & 0.12 & 0.778 & 0.535\\
+		\multirow{4}{*}{\rotatebox[origin=c]{90}{mouse}} & \multirow{2}{*}{\rotatebox[origin=c]{90}{pos}} & $\mu$ & 3.083 & 0.85 & 1.698 & 0.08 & -0.052 & 300.77 & 491.275\\
 		\cline{3-10}
-		& & $\sigma$ & 0.298 & 1.614 & 0.37 & 0.004 & 0.303 & 0.315 & 0.336\\
+		& & $\sigma$ & 0.72 & 0.159 & 0.33 & 0.085 & 0.07 & 82.451 & 104.304\\
 		\cline{2-10}
-		& \multirow{2}{*}{\rotatebox[origin=c]{90}{neg}} & $\mu$ & -0.904 & -0.32 & -0.884 & 0.546 & -0.115 & -0.747 & -0.514\\
+		& \multirow{2}{*}{\rotatebox[origin=c]{90}{neg}} & $\mu$ & 0.862 & 0.77 & 0.788 & 1.262 & -0.075 & 88.644 & 304.531\\
 		\cline{3-10}
-		& & $\sigma$ & 0.007 & 0.201 & 0.012 & 1.348 & 1.642 & 0.519 & 1.098\\
+		& & $\sigma$ & 0.106 & 0.057 & 0.053 & 1.219 & 0.148 & 99.833 & 184.08\\
 		\hline
-		\multirow{4}{*}{\rotatebox[origin=c]{90}{human}} & \multirow{2}{*}{\rotatebox[origin=c]{90}{pos}} & $\mu$ & 0.826 & 0.173 &  0.75 & -0.271 & 0.259 & -0.201 &	-0.252\\
+		\multirow{4}{*}{\rotatebox[origin=c]{90}{human}} & \multirow{2}{*}{\rotatebox[origin=c]{90}{pos}} & $\mu$ & 2.854 & 0.553 &  1.916 & 0.23 & -0.033 & 113.595 & 438.763\\
 		\cline{3-10}
-		& & $\sigma$ & 0.167 & 1.54 & 0.456 & 0.073 & 0.097 & 0.311 & 0.677\\
+		& & $\sigma$ & 0.357 & 0.294 & 0.44 & 0.219 & 0.073 & 59.7 & 175.998\\
 		\cline{2-10}
-		& \multirow{2}{*}{\rotatebox[origin=c]{90}{neg}} & $\mu$ & -1.069 & -0.224 & -0.97 & 0.351 & -0.336 & 0.26 &	0.327 \\
+		& \multirow{2}{*}{\rotatebox[origin=c]{90}{neg}} & $\mu$ & 0.864 & 0.543 & 0.604 & 0.58 & -0.19 & 169.394 & 528.006 \\
 		\cline{3-10}
-		& & $\sigma$ & 0.052 & 0.212 & 0.036 & 1.982 & 1.969 & 1.772 & 1.229\\
+		& & $\sigma$ & 0.56 & 0.197 & 0.274 & 1.022 & 0.332 & 142.358 & 229.078 \\
 		\hline
 	\end{tabular}
-	\caption{Means and standard deviations of the positive and negative controls in human and mouse cells output from using Gaussian Mixture Model. The values in the rows marked with $\sigma$ are the values in the diagonal of the covariance matrix.}
-	\label{tab:mean_std_clustering}
+	\caption{Mean $\mu$ and standard deviation $\sigma$ of the parameters of the approximation for positive and negative controls in human and mouse cells.}
+	\label{tab:mean_std_parameters}
 \end{table}
 
-[TODO Compare mean and covariance between the mouse and human.]
-
-[TODO same with kmeans instad of gaussian mixture model]
-
+By comparing the means from table~\ref{tab:mean_std_parameters} we see that indeed the mean of $a$ and $u$ are higher or about equal in mouse cells. Differences in $d$, $k1$ and $k2$ are less pronounced and differ between positive and negative control. Differences in $w1$ and $w2$ are probably caused by differences in timing between the different recordings of the control groups. Therefore, comparing the means does not give much valuable information. In conclusion the differences are biggest in the parameter $u$.
 
 \section{Oscillation in Decrease}
+
+[TODO this section]
 
 Question: With which frequencies does the Calcium concentration repeat after activation?
 

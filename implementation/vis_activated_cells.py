@@ -23,6 +23,11 @@ def import_all_data(files, normalize=True, equalize_weights=False):
                            columns=header)
         df2 = df2.drop(df2[df2["idx"].isin(ignore)].index)
         df2["file"] = file
+
+        print(file)
+        print(df2[["a", "u", "d", "k1", "k2", "w1", "w2"]].mean())
+        print(df2[["a", "u", "d", "k1", "k2", "w1", "w2"]].std(), end="\n\n")
+
         all_data.append(df2)
         weights.append(len(df2))
 
