@@ -106,6 +106,7 @@ def main(file, width, par_used, ignore_file=True):
     # matplotlib.use('TkAgg')
 
     SAVE_PDF = False
+    SHOW = False
 
     # read parameters from file
     all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
@@ -183,7 +184,7 @@ def main(file, width, par_used, ignore_file=True):
             fig = visualize(single_particle_data, titel=f"particle {int(particle_idx)}: {str(outlier_params)}", return_fig=True)
             if SAVE_PDF:
                 pp.savefig(fig)
-            else:
+            if SHOW:
                 plt.show()
             plt.close(fig)
 
@@ -213,9 +214,9 @@ if __name__ == '__main__':
     # filter out all outliers
 
     main("human_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    main("human_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    main("mouse_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    main("mouse_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    # main("human_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    # main("mouse_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
+    # main("mouse_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
     # main("mouse_experiment", [3, 3], ["a", "u", "d", "k1"], ignore_file=False)
 
 

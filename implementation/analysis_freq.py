@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import pandas
-
 from approximation import read_data, visualize, sigmoid_and_linear_decreasing, freq_to_func
 
 
@@ -23,8 +21,7 @@ def main(file):
 
     data = read_data(file)
 
-    all_freqs = []
-    all_amps = []
+    all_freqs, all_amps, all_phases = [], [], []
 
     ignore = np.loadtxt(f"intermediate/ignore_{file}.csv", delimiter=",").flatten()
 
@@ -34,16 +31,9 @@ def main(file):
 
         try:
             row_number = all_parameters[:, indices.index("idx")].tolist().index(particle_idx)
-            freqs = [all_parameters[row_number][indices.index(f"freq{i}")] for i in range(10)]
-            amps = [all_parameters[row_number][indices.index(f"amp{i}")] for i in range(10)]
-
-            """tmp = list(zip(*((f, a) for f, a in zip(freqs, amps) if a > 0)))
-            if len(tmp) == 2:
-                freqs, amps = tmp
-            else:
-                freqs, amps = [], []"""
-
-            freqs, amps = np.array(freqs, dtype=int), np.array(amps)
+            freq = all_parameters[row_number][indices.index("freq")]
+            amp = all_parameters[row_number][indices.index("amp")]
+            phase = all_parameters[row_number][indices.index("phase")]
 
             if VISUALIZE:
                 w1 = all_parameters[row_number][indices.index("w1")]
@@ -56,30 +46,34 @@ def main(file):
                 t = all_parameters[row_number][indices.index("t")]
 
                 single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
-                single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2,
-                                                                                    a, d, u, k1, k2)
+                single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2, a, d, u, k1, k2)
                 single_particle_data['residuum'] = single_particle_data['ratio'] - single_particle_data['fit_sigmoid']
 
-                single_particle_data['fit_sin'] = freq_to_func(freqs, amps,
-                                                               int((np.abs(single_particle_data['frame'] - t)).argmin()),
-                                                               len(single_particle_data['frame']))
+                start = int((np.abs(single_particle_data['frame'] - t)).argmin())
+                end = len(single_particle_data['frame'])
+
+                single_particle_data['fit_sin'] = freq_to_func(freq, amp, phase,
+                                                               start, np.array(single_particle_data["frame"][start:end]))
 
                 single_particle_data['fit_total'] = single_particle_data['fit_sigmoid'] + single_particle_data['fit_sin']
 
+                print(f"freq: {freq:.3f}, amp: {amp:.3}, phase: {phase:.3}")
                 visualize(single_particle_data, titel=f"particle {int(particle_idx)}")
 
-            all_freqs.extend(freqs)
-            all_amps.extend(amps)
+            all_freqs.append(freq)
+            all_amps.append(amp)
+            all_phases.append(phase)
 
         except RuntimeError as e:
             print(e)
 
     # filter according to amplitude
-    try:
-        all_freqs, all_amps = zip(*((f, a) for f, a in zip(all_freqs, all_amps) if 2 <= f <= 20))
-    except ValueError:
-        print("no frequencies and amplitudes matched the given conditions")
-        return
+    for i in range(len(all_freqs)-1, -1, -1):
+        # if all_amps[i] <= 0.1 or all_freqs[i] < 0.005:
+        if False:
+            all_freqs.pop(i)
+            all_amps.pop(i)
+            all_phases.pop(i)
 
     # violin plots
     labels = []
@@ -88,39 +82,38 @@ def main(file):
         color = violin["bodies"][0].get_facecolor().flatten()
         labels.append((mpatches.Patch(color=color), label))
 
-    fig, ax = plt.subplots(2)
-    ax[0].set_title("freqs")
-    ax[0].xaxis.label.set_size(12)
-    ax[0].yaxis.label.set_size(12)
-    ax[0].tick_params(axis='both', labelsize=12)
-    add_label(ax[0].violinplot(all_freqs, showmedians=True, showmeans=False, showextrema=False),
-              label="freqs")
-    ax[0].legend(*zip(*labels), loc=1)
+    fig, ax = plt.subplots(3)
+
+    def set_plot_sizes(i):
+        ax[i].xaxis.label.set_size(12)
+        ax[i].yaxis.label.set_size(12)
+        ax[i].tick_params(axis='both', labelsize=12)
+        ax[i].legend(*zip(*labels), loc=1)
 
     labels = []
-    ax[1].set_title("amps")
-    ax[1].xaxis.label.set_size(12)
-    ax[1].yaxis.label.set_size(12)
-    ax[1].tick_params(axis='both', labelsize=12)
-    add_label(ax[1].violinplot(all_amps, showmedians=True, showmeans=False, showextrema=False),
-              label="amps")
-    ax[1].legend(*zip(*labels), loc=1)
-    plt.show()
+    add_label(ax[0].violinplot(all_freqs, showmedians=True, showmeans=False, showextrema=False), label="frequency")
+    set_plot_sizes(0)
 
-    tmp_freqs = np.array(list(set(all_freqs)), dtype=int)
-    tmp_amps = np.array([sum([all_amps[i] for i in range(len(all_amps)) if all_freqs[i] == f]) for f in tmp_freqs])
+    labels = []
+    add_label(ax[1].violinplot(np.abs(all_amps), showmedians=True, showmeans=False, showextrema=False), label="amplitude")
+    set_plot_sizes(1)
+
+    labels = []
+    add_label(ax[2].violinplot(all_phases, showmedians=True, showmeans=False, showextrema=False), label="phase")
+    set_plot_sizes(2)
+
+    plt.show()
 
     # histogram
     fig, axs = plt.subplots(1)
     axs.set_title("weighted frequencies")
-    axs.hist(tmp_freqs, weights=tmp_amps, bins=20)
+    axs.hist(all_freqs, weights=np.abs(all_amps), bins=20)
     plt.show()
 
-    # typical oscillation
-    tmp = pandas.DataFrame()
-    tmp["frame"] = np.array(range(0, 1000))
-    tmp["ratio"] = freq_to_func(tmp_freqs, tmp_amps, 0, 1000)
-    visualize(tmp)
+    fig, axs = plt.subplots(1)
+    axs.set_title("typical oscillation")
+    axs.plot(np.arange(1000), freq_to_func(np.mean(all_freqs), np.mean(all_amps), np.mean(phase), 0, np.arange(1000)))
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -128,15 +121,7 @@ if __name__ == '__main__':
     statistical analysis of frequencies and amplitudes
     """
 
-    """
-    # Test different frequenices and amplitudes
-    tmp = pandas.DataFrame()
-    tmp["frame"] = np.array(range(0, 1000))
-    tmp["ratio"] = freq_to_func(np.array([10], dtype=int), np.array([500]), 0, 1000)
-    visualize(tmp)
-    """
-
     main("human_positive")
-    main("human_negative")
-    main("mouse_positive")
-    main("mouse_negative")
+    # main("human_negative")
+    # main("mouse_positive")
+    # main("mouse_negative")

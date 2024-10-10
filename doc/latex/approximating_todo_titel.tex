@@ -496,7 +496,17 @@ Fourier Transformation is used when an application is concerned with cyclic temp
 
 As the function of sound waves or oscillations in the \Calcium concentration in t cells is almost cyclic we might be interested in a decomposition into simple cyclic function, such as sine. We can then analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. Fast Fourier Transformation (FFT) is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
 
-As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can then filter out the 10 frequencies with the highest amplitudes and use them to further analyse the oscillations. This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
+As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can use the frequency with the highest amplitude and use them to further analyse the oscillations. After having found this estimation of the frequency we can use the method from before, but with a sin function instead of the sigmoid functions. In detail, we once again utilize \texttt{scipy.optimize.curve\_fit}, this time using the function
+
+\begin{align*}
+	f(x, A, w, p) := A \cdot \sin(w \cdot t + p)
+\end{align*}
+
+with parameters amplitude $A$, angular frequency $w$ and phase $p$. The starting value for the approximation can be set using the results of the FFT. We denote the frequency with the highest amplitude returned from the FFT by $f_{guess}$ and the standard deviation of the residuum of the approximation with $std(Y)$. Then we can set the start value of $A$ to be $\sqrt{2 \cdot std(Y)}$, the one of $w$ to be $2\pi |f_{guess}|$ and the one of $p$ to be $0$.
+
+The drawback of this method is that only oscillations that can be represented by a single sin function can be modelled. However, for our purpose we can assume that the oscillations are of this form.
+
+Doing this gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
 
 \begin{figure}[h]
 	\centering
@@ -506,7 +516,7 @@ As the oscillations happen in the decrease of the \Calcium concentration we appl
 	\label{fig:particle_vis_fft_approx}
 \end{figure}
 
-We can store the data gathered using the FFT as a list of frequencies and corresponding amplitudes.
+We store the data gathered from the approximation as a list of frequency, amplitude and phase.
 
 [TODO analyse frequencies and amplitudes]
 

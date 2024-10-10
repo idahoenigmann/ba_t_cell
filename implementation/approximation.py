@@ -126,39 +126,44 @@ def approximate_with_sigmoid_curve(dataframe: pandas.DataFrame) -> dict:
     return {"start": start, "end": end, 'w1': w1, 't': t, 'w2': w2, 'e': end, 'a': a, 'd': d, 'u': u, 'k1': k1, 'k2': k2}
 
 
-def freq_to_func(freqs, amps, start, end):
-    # delete all but main frequencies
-    fft_out = np.zeros(end - start, dtype=complex)
-    fft_out[freqs] = amps
+def freq_to_func(f, A, p, start, tt):
+    w = 2. * np.pi * f    # f = w / (2. * np.pi)
+    fitfunc = lambda t: A * np.sin(w * t + p)
 
-    return np.concatenate((np.zeros(start), np.real(np.fft.ifft(fft_out))))
+    return np.concatenate((np.zeros(start), fitfunc(tt)))
 
 
-def approximate_residuum_with_fft(dataframe: pandas.DataFrame, number_of_frequencies_kept: int, start: int, end: int)\
+def approximate_residuum_with_fft(dataframe: pandas.DataFrame, start: int, end: int)\
         -> dict:
     """
     approximates the residuum between frames start and end by sin generated with fft
     changes dataframe! adds a column named fit_sin
     :param dataframe: datapoints to approximate, must contain columns ratio and fit_sigmoid
-    :param number_of_frequencies_kept: how many frequencies are used in the approximation
     :param start: the point from which the approximation with periodic functions is to start
     :param end: the point from which the approximation with periodic functions is to end
     :returns: parameters for fft
     """
 
-    # assumes frames are evenly spaced!
-    fft_out = np.fft.fft(dataframe['residuum'][start:end])
+    if end - start < 10:
+        dataframe['fit_sin'] = np.zeros(end)
+        return {"freq": 0, "amp": 0, "phase": 0}
 
-    # get frequencies with the highest amplitude
-    main_freqs = np.argsort(fft_out)[-number_of_frequencies_kept:]
-    main_amps = [abs(fft_out[f]) for f in main_freqs]
+    tt = np.array(dataframe["frame"][start:end])
+    yy = np.array(dataframe["residuum"][start:end])
+    ff = np.fft.fftfreq(len(tt), (tt[1] - tt[0]))  # assume uniform spacing
+    Fyy = abs(np.fft.fft(yy))
+    guess_freq = abs(ff[np.argmax(Fyy[1:]) + 1])  # excluding the zero frequency "peak", which is related to offset
+    guess_amp = np.std(yy) * 2. ** 0.5
+    guess = np.array([guess_amp, 2. * np.pi * guess_freq, 0.])
 
-    dataframe['fit_sin'] = freq_to_func(main_freqs, main_amps, start, end)
+    def sinfunc(t, A, w, p):  return A * np.sin(w * t + p)
 
-    freqs = {f'freq{i}': main_freqs[-i] for i in range(len(main_freqs))}
-    amps = {f'amp{i}': abs(main_amps[-i]) for i in range(len(main_amps))}
+    popt, _ = scipy.optimize.curve_fit(sinfunc, tt, yy, p0=guess)
+    A, w, p = popt
+    f = w / (2. * np.pi)
 
-    return {**freqs, **amps}
+    dataframe['fit_sin'] = freq_to_func(f, A, p, start, tt)
+    return {"freq": f, "amp": A, "phase": p}
 
 
 def visualize(dataframe: pandas.DataFrame, titel: str = "", return_fig: bool = False):
@@ -234,13 +239,8 @@ def particle_to_parameters(particle_data: pandas.DataFrame, output_information: 
         transition_index = int((np.abs(particle_data['frame'] - parameters_sigmoid['t'])).argmin())
 
     # use fft to fit sin
-    parameters_sin = approximate_residuum_with_fft(particle_data, 10, transition_index,
+    parameters_sin = approximate_residuum_with_fft(particle_data, transition_index,
                                                    len(particle_data['frame']))
-
-    for i in range(10):
-        if f"freq{i}" not in parameters_sin.keys():
-            parameters_sin[f"freq{i}"] = 0
-            parameters_sin[f"amp{i}"] = 0
 
     particle_parameters = {**parameters_sigmoid, **parameters_sin}
     particle_data['fit_total'] = particle_data['fit_sigmoid'] + particle_data['fit_sin']
@@ -275,9 +275,7 @@ def main(file_name):
 
     all_parameters = list()
     parameters_saved = ["idx", "start", "end", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid",
-                        "mse_total"]
-    # TODO 10 is not a fixed value, but a parameter of approximate_residuum_with_fft
-    parameters_saved = parameters_saved + [f"freq{i}" for i in range(10)] + [f"amp{i}" for i in range(10)]
+                        "mse_total", "freq", "amp", "phase"]
 
     for particle_idx in set(data['particle']):
         # get data of a single particle
@@ -296,7 +294,7 @@ def main(file_name):
             parameters['s'] = calc_transition_point(parameters['w1'], parameters['k1'], alpha=0.01)
             all_parameters.append([parameters[e] for e in parameters_saved])
 
-        except Exception as e:
+        except RuntimeError as e:
             print(e)
             continue
 
@@ -314,8 +312,8 @@ if __name__ == '__main__':
     to False.
     """
 
-    # main("human_positive")
+    main("human_positive")
     # main("human_negative")
     # main("mouse_positive")
     # main("mouse_negative")
-    main("mouse_experiment")
+    # main("mouse_experiment")
