@@ -467,7 +467,8 @@ Naturally we can use the same outlier detection with different parameters to fin
 
 These results will be used in section~\ref{sec:proposed-algorithm} to remove wrongly-labelled data from the datasets.
 
-\section{Adding Oscillation in the Decrease}
+\section{Adding Oscillation to the Approximation}
+\label{sec:adding_oscillation_to_the_approximation}
 
 In order to answer the questions from chapter~\ref{chapter:introduction} concerned with the oscillations  happening in the decrease of the \Calcium concentration we want to model them as well. We use a method often used when analysing oscillating data, called Fourier Transformation.
 
@@ -502,7 +503,7 @@ As the oscillations happen in the decrease of the \Calcium concentration we appl
 	f(x, A, w, p) := A \cdot \sin(w \cdot t + p)
 \end{align*}
 
-with parameters amplitude $A$, angular frequency $w$ and phase $p$. The starting value for the approximation can be set using the results of the FFT. We denote the frequency with the highest amplitude returned from the FFT by $f_{guess}$ and the standard deviation of the residuum of the approximation with $std(Y)$. Then we can set the start value of $A$ to be $\sqrt{2 \cdot std(Y)}$, the one of $w$ to be $2\pi |f_{guess}|$ and the one of $p$ to be $0$.
+with parameters amplitude $A$, angular frequency $w$ and phase $p$. The starting value for the approximation can be set using the results of the FFT. We denote the frequency with the highest amplitude returned from the FFT by $f_{guess}$ and the standard deviation of the approximation residuum time series with $std(Y)$. Then we can set the start value of $A$ to be $\sqrt{2 \cdot std(Y)}$, the one of $w$ to be $2\pi |f_{guess}|$ and the one of $p$ to be $0$.
 
 The drawback of this method is that only oscillations that can be represented by a single sin function can be modelled. However, for our purpose we can assume that the oscillations are of this form.
 
@@ -517,6 +518,3 @@ Doing this gives an even better approximation of the data, which can be seen in 
 \end{figure}
 
 We store the data gathered from the approximation as a list of frequency, amplitude and phase.
-
-[TODO analyse frequencies and amplitudes]
-

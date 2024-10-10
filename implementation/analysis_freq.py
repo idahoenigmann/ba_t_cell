@@ -67,13 +67,23 @@ def main(file):
         except RuntimeError as e:
             print(e)
 
+    print(len(all_freqs))
+    len_filtered = 0
     # filter according to amplitude
     for i in range(len(all_freqs)-1, -1, -1):
-        # if all_amps[i] <= 0.1 or all_freqs[i] < 0.005:
-        if False:
+        if all_amps[i] <= 0.1 or all_freqs[i] < 0.005:
             all_freqs.pop(i)
             all_amps.pop(i)
             all_phases.pop(i)
+            len_filtered += 1
+    print(len_filtered)
+
+    print(f"mean freq: {np.mean(all_freqs):.3f}, mean amp: {np.mean(all_amps):.3f}, mean phase: {np.mean(all_phases):.3f}")
+
+    # transform phase to be within [-pi, pi]
+    for i in range(len(all_phases)):
+        if all_phases[i] > np.pi or all_phases[i] < -np.pi:
+            all_phases[i] = all_phases[i] - int(all_phases[i] / np.pi) * 2 * np.pi
 
     # violin plots
     labels = []
@@ -122,6 +132,4 @@ if __name__ == '__main__':
     """
 
     main("human_positive")
-    # main("human_negative")
-    # main("mouse_positive")
-    # main("mouse_negative")
+    main("mouse_positive")

@@ -92,12 +92,21 @@ This shows differences in the axes $a$ and $u$ are present. On average the unact
 By comparing the means from table~\ref{tab:mean_std_parameters} we see that indeed the mean of $a$ and $u$ are higher or about equal in mouse cells. Differences in $d$, $k1$ and $k2$ are less pronounced and differ between positive and negative control. Differences in $w1$ and $w2$ are probably caused by differences in timing between the different recordings of the control groups. Therefore, comparing the means does not give much valuable information. In conclusion the differences are biggest in the parameter $u$.
 
 \section{Oscillation in Decrease}
+\label{sec:oscillation_in_decrease}
 
-[TODO this section]
+Looking at the frequencies, amplitudes and phases returned from the approximation described in section~\ref{sec:adding_oscillation_to_the_approximation} gives us an idea with which period the typical t cell oscillates in \Calcium concentration during the decrease after activation. The figure~\ref{fig:freq_amp} shows violin plots of all three parameters in the positive control on human t cells. The means in this data set are 0.005 for the frequency, 0.01 for the amplitude and -0.001 for the phase.
 
-Question: With which frequencies does the Calcium concentration repeat after activation?
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{fig/freq_amp}
+	
+	\caption{Violin plots of the frequencies, amplitudes and phases of the oscillation approximation in the positive control dataset of human t cells.}
+	\label{fig:freq_amp}
+\end{figure}
 
-Answer: Results from frequency analysis
+As some t cells do not oscillate the approximation sometimes returns a misleading frequency with a low amplitude. We want to filter these cells before looking at the typical period with which the \Calcium concentration oscillates. We choose arbitrary threshold values, that seemed sensible to the author. Namely, all particles with an amplitude less than 0.1 or a frequency less than 0.005 are removed before once again looking at the average values. Now the average frequency is 0.008 with an average amplitude of 0.223. This corresponds to a period of oscillation being $1/freq = $ 125 seconds. Indeed, looking at the example provided in figure~\ref{fig:freq_amp}, this seems like a good estimate.
+
+Lastly we compare this to the positive control in mouse cells. Before filtering the averages are 0.007 for the frequency, 0.071 for the amplitude and 0.288 for the phase. After filtering, which the same thresholds as for human cells, we have an average of 0.007 for the frequency and 0.177 for the amplitude. Converting this to the period gives us 143. This compares to the average period found in human t cells.
 
 \section{Types of Activated Cells}
 
@@ -121,4 +130,6 @@ We find an answer by looking at the activated cells only. We have two data sets 
 
 From figure~\ref{fig:positive_control}, it is not apparent that there are different types of activated cells.
 
-[TODO see if using oscillations shows differences]
+Lastly we can have a look whether particles differ in the oscillation. Using the approximation of the oscillation and the filtering done in section~\ref{sec:oscillation_in_decrease} we can for example differ between oscillating t cells, marked by high amplitude and period around the expected 125 seconds, and non-oscillating t cells, marked by low amplitude or different period.
+
+We note that out of 139 particles in the positive control of human t cells only 14 have the behaviour of a heavily oscillating t cell. In the mouse positive control it is 192 out of 1058.

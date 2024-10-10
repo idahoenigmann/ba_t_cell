@@ -106,7 +106,7 @@ def main(file, width, par_used, ignore_file=True):
     # matplotlib.use('TkAgg')
 
     SAVE_PDF = False
-    SHOW = False
+    SHOW = True
 
     # read parameters from file
     all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
