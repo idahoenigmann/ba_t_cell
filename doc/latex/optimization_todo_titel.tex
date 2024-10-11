@@ -1,4 +1,4 @@
-\chapter{Optimization Algorithm}
+\chapter{Optimization Algorithms}
 \label{chapter:optimization}
 
 An optimization problem is any problem where a function $f:X \rightarrow Y$ is given, and we search for the point $x \in X$ such that $f(x)$ is minimal or maximal. Obviously the minimum or maximum must not exist, as the example $f: (0, 1) \rightarrow \mathbb{R}, x \mapsto x$ demonstrates by not having either. Investigating conditions on $X$, $Y$ and $f$ such that a minimum or maximum exists is mathematically interesting. However, when implementing an optimization algorithm the true minimum or maximum can sometimes not be found even if it exists and is instead replaced by a sufficiently good approximation.
@@ -334,9 +334,3 @@ Trust Region Reflective gets its name from the use of trust regions as in Levenb
 As the name suggests the Dogleg Algorithm with Rectangular Trust Regions uses rectangular trust regions as opposed to ellipsoids.\cite{voglis2004} As the bounds are specified as a rectangle to stay within, this results in the intersection of trust region and bounds to be rectangular. The resulting minimizing problem is solved with an adequate algorithm\cite{Nocedal1999}.
 
 In Python the library SciPy provides the three methods Levenberg-Marquardt, Trust Region Reflective and Dogleg with Rectangular Trust Regions for solving Least Square Problems.
-
-% https://www.applied-mathematics.net/LMvsTR/LMvsTR.pdf
-
-% https://johnwlambert.github.io/gauss-newton/
-
-% https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html

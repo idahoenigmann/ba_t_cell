@@ -1,7 +1,7 @@
 \chapter{Discussion}
 \label{chapter:conclusion}
 
-This chapter gives answers to the questions from chapter~\ref{chapter:introduction} using the results from chapter~\ref{chapter:results}. 
+This chapter gives answers to the questions from chapter~\ref{chapter:introduction} using the results from chapter~\ref{chapter:results} and gives an outlook into which aspects could be improved in further work.
 
 \begin{itemize}
 	\item Which criteria can distinguish between unactivated, activated and pre-activated cells?
@@ -41,13 +41,10 @@ As the first question is the most relevant we want to discuss the answer further
 	\label{tab:accuracy}
 \end{table}
 
+We now discuss possible improvements. The proposed algorithm and subsequent analysis of the clustering performed can be improved by applying the discussed algorithm to enough data point to achieve a good approximation for average and standard deviation that hold for arbitrary data point from the same t cell line.
 
-can we give a value for accuracy of the proposed algorithms?
+Another improvement can be made in the frequency analysis. Exploring what causes these oscillations can give a better understanding as to what type of oscillation is to be expected and how these might differ between different t cells. The assumption made in this work, that the oscillations can be modelled by a single sin wave, might prove wrong. In this case a different modelling approach has to be chosen. Alternatively the output of the FFT can be used directly.
 
-Discuss limitations
+Lastly the performance of the Python implementation given in the appendix~\ref{chapter:python_implementation} is suboptimal. Changing to other programming languages or improving the performance of the code in Python desirable.
 
-\section{Outlook}
-
-better frequency analysis (look into what causes these oscillations)
-
-apply discussed algorithm to enough data to give good approximations of average and standard deviation to hold for arbitrary data sets
+In summary this work proposed an algorithm for detecting activated t cells in \Calcium concentration recordings, without a need for user specified criteria for activation detection. The accuracy of this algorithm is acceptable, and the implementation is given in Python.
