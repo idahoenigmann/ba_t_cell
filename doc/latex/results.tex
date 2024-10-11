@@ -1,12 +1,12 @@
 \chapter{Results}
 \label{chapter:results}
 
-This chapter gives answers to the questions from chapter~\ref{chapter:introduction}. To answer the methods described in this work, such as approximation, clustering and outlier detection, are combined and used.
+Combining all the methods and algorithms from the previous chapters, such as approximation, clustering and outlier detection, gives us insight into the \Calcium concentration data. We give an algorithm for detecting activated t cells, look at differences between mouse and human t cells, analyse the oscillations and investigate whether there are different types of activated t cells.
 
 \section{Proposed algorithm for Detecting Activated T Cells}
 \label{sec:proposed-algorithm}
 
-The first and most relevant question was ''Which criteria can distinguish between unactivated, activated and pre-activated cells?''.
+A relevant question this work aims to provide an answer to is how pre-activated, unactivated and activated t cells can be distinguished.
 
 First we give a method for filtering the pre-activated cells from a dataset. From their nature we expect a high value in \Calcium concentration at the start of the recording. Using the approximation from chapter~\ref{chapter:approximating} it is easy to get the approximate \Calcium concentration value at the start of the recording, as it is the parameter $u$. Using the algorithm~\ref{alg:outlier_detection} with parameters threshold as $[\infty, 0.5]$ and parameters\_used as [$u$] gives good results. It returns the indices of particles, which are pre-activated in the data sets of the positive controls.
 
@@ -110,9 +110,7 @@ Lastly we compare this to the positive control in mouse cells. Before filtering 
 
 \section{Types of Activated Cells}
 
-We are interested in whether there are different types of activated cells. The question formulated in chapter~\ref{chapter:introduction} is ''Do different types of activated cells exists? How are they different?''
-
-We find an answer by looking at the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. This was further explored in section~\ref{sec:differences_between_mouse_and_human_cells}. By looking at only one data set of the positive control at a time we generate the images seen in figure~\ref{fig:positive_control}. To reduce the dimensionality once again Principal Component Analysis is used.
+It is interesting to see whether there are different types of activated cells. We find an answer by looking at the activated cells only. We have two data sets of activated cells, one from mouse cells and one from human cells. Naturally there will be differences between the two. This was further explored in section~\ref{sec:differences_between_mouse_and_human_cells}. By looking at only one data set of the positive control at a time we generate the images seen in figure~\ref{fig:positive_control}. To reduce the dimensionality once again Principal Component Analysis is used.
 
 \begin{figure}[h]
 	\centering

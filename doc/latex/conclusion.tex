@@ -1,6 +1,47 @@
 \chapter{Discussion}
 \label{chapter:conclusion}
 
+This chapter gives answers to the questions from chapter~\ref{chapter:introduction} using the results from chapter~\ref{chapter:results}. 
+
+\begin{itemize}
+	\item Which criteria can distinguish between unactivated, activated and pre-activated cells?
+	
+	Pre-activated cells can be detected by having a parameter $u$ that is bigger than $\mu + 0.5 \sigma$, which $\mu$ being the mean and $\sigma$ being the standard deviation of $u$. Distinguishing between activated and unactivated t cells can be done by the algorithm proposed in section~\ref{sec:proposed-algorithm}.
+	\item Do different types of activated cells exists? How are they different?
+	
+	There are no apparent differences between different activated t cells. The parameters found behave according to a normal distribution. Differences can be found in how pronounced the oscillations are.
+	\item With which frequencies does the Calcium concentration repeat after activation?
+	
+	The oscillations appear to have a frequency of about 0.0075 which corresponds to a period of 133 seconds in both human and mouse t cells.
+	\item Is there a difference between mouse and human cells?
+	
+	There are differences between the two different types of t cells. The biggest differences are present in the parameter of the \Calcium concentration before activation $u$.
+\end{itemize}
+
+As the first question is the most relevant we want to discuss the answer further. To give a value for accuracy achieved by the proposed algorithm we have to know how many t cells from the experiment dataset are activated. We do this by using some of the particles from the positive and negative control. Using random sampling we select some particles from each control data set to be the experiment data. Of course, we then have to remove these particles from the control data to avoid training on the data we test with. By varying the number of particles chosen from the two control data sets we can vary the percentage of activated cells in this generated experiment data. The results from this test can be found in table~\ref{tab:accuracy}.
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|c|c|c|}
+		\hline
+		percentage activated & KMeans output & Gaussian Mixture output\\
+		\hline
+		0\% & 5.5\% & 4\%\\
+		\hline
+		25\% & 27.5\% & 26\%\\
+		\hline
+		50\% & 49.5\% & 49.5\%\\
+		\hline
+		75\% & 72\% & 70.5\%\\
+		\hline
+		100\% & 96\% & 97.5\%\\
+		\hline
+	\end{tabular}
+	\caption{Percentage activated output by KMeans and Gaussian Mixture for different true values of percentages of activated t cells.}
+	\label{tab:accuracy}
+\end{table}
+
+
 can we give a value for accuracy of the proposed algorithms?
 
 Discuss limitations

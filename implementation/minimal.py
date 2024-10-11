@@ -1,3 +1,4 @@
+import random
 import time
 import math
 import scipy
@@ -123,7 +124,7 @@ def normalize(neg_df, pos_df, exp_df, normalized_columns):
 
     neg_df = all_data[all_data["idx"].isin(neg_df["idx"])]
     pos_df = all_data[all_data["idx"].isin(pos_df["idx"])]
-    exp_df = scaler.transform(exp_df)
+    exp_df[normalized_columns] = scaler.transform(exp_df[normalized_columns])
 
     return neg_df, pos_df, exp_df
 
@@ -172,16 +173,22 @@ if __name__ == "__main__":
           f"{FILE_NAME_POS_CONTROL} and {FILE_NAME_EXPERIMENT} with "
           f"parameters {USED_COLUMNS}.\n")
 
-    neg_df, pos_df, exp_df = Parallel(n_jobs=3)(
-        delayed(approximation_loop)(file) for file in
-        [FILE_NAME_NEG_CONTROL, FILE_NAME_POS_CONTROL,
-         FILE_NAME_EXPERIMENT])
-
-    neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, USED_COLUMNS)
+    neg_df = approximation_loop(FILE_NAME_NEG_CONTROL)
+    pos_df = approximation_loop(FILE_NAME_POS_CONTROL)
+    # exp_df = approximation_loop(FILE_NAME_EXPERIMENT)
 
     neg_df = remove_outliers(neg_df, 3, USED_COLUMNS)
     pos_df = remove_outliers(pos_df, 3, USED_COLUMNS)
-    exp_df = remove_outliers(exp_df, 3, USED_COLUMNS)
+    # exp_df = remove_outliers(exp_df, 3, USED_COLUMNS)
+
+    neg_idxs, pos_idxs = sorted(set(neg_df["idx"])), sorted(set(pos_df["idx"]))
+    exp_neg_idxs = random.sample(neg_idxs, 200)
+    exp_pos_idxs = random.sample(pos_idxs, 0)
+    exp_df = pd.concat([neg_df[neg_df["idx"].isin(exp_neg_idxs)], pos_df[pos_df["idx"].isin(exp_pos_idxs)]])
+    neg_df = neg_df[~neg_df["idx"].isin(exp_neg_idxs)]
+    pos_df = pos_df[~pos_df["idx"].isin(exp_pos_idxs)]
+
+    neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, USED_COLUMNS)
 
     n = min(len(neg_df), len(pos_df))
     neg_df, pos_df = neg_df.sample(n), pos_df.sample(n)
