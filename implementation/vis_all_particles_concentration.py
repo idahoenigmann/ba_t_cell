@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from approximation import read_data
+import pandas as pd
+
+from approximation import read_data, sigmoid_and_linear_decreasing
 
 
 def main(file_name):
@@ -31,6 +33,12 @@ def main(file_name):
 
         single_particle_data.plot(x="frame", y="ratio", color="#000000", alpha=0.015, ax=ax, legend=False)
 
+    """a, u, d, k1, k2, w1, w2 = 3.5, 0.8, 1.75, 0.15, -0.02, 290, 470
+    frame_data = np.arange(0, 1000)
+    fit_data = sigmoid_and_linear_decreasing(np.arange(0, 1000), w1, w2, a, d, u, k1, k2)
+    dataframe = pd.DataFrame([[frame_data[i], fit_data[i]] for i in range(1000)], columns=["frame", "fit_sigmoid"])
+    dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=ax)"""
+
     plt.savefig("visualizations/all_cells_overlayed.jpg")
     plt.show()
 
@@ -41,6 +49,6 @@ if __name__ == '__main__':
     """
 
     # main("human_positive")
-    main("human_negative")
-    # main("mouse_positive")
+    # main("human_negative")
+    main("mouse_positive")
     # main("mouse_negative")

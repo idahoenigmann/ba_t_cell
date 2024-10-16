@@ -187,9 +187,9 @@ def visualize(dataframe: pandas.DataFrame, titel: str = "", return_fig: bool = F
     for i in range(0, 2):
         dataframe.plot.scatter(x="frame", y="ratio", color="#000000", ax=axes[i])
         if 'fit_sigmoid' in dataframe.columns:
-            dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", ax=axes[i])
+            dataframe.plot(x='frame', y='fit_sigmoid', color="#FF9904", linewidth=3, ax=axes[i])
         if 'fit_total' in dataframe.columns:
-            dataframe.plot(x='frame', y='fit_total', color="#E9190C", ax=axes[i])
+            dataframe.plot(x='frame', y='fit_total', color="#E9190C", linewidth=3, ax=axes[i])
     if return_fig:
         return fig
     else:

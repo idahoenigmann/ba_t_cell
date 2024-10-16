@@ -14,7 +14,7 @@ Often gathered observations are distributed as a normal distribution. These dist
 \end{align*}
 with parameters $D$ called the dimension, $\mu$ called the mean vector and $\Sigma$ called the covariance matrix.
 
-As we are concerned with clustering data points we expect the observed data points from different clusters to have different parameters in the normal distribution they come from. Assuming we have $n$ different data sources gives us normal distributions $g_i(x|\mu_i, \Sigma_i)$ where $i=1, ..., n$. Additionally, we might have more data points being generated from some normal distributions while less from others. We can express this using another weight parameter $w_i$ with $i=1, ..., n$. To normalize the weights we set the constraint $\sum w_i = 1$.
+As we are concerned with clustering data points we expect the observed data points from different clusters to have different parameters in the normal distribution they come from. Assuming we have $n$ different data sources gives us normal distributions $g_i(x|\mu_i, \Sigma_i)$ where $i=1, ..., n$. Additionally, we might have more data points being generated from some normal distributions while less from others. We can express this using another parameter for the weight $w_i$ with $i=1, ..., n$. To normalize the weights we set the constraint $\sum w_i = 1$.
 
 The distribution describing the entire dataset now can be described with the distribution
 \begin{align}
@@ -24,7 +24,7 @@ The distribution describing the entire dataset now can be described with the dis
 
 Gaussian Mixture Model is a method to retrieve these parameters $w_i$, $\mu_i$ and $\Sigma_i$ for some $D$ dimensional data points generated from $n$ normal distributions.
 
-From these parameters it is easy to cluster the data as we know where data points from the different clusters are expected to lie.
+From these parameters it is easy to cluster the data, as we know where data points from the different clusters are expected to lie.
 
 From equation~\ref{eq:sum_of_normal} we expect every $\Sigma_i$ to be independent of each other. In the context of Gaussian Mixture Models this is called having a full covariance matrix. However, we can eliminate some of the variables in the covariance matrix if we choose a diagonal covariance matrix. Additionally, we might specify to use the same covariance matrix for all $i$, which is called tied in this context.
 
@@ -157,7 +157,7 @@ When comparing different covariance types in the Gaussian Mixture we see that us
 
 Using a diagonal covariance matrix we can now try to separate the data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}.
 
-Choosing good axis for visualizing high dimensional data is tricky. One approach for minimizing the data lost by the lower dimensional representation is called Principal Component Analysis. Axis are specifically chosen to maximize variance along those axes, which we assume corresponds to information displayed along the axis. The drawback is that the new axis can are more difficult to intuitively understand. The results can be seen in figure~\ref{fig:vis_output_seperate_human_gaussian_mixture}, figure~\ref{fig:vis_output_seperate_human_kmeans}, figure~\ref{fig:vis_output_seperate_mouse_gaussian_mixture} and~\ref{fig:vis_output_seperate_mouse_kmeans}.
+Choosing good axis for visualizing high dimensional data is tricky. One approach for minimizing the data lost by the lower dimensional representation is called Principal Component Analysis. Axis are specifically chosen to maximize variance along those axes, which we assume corresponds to information displayed along the axis. The drawback is that the new axis can be more difficult to intuitively understand. The results can be seen in figure~\ref{fig:vis_output_seperate_human_gaussian_mixture}, figure~\ref{fig:vis_output_seperate_human_kmeans}, figure~\ref{fig:vis_output_seperate_mouse_gaussian_mixture} and~\ref{fig:vis_output_seperate_mouse_kmeans}.
 
 \begin{figure}
 	\centering

@@ -38,26 +38,26 @@ for activated cells. The parameters can be understood as described in table~\ref
 
 \begin{table}[h!]
 	\centering
-	\begin{tabular}{|cl|}
+	\begin{tabular}{|ccl|}
 		\hline
-		$u$ ... & average value before activation, \\
+		$u$ & ... & average value before activation\\
 		\hline
-		$a$ ... & value reached at the peak of activation, \\
+		$a$ & ... & value reached at the peak of activation\\
 		\hline
-		$d$ ... & average value after activation, \\
+		$d$ & ... & average value after activation\\
 		\hline
-		$k_1$ ... & steepness of increase, \\
+		$k_1$ & ... & steepness of increase\\
 		\hline
-		$k_2$ ... & steepness of decrease, \\
+		$k_2$ & ... & steepness of decrease\\
 		\hline
-		$w_1$ ... & time point at which the increase happens, \\
+		$w_1$ & ... & time point at which the increase happens\\
 		\hline
-		$w_2$ ... & time point at which the decrease happens, \\
+		$w_2$ & ... & time point at which the decrease happens\\
 		\hline
-		$t$ ... & time point at which the increase ends, and the decrease starts, \\
+		$t$ & ... & time point at which the increase ends, and the decrease starts\\
 		\hline
 	\end{tabular}
-	\caption{List of parameters and their interpretation.}
+	\caption{List of parameters occurring in function $f_{unac}$ from~\ref{math:function_unactivated_cell} and function $f_{ac}$ from~\ref{math:function_activated_cell} and their interpretation.}
 	\label{tab:parameters}
 \end{table}
 
@@ -435,7 +435,7 @@ We give pseudocode for the detection of outliers.
 			mean := mean(data[parameter])\;
 			std := standard\_deviation(data[parameter])\;
 			interval := [mean - std $\cdot$ threshold[0], mean - std $\cdot$ threshold[1]]\;
-			outliers = outlier $\cup$ \{data[index] : data[parameter] $\not\in$ interval\}\;
+			outliers = outliers $\cup$ \{data[index] : data[parameter] $\not\in$ interval\}\;
 		}
 		\Return{outliers}
 	}
