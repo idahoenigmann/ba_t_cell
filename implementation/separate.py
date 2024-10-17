@@ -104,7 +104,7 @@ def main(n_components, clustering_method, files, normalize, equalize_weights, vi
 
     data = import_all_data(files, normalize, equalize_weights)
     dim = 2
-    prediction_parameters = ["a", "u", "d", "k1", "k2", "w1", "w2"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
+    prediction_parameters = ["a", "u", "d", "k1", "k2", "mse_sigmoid"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
     # clustering
     if clustering_method == "gaussian_mixture":
@@ -176,4 +176,4 @@ if __name__ == "__main__":
     cluster the data
     """
 
-    main(2, "gaussian_mixture", ["human_positive", "human_negative"], True, True, True)
+    main(2, "gaussian_mixture", ["mouse_positive", "mouse_negative", "mouse_experiment"], True, True, True)

@@ -106,7 +106,7 @@ def main(file, width, par_used, ignore_file=True):
     # matplotlib.use('TkAgg')
 
     SAVE_PDF = False
-    SHOW = True
+    SHOW = False
 
     # read parameters from file
     all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
@@ -203,21 +203,9 @@ if __name__ == '__main__':
     """
     statistical analysis of parameters, plots and prints information
     """
-    # filter out activated in neg control and unactivated in pos control
-    """
-    main("human_positive", [3, np.infty], ["a"])
-    main("human_negative", [np.infty, 0.5], ["a"])
-    main("mouse_positive", [2, np.infty], ["a"])
-    main("mouse_negative", [np.infty, 3], ["a"])
-    """
 
     # filter out all outliers
-
-    main("human_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    # main("human_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    # main("mouse_positive", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    # main("mouse_negative", [3, 3], ["a", "u", "d", "k1", "k2", "w1", "w2"])
-    # main("mouse_experiment", [3, 3], ["a", "u", "d", "k1"], ignore_file=False)
+    main("mouse_positive", [3, 3], ["a", "u", "d", "k1", "k2"], ignore_file=True)
 
 
     # filter out pre-activated cells

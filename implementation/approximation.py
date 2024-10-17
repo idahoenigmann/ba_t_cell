@@ -287,7 +287,7 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=False, select_by_input=False,
+                                                visualize_particles=True, select_by_input=False,
                                                 titel=f"particle {particle_idx}")
 
             parameters["idx"] = particle_idx
@@ -312,8 +312,8 @@ if __name__ == '__main__':
     to False.
     """
 
-    # main("human_positive")
+    main("human_positive")
     # main("human_negative")
-    main("mouse_positive")
+    # main("mouse_positive")
     # main("mouse_negative")
     # main("mouse_experiment")

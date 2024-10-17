@@ -162,7 +162,7 @@ if __name__ == "__main__":
     FILE_NAME_POS_CONTROL = "mouse_positive/mouse_positive.h5"
     FILE_NAME_EXPERIMENT = "mouse_experiment/mouse_experiment.h5"
 
-    USED_COLUMNS = ["a", "u", "d", "k1", "k2", "w1", "w2"]
+    USED_COLUMNS = ["a", "u", "d", "k1", "k2"]
     CLUSTERING_METHODS = [GaussianMixture(covariance_type="diag",
                                           n_components=2, n_init=10),
                           KMeans(n_clusters=2, n_init=10)]
@@ -177,7 +177,6 @@ if __name__ == "__main__":
 
     neg_df = remove_outliers(neg_df, 3, USED_COLUMNS)
     pos_df = remove_outliers(pos_df, 3, USED_COLUMNS)
-    exp_df = remove_outliers(exp_df, 3, USED_COLUMNS)
 
     neg_df, pos_df, exp_df = normalize(neg_df, pos_df, exp_df, USED_COLUMNS)
 
