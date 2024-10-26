@@ -11,7 +11,7 @@ import pandas as pd
 import itertools
 
 
-def import_all_data(files, normalize=True, equalize_weights=False):
+def import_all_data(files, equalize_weights=False):
     all_data = []
     weights = []
     for file in files:
@@ -20,11 +20,7 @@ def import_all_data(files, normalize=True, equalize_weights=False):
         except FileNotFoundError:
             ignore = []
 
-        with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
-            header = f_in.readline()
-            header = header.translate({ord(c): None for c in '# \n'}).split(',')
-        df2 = pd.DataFrame(data=np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=','),
-                           columns=header)
+        df2 = pd.DataFrame(pd.read_hdf(f"intermediate/par_{file}.h5", "parameters"))
         df2 = df2.drop(df2[df2["idx"].isin(ignore)].index)
         df2["file"] = file
         df2["activation"] = "positive" if file in ["human_positive", "mouse_positive"] else "negative"
@@ -37,11 +33,6 @@ def import_all_data(files, normalize=True, equalize_weights=False):
             all_data[i] = all_data[i].sample(min(weights))
 
     all_data = pd.concat(all_data)
-
-    if normalize:
-        scaler = StandardScaler()
-        all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = (
-            scaler.fit_transform(all_data[["a", "u", "d", "k1", "k2", "w1", "w2"]]))
 
     return all_data
 
@@ -99,33 +90,47 @@ def visualize_3d_compare(data, x_axis, y_axis, z_axis):
     plt.show()
 
 
-def main(n_components, clustering_method, files, normalize, equalize_weights, vis_individual):
-    print(f"{n_components} components on files {files} with {clustering_method}")
+def main(n_components, clustering_method, normalize, equalize_weights, vis_individual):
+    print(f"{n_components} components with {clustering_method}")
 
-    data = import_all_data(files, normalize, equalize_weights)
+    fit_files = ["mouse_positive", "mouse_negative"]
+    ctrl_files = ["mouse_positive_with_ctrl", "mouse_negative_with_ctrl"]
+    files = ["mouse_positive_with_ctrl", "mouse_negative_with_ctrl", "mouse_positive", "mouse_negative"]
+
+    print(f"fit with {fit_files}, show with {files}")
+
+    data_no_ctrl = import_all_data(fit_files, equalize_weights)
+    data = import_all_data(files, False)
+
+    if normalize:
+        scaler = StandardScaler()
+        data_no_ctrl[["a", "u", "d", "k1", "k2", "w1", "w2"]] = scaler.fit_transform(data_no_ctrl[["a", "u", "d", "k1", "k2", "w1", "w2"]])
+        data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = scaler.transform(data[["a", "u", "d", "k1", "k2", "w1", "w2"]])
+
     dim = 2
-    prediction_parameters = ["a", "u", "d", "k1", "k2", "mse_sigmoid"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
+    prediction_parameters = ["a", "u", "d", "k1", "k2"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
     # clustering
     if clustering_method == "gaussian_mixture":
         clustering = GaussianMixture(n_components=n_components, covariance_type="diag", n_init=10)
     elif clustering_method == "kmeans":
         clustering = KMeans(n_clusters=n_components, n_init=10)
-    data["predicted_clusters"] = clustering.fit_predict(whiten(data[prediction_parameters]))
+    clustering.fit(data_no_ctrl[prediction_parameters])
+    data["predicted_clusters"] = clustering.predict(data[prediction_parameters])
 
     res = range(n_components)
     # find association between predicted clusters and files
-    if n_components == len(files):
-        assign_matrix = np.zeros([len(files), n_components])
+    if n_components == len(ctrl_files):
+        assign_matrix = np.zeros([len(ctrl_files), n_components])
         for i in range(n_components):
-            for f_idx in range(len(files)):
+            for f_idx in range(len(ctrl_files)):
                 assign_matrix[f_idx, i] = len(data[(data['predicted_clusters'] == i) &
-                                                   (data['file'] == files[f_idx])])
-                print(f"{i} + {files[f_idx]}: {assign_matrix[f_idx, i]}")
+                                                   (data['file'] == ctrl_files[f_idx])])
+                print(f"{i} + {ctrl_files[f_idx]}: {assign_matrix[f_idx, i]}")
             print()
 
         res_sum = 0
-        for per in itertools.permutations(range(len(files))):
+        for per in itertools.permutations(range(len(ctrl_files))):
             tmp_sum = 0
             for i in range(len(per)):
                 tmp_sum += assign_matrix[per[i], i]
@@ -134,8 +139,8 @@ def main(n_components, clustering_method, files, normalize, equalize_weights, vi
                 res_sum = tmp_sum
 
         # print out means and std
-        for i in range(len(files)):
-            print(files[res[i]])
+        for i in range(len(ctrl_files)):
+            print(ctrl_files[res[i]])
             if clustering_method == "gaussian_mixture":
                 print(f"weigh: {clustering.weights_[i]}")
                 print(f"mean: {clustering.means_[i]}")
@@ -176,4 +181,4 @@ if __name__ == "__main__":
     cluster the data
     """
 
-    main(2, "gaussian_mixture", ["mouse_positive", "mouse_negative", "mouse_experiment"], True, True, True)
+    main(2, "gaussian_mixture", True, True, True)

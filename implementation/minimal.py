@@ -82,12 +82,19 @@ def approximate(dataframe):
 
 
 def approximation_loop(file_name):
-    data = pd.DataFrame(pd.read_hdf(f"../data/{file_name}"))
+    data = pd.DataFrame(pd.read_hdf(f"../data/{file_name}.h5"))
 
     # filter data
     data = data[np.isfinite(data["ratio"])]
     data = data[np.less(data["ratio"], np.full((len(data["ratio"])), 5))]
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
+    if "incl_act" in data.columns:
+        data = data[data["incl_act"]]
+    if "activated" in data.columns:
+        if "pos" in file_name:
+            data = data[data["activated"] == "activated"]
+        elif "neg" in file_name:
+            data = data[data["activated"] == "non_act"]
 
     all_parameters = list()
     parameters_saved = ["idx", "a", "u", "d", "k1", "k2", "w1", "w2"]
@@ -111,6 +118,15 @@ def approximation_loop(file_name):
             print(f"\nerror in particle {particle_idx}: {e}")
 
     return pd.DataFrame(all_parameters, columns=parameters_saved)
+
+
+def load_from_file_or_approx(file_name):
+    try:
+        df = pd.read_hdf(f"intermediate/par_{file_name}.h5", "parameters")
+    except FileNotFoundError:
+        df = approximation_loop(file_name)
+        df.to_hdf(f"intermediate/par_{file_name}.h5", key="parameters")
+    return df
 
 
 def normalize(neg_df, pos_df, exp_df, normalized_columns):
@@ -158,22 +174,22 @@ def separate(neg_df, pos_df, prediction_parameters, clustering):
 
 
 if __name__ == "__main__":
-    FILE_NAME_NEG_CONTROL = "mouse_negative/mouse_negative.h5"
-    FILE_NAME_POS_CONTROL = "mouse_positive/mouse_positive.h5"
-    FILE_NAME_EXPERIMENT = "mouse_experiment/mouse_experiment.h5"
+    FILE_NAME_NEG = "mouse_negative"
+    FILE_NAME_POS = "mouse_positive"
+    FILE_NAME_EXP = "mouse_positive_with_ctrl"
 
     USED_COLUMNS = ["a", "u", "d", "k1", "k2"]
     CLUSTERING_METHODS = [GaussianMixture(covariance_type="diag",
                                           n_components=2, n_init=10),
                           KMeans(n_clusters=2, n_init=10)]
 
-    print(f"Clustering files {FILE_NAME_NEG_CONTROL}, "
-          f"{FILE_NAME_POS_CONTROL} and {FILE_NAME_EXPERIMENT} with "
+    print(f"Clustering files {FILE_NAME_NEG}, "
+          f"{FILE_NAME_POS} and {FILE_NAME_EXP} with "
           f"parameters {USED_COLUMNS}.\n")
 
-    neg_df = approximation_loop(FILE_NAME_NEG_CONTROL)
-    pos_df = approximation_loop(FILE_NAME_POS_CONTROL)
-    exp_df = approximation_loop(FILE_NAME_EXPERIMENT)
+    neg_df = load_from_file_or_approx(FILE_NAME_NEG)
+    pos_df = load_from_file_or_approx(FILE_NAME_POS)
+    exp_df = load_from_file_or_approx(FILE_NAME_EXP)
 
     neg_df = remove_outliers(neg_df, 3, USED_COLUMNS)
     pos_df = remove_outliers(pos_df, 3, USED_COLUMNS)

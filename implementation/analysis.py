@@ -1,13 +1,14 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import pandas as pd
 import numpy as np
 from venn import venn
 from approximation import read_data, visualize, sigmoid_and_linear_decreasing
 from matplotlib.backends.backend_pdf import PdfPages
 
 
-def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.pyplot.axes, vert: bool = True):
+def violin_plot_visualization(parameters: pd.DataFrame, ax: matplotlib.pyplot.axes, vert: bool = True):
     """
     plots violin plots of various parameters
     :param vert: orientation of violin plot
@@ -21,21 +22,20 @@ def violin_plot_visualization(parameters: list, par_names: list, ax: matplotlib.
         color = violin["bodies"][0].get_facecolor().flatten()
         labels.append((mpatches.Patch(color=color), label))
 
-    ax.set_title(', '.join(par_names))
+    ax.set_title(', '.join(parameters.columns))
     ax.xaxis.label.set_size(12)
     ax.yaxis.label.set_size(12)
     ax.tick_params(axis='both', labelsize=12)
-    for i in range(len(par_names)):
-        add_label(ax.violinplot(parameters[i], showmedians=True, showmeans=False, showextrema=False, vert=vert),
-                  label=par_names[i])
+    for e in parameters.columns:
+        add_label(ax.violinplot(parameters[e], showmedians=True, showmeans=False, showextrema=False, vert=vert),
+                  label=e)
     ax.legend(*zip(*labels), loc=1)
 
 
-def plot_parameters(parameters: np.ndarray, par_indices: list):
+def plot_parameters(parameters: pd.DataFrame):
     """
     shows violin plots of various parameters
     :param parameters: numpy matrix of all parameter values
-    :param par_indices: list of names describing the column order of the parameters matrix
     """
 
     violin_plots = [['u', 'a', 'd'], ['w1', 'w2'], ['k1', 'k2']]
@@ -43,28 +43,23 @@ def plot_parameters(parameters: np.ndarray, par_indices: list):
 
     fig, ax = plt.subplots(3)
 
-    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[0]],
-                              violin_plots[0], ax[0], vert=True)
-    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[1]],
-                              violin_plots[1], ax[1], vert=False)
-    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plots[2]],
-                              violin_plots[2], ax[2], vert=True)
+    violin_plot_visualization(parameters[violin_plots[0]], ax[0], vert=True)
+    violin_plot_visualization(parameters[violin_plots[1]], ax[1], vert=False)
+    violin_plot_visualization(parameters[violin_plots[2]], ax[2], vert=True)
 
     plt.show()
 
 
-def plot_error(parameters: np.ndarray, par_indices: list):
+def plot_error(parameters: pd.DataFrame):
     """
     shows violin plots of errors
     :param parameters: numpy matrix of all parameter values
-    :param par_indices: list of names describing the column order of the parameters matrix
     """
 
     violin_plot = ["mse_sigmoid", "mse_total"]
     fig, ax = plt.subplots(1)
 
-    violin_plot_visualization([[param[par_indices.index(e)] for param in parameters] for e in violin_plot],
-                              violin_plot, ax, vert=True)
+    violin_plot_visualization(parameters[violin_plot], ax, vert=True)
 
     plt.show()
 
@@ -79,11 +74,10 @@ def statistics(values: list) -> dict:
             "mean": np.mean(values)}
 
 
-def find_outlier(values: np.ndarray, width: list, par_indices: list, par_used: list = []) -> dict:
+def find_outlier(values: pd.DataFrame, width: list, par_used: list = ()) -> dict:
     """
     returns sets of outliers, where an outlier is defined by being more than width*std_dev away from the average
     :param par_used: list of parameter names, to be used when finding outliers
-    :param par_indices: list of names describing the column order of the parameters matrix
     :param values: matrix of values for which to determine the outliers
     :param width: min distance from mean in std for particle to count as outlier
     """
@@ -91,14 +85,14 @@ def find_outlier(values: np.ndarray, width: list, par_indices: list, par_used: l
     outliers = dict()
 
     for par in set(par_used):
-        stat = statistics(values[:, par_indices.index(par)].tolist())
+        stat = statistics(values[par].tolist())
         mean, std = stat["mean"], stat["std"]
 
         interval = [mean - std * width[0], mean + std * width[1]]
 
-        outliers[par] = set([values[i, par_indices.index("idx")] for i in range(values.shape[0])
-                             if values[i, par_indices.index(par)] < interval[0] or
-                             values[i, par_indices.index(par)] > interval[1]])
+        outliers[par] = set([values["idx"][i] for i in range(values.shape[0])
+                             if values[par][i] < interval[0] or
+                             values[par][i] > interval[1]])
     return outliers
 
 
@@ -109,31 +103,26 @@ def main(file, width, par_used, ignore_file=True):
     SHOW = False
 
     # read parameters from file
-    all_parameters = np.loadtxt(f'intermediate/particle_parameters_{file}.csv', delimiter=',')
-    with open(f'intermediate/particle_parameters_{file}.csv', 'r') as f_in:
-        header = f_in.readline()
-        header = header.translate({ord(c): None for c in '# \n'})
-        indices = header.split(',')
+    all_parameters = pd.DataFrame(pd.read_hdf(f"intermediate/par_{file}.h5", "parameters"))
 
     # print statistics for all parameters
     print("Statistics for all parameters")
-    for e in indices:
-        print(f"{e}: {statistics(all_parameters[:, indices.index(e)].tolist())}")
-    print(f"t-s: {statistics(all_parameters[:, indices.index('t')] - all_parameters[:, indices.index('s')].tolist())}")
+    for e in all_parameters.columns:
+        print(f"{e}: {statistics(all_parameters[e].tolist())}")
     print()
 
     if SAVE_PDF:
         pp = PdfPages(f'{file}.pdf')
 
     # find outliers in parameters
-    outliers = find_outlier(all_parameters, width, indices, par_used=par_used)
+    outliers = find_outlier(all_parameters, width, par_used=par_used)
 
     text = (f"\n{file}\n\nOutlier analysis\n"
             f"Total number of particles: {all_parameters.shape[0]}\n"
             f"Total number of outliers: {len(set([item for sublist in outliers.values() for item in sublist]))}\n\n")
 
     for e in outliers.keys():
-        stat = statistics(all_parameters[:, indices.index(e)].tolist())
+        stat = statistics(all_parameters[e].tolist())
         mean, std = stat["mean"], stat["std"]
         text += (f"Outliers in {e}: {len(outliers[e])}\n"
                  f"mean: {mean}\n"
@@ -152,8 +141,8 @@ def main(file, width, par_used, ignore_file=True):
         plt.close(fig)
 
     # show distribution of parameters
-    plot_parameters(all_parameters, indices)
-    plot_error(all_parameters, indices)
+    plot_parameters(all_parameters)
+    plot_error(all_parameters)
 
     # show venn diagram of outliers
     if 2 <= len(outliers.keys()) <= 6:
@@ -169,14 +158,14 @@ def main(file, width, par_used, ignore_file=True):
         outlier_params = [key for key, val in outliers.items() if particle_idx in val]
 
         try:
-            row_number = all_parameters[:, indices.index("idx")].tolist().index(particle_idx)
-            w1 = all_parameters[row_number][indices.index("w1")]
-            w2 = all_parameters[row_number][indices.index("w2")]
-            a = all_parameters[row_number][indices.index("a")]
-            d = all_parameters[row_number][indices.index("d")]
-            u = all_parameters[row_number][indices.index("u")]
-            k1 = all_parameters[row_number][indices.index("k1")]
-            k2 = all_parameters[row_number][indices.index("k2")]
+            single_data = all_parameters[all_parameters["idx"] == particle_idx]
+            w1 = single_data["w1"].tolist()[0]
+            w2 = single_data["w2"].tolist()[0]
+            a = single_data["a"].tolist()[0]
+            d = single_data["d"].tolist()[0]
+            u = single_data["u"].tolist()[0]
+            k1 = single_data["k1"].tolist()[0]
+            k2 = single_data["k2"].tolist()[0]
 
             single_particle_data = data.loc[data['particle'] == particle_idx][['frame', 'ratio']]
             single_particle_data['fit_sigmoid'] = sigmoid_and_linear_decreasing(single_particle_data['frame'], w1, w2,
@@ -205,7 +194,7 @@ if __name__ == '__main__':
     """
 
     # filter out all outliers
-    main("mouse_positive", [3, 3], ["a", "u", "d", "k1", "k2"], ignore_file=True)
+    main("mouse_negative", [3, 3], ["a", "u", "d", "k1", "k2"], ignore_file=True)
 
 
     # filter out pre-activated cells

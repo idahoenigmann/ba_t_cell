@@ -13,7 +13,7 @@ def read_data(file: str) -> pandas.DataFrame:
     :param file: name of file without .h5-suffix
     :return: pandas dataframe of t-cell calcium concentrations
     """
-    return pandas.DataFrame(pd.read_hdf(f"../data/{file}/{file}.h5"))
+    return pandas.DataFrame(pd.read_hdf(f"../data/{file}.h5"))
 
 
 def calc_transition_point(w: float, k: float, alpha: float = 0.99) -> float | None:
@@ -273,6 +273,15 @@ def main(file_name):
     data = data[np.less(data["ratio"], np.full((len(data["ratio"])), 5))]
     data = data[np.greater(data["ratio"], np.full((len(data["ratio"])), 0))]
 
+    # filter by activatedness
+    if "incl_act" in data.columns:
+        data = data[data["incl_act"]]
+    if "activated" in data.columns:
+        if "pos" in file_name:
+            data = data[data["activated"] == "activated"]
+        elif "neg" in file_name:
+            data = data[data["activated"] == "non_act"]
+
     all_parameters = list()
     parameters_saved = ["idx", "start", "end", 's', 'w1', 't', 'w2', 'e', 'a', 'd', 'u', 'k1', 'k2', "mse_sigmoid",
                         "mse_total", "freq", "amp", "phase"]
@@ -287,7 +296,7 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=True, select_by_input=False,
+                                                visualize_particles=False, select_by_input=False,
                                                 titel=f"particle {particle_idx}")
 
             parameters["idx"] = particle_idx
@@ -298,8 +307,8 @@ def main(file_name):
             print(e)
             continue
 
-    np.savetxt(f"intermediate/particle_parameters_{file_name}.csv", np.matrix(np.array(all_parameters)), delimiter=',',
-               newline='\n', header=",".join(parameters_saved))
+    all_parameters = pd.DataFrame(all_parameters, columns=parameters_saved)
+    all_parameters.to_hdf(f"intermediate/par_{file_name}.h5", key="parameters")
 
 
 if __name__ == '__main__':
@@ -312,8 +321,4 @@ if __name__ == '__main__':
     to False.
     """
 
-    main("human_positive")
-    # main("human_negative")
-    # main("mouse_positive")
-    # main("mouse_negative")
-    # main("mouse_experiment")
+    main("mouse_negative")
