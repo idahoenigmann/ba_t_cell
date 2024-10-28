@@ -65,7 +65,7 @@ if __name__ == "__main__":
     kappas = dict((c, []) for c in CLUSTERING_METHODS)
     for c in CLUSTERING_METHODS:
         for percentage in progress_bar(PERCENTAGES):
-            kappas[c].append(np.mean([main(percentage, c) for _ in range(10)]))
+            kappas[c].append(np.mean([main(percentage, c) for _ in range(30)]))
 
     fig, ax = plt.subplots(1, 1)
     for c in CLUSTERING_METHODS:
