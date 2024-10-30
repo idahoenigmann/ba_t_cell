@@ -1,7 +1,7 @@
 \chapter{Approximating the Calcium Concentration}
 \label{chapter:approximating}
 
-If we have a look at the typical trajectory of the calcium concentration in activated and unactivated cells, shown in figure~\ref{fig:all_cells_overlayed}, we can see differences emerging. For one the maximum concentration value reached by most activated cells is higher. Another distinguishing feature is the presence of a steep incline at the moment of activation.
+If we have a look at the typical trajectory of the calcium concentration in activated and unactivated cells, shown in figure~\ref{fig:all_cells_overlayed}, we can see differences emerging. For one, the maximum concentration value reached by most activated cells is higher. Another distinguishing feature is the presence of a steep incline at the moment of activation.
 
 \begin{figure}[h]
 	\centering
@@ -13,7 +13,7 @@ If we have a look at the typical trajectory of the calcium concentration in acti
 		\includegraphics[width=\textwidth]{fig/all_cells_overlayed_mouse_pos}
 	\end{subfigure}
 	
-	\caption{Two plots of the overlapping calcium concentration time series of cells. On the left a negative control and on the right a positive control of mouse cells.}
+	\caption{Two plots of the overlapping calcium concentration time series of cells, on the left a negative control and on the right a positive control of mouse cells.}
 	\label{fig:all_cells_overlayed}
 \end{figure}
 
@@ -34,7 +34,7 @@ for unactivated cells and
 		\frac{a-d}{1 + e^{-k_2(x-w_2)}} + d & \textbf{ else}
 	\end{cases}
 \end{align}
-for activated cells. The parameters can be understood as described in table~\ref{tab:parameters}.
+for activated cells. The parameters are described in table~\ref{tab:parameters}.
 
 \begin{table}[h!]
 	\centering
@@ -61,7 +61,7 @@ for activated cells. The parameters can be understood as described in table~\ref
 	\label{tab:parameters}
 \end{table}
 
-Figure~\ref{fig:typical_time_series_with_parameters} shows the above functions~\ref{math:function_unactivated_cell} and~\ref{math:function_activated_cell}, and shows the relations to the parameters in unactivated and activated cells. The similarity between these functions and figure~\ref{fig:all_cells_overlayed} can be observed.
+Figure~\ref{fig:typical_time_series_with_parameters} depicts the above functions~\ref{math:function_unactivated_cell}, \ref{math:function_activated_cell}, and the relations to the parameters in unactivated and activated cells. The similarity between these functions and figure~\ref{fig:all_cells_overlayed} can be observed.
 
 % start = 50, u = 0.9, a = 4, k1 = 0.075, k2 = -0.04, w1 = 300, w2 = 520, t = 400, d = 2, z = 800
 
@@ -199,8 +199,7 @@ Figure~\ref{fig:typical_time_series_with_parameters} shows the above functions~\
 	\label{fig:typical_time_series_with_parameters}
 \end{figure}
 
-For our model to make sense we have to impose some conditions onto the parameters. We expect
-
+For our model to make sense, we have to impose some conditions on the parameters. We expect
 \begin{align*}
 	0 \leq u \leq d \leq a, && w_1 \leq t \leq w_2, && k_1 > 0 && \text{and} && k_2 < 0.
 \end{align*}
@@ -233,18 +232,15 @@ First we give the pseudocode for approximating a single particles time series wi
 		\Return{parameters}\;
 	}
 \end{algorithm}
-\vspace{1cm}
 
-The parameters of $f_{ac}$ used in the approximation are not independent of each other as we want to choose $t$ to be the point at which the increasing part of the function, $(a-u)/(1+e^{-k_1(x-w_1)})$, almost reaches the value $a$. We choose
-
+The parameters of $f_{ac}$ used in the approximation are not independent of each other as we want to choose $t$ to be the point at which the increasing part of the function, ${(a-u)/(1+e^{-k_1(x-w_1)})}$, almost reaches the value $a$. We choose
 \begin{align*}
-	t := w_1 - log(1/0.99-1) / k_1 = w_1 - log(1/99) / k_1
+	t := w_1 - \log_e(1/0.99-1) / k_1 = w_1 - \log_e(1/99) / k_1,
 \end{align*}
 
 as the function has had $99\%$ of the increase of the sigmoid curve up to this point.
 
-Setting the boundaries in line 2 is non-trivial. We have noted that a condition such as $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by changing the parameters to be relative to each other. As $u \leq d \leq a$ we choose to use the three parameters $u, d-u$ and $a-d$. We can then set the lower boundary to be $0$ which ensures
-
+Setting the boundaries in line 2 is non-trivial. We have noted that conditions such as $0 \leq u \leq d \leq a$, $w_1 \leq t \leq w_2$, $k_1 > 0$ and $k_2 < 0$ are expected. We want to impose them using boundaries in which the parameters must lie. However, boundaries for each parameter must not depend on other parameters. We can circumvent this by changing the parameters to be relative to each other. As $u \leq d \leq a$ we choose to use the three parameters $u, d-u$ and $a-d$. Then, we can set the lower boundary to be $0$ which ensures
 \begin{align*}
 	0 \leq u &&\land &&0 \leq d - u \implies d \geq u &&\land &&0 \leq a - d \implies a \geq d\\
 	&& &&\implies 0 \leq u \leq d \leq a.
@@ -253,12 +249,14 @@ Setting the boundaries in line 2 is non-trivial. We have noted that a condition 
 Using the same method, we choose the parameters $w_1 - start$ and $w_2 - w_1$, where $start$ is the first frame in which the particle was tracked. The resulting boundaries are described in table~\ref{tab:boundaries_and_starting_vals}, where we set min val, max val and median val as the minimum, maximum and median of the particles' ratio data respectively while start and end is the first and last frame where data was recorded for this particle.
 
 The condition $t \leq w_2$ can be violated, but it is ensured that at least $w_1 \leq w_2$.
+\newpage
 
 The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$ and
-
 \begin{align*}
 	t = w_1 - \underbrace{log(1/99) / k_1}_{< 0} \geq w_1.
 \end{align*}
+
+Along with the boundaries we specify so-called starting values. These define to which values the parameters are set at the start of the approximation algorithm.
 
 \begin{table}[h!]
 	\centering
@@ -329,15 +327,15 @@ Using algorithm~\ref{alg:approximate} we now describe a routine which handles re
 
 Filtering the data is necessary as the ratio can be very large if the denominator is small. Values are therefore bounded to lie within the interval $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors. Values below 0 are definitely incorrect, as both the denominator and enumerator are measured as the brightness of a pixel, which can not be negative.
 
-The visualization in line 10 of algorithm~\ref{alg:main} generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}.
+The visualization in line 10 of algorithm~\ref{alg:main} generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}. It depicts the approximation on two t cells, one of which is activated during the recording, while the other is not.
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.45\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_pos}
 	\end{subfigure}
 	\hfill
-	\begin{subfigure}{0.45\linewidth}
+	\begin{subfigure}{0.48\linewidth}
 		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_neg}
 	\end{subfigure}
 	
@@ -352,15 +350,21 @@ This work uses the python scipy function \texttt{scipy.optimize.curve\_fit(funct
 \section{Analysis of the Approximation}
 \label{sec:analysis_of_approximation}
 
-We now give data on the parameters found from the above approximation. Some statistics are found in table~\ref{tab:statistics_parameters}. Figure~\ref{fig:parameter_violin_plot} shows the distribution of the resulting parameters of the approximation. From the figure it seems the differences between activated and unactivated cells is biggest in the parameters activated value $a$, decreased value $d$ as well as the steepness of increase $k_1$.
+We now give detailed information on the parameters found from the above approximation. Some statistics are found in table~\ref{tab:statistics_parameters}. Figure~\ref{fig:parameter_violin_plot} shows the distribution of the resulting parameters of the approximation. From the figure it seems the differences between activated and unactivated cells is biggest in the parameters activated value $a$, decreased value $d$ as well as the steepness of increase $k_1$.
+
+As the datasets are not perfectly labelled, meaning there are activated cells in the negative control and vice versa, we have relatively high standard deviation.
+
+We can use the mean and standard deviation of each of the parameters to find data points that can be considered outliers. We expect wrongly-labelled data, e.g. activated cells in the negative control, to be an outlier in the parameters $a$ and $d$. However, activated cells in the positive control might have a decreased value $d$ that is very low, around $u$. This makes it difficult to distinguish activated from unactivated cells when looking at the parameter $d$. Therefore, we choose $a$ as the only parameter when filtering for these kinds of outliers.
+
+A particle from the positive control dataset that has a value in parameter $a$ higher than the median should still be classified as activated. Only a value lower than some threshold indicates an unactivated cell. The same holds for values of $a$ lower than the median in the negative control dataset. In short, we want to filter out particles with a high value of $a$ in the negative control and those with a low value of $a$ in the positive control dataset. Therefore, the threshold has to be specified as a lower and upper bound in multiples of the standard deviation.
 
 \begin{table}[h!]
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|}
 		\hline
-		 & & \multicolumn{2}{|c|}{Positive Control} & \multicolumn{2}{|c|}{Negative Control} & \\ 
+		& & \multicolumn{2}{|c|}{Positive Control} & \multicolumn{2}{|c|}{Negative Control} & \\ 
 		\hline
-		& Parameter & Average & Standard Deviation & Average & Standard Deviation & Difference \\ 
+		& Parameter & $\mu$ & $\sigma$ & $\mu$ & $\sigma$ & Difference \\ 
 		\hline
 		\multirow{7}{*}{\rotatebox[origin=c]{90}{human cells}} & $a$ & 2.808 & 0.461 & 0.923 & 0.669 & 1.885\\
 		\cline{2-7}
@@ -391,11 +395,11 @@ We now give data on the parameters found from the above approximation. Some stat
 		& $w_2$ & 469.952 & 105.375 & 304.283 & 179.834 & 165.669 \\
 		\hline
 	\end{tabular}
-	\caption{Statistics of the parameters retrieved from approximating the human cell data.}
+	\caption{Average $\mu$ and standard deviation $\sigma$ of the parameters retrieved from approximating the human cell data.}
 	\label{tab:statistics_parameters}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[h!]
 	\centering
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\textwidth]{fig/parameter_violin_plot_human_pos}
@@ -405,17 +409,12 @@ We now give data on the parameters found from the above approximation. Some stat
 		\includegraphics[width=\textwidth]{fig/parameter_violin_plot_human_neg}
 	\end{subfigure}
 	
-	\caption{Violin plots of parameters $u, a, d, w_1, w_2, k_1$ and $k_2$ from the approximations. The parameters of the positive control are on the left and those of the negative control are on the right. Both are of human cells.}
+	\caption{Violin plots of parameters $u, a, d, w_1, w_2, k_1$ and $k_2$ from the approximations. The mean is shown by the bar. The width of the individual plots corresponds to the distribution density. The parameters of the positive control are on the left and those of the negative control are on the right. Both are of human cells.}
 	\label{fig:parameter_violin_plot}
 \end{figure}
 
-As the datasets are not perfectly labelled, meaning there are activated cells in the negative control and vice versa, we have relatively high standard deviation.
-
-We can use the mean and standard deviation of each of the parameters to find data points that can be considered outliers. We expect wrongly-labelled data, e.g. activated cells in the negative control, to be an outlier in the parameters $a$ and $d$. However, activated cells in the positive control might have a decreased value $d$ that is very low, around $u$. This makes it difficult to distinguish activated from unactivated cells when looking at the parameter $d$. Therefore, we choose $a$ as the only parameter when filtering for these kinds of outliers.
-
-A particle from the positive control dataset that has a value in parameter $a$ higher than the median should still be classified as activated. Only a value lower than some threshold indicates an unactivated cell. The same holds for values of $a$ lower than the median in the negative control dataset. In short, we want to filter out particles with a high value of $a$ in the negative control and those with a low value of $a$ in the positive control dataset. Therefore, the threshold has to be specified as a lower and upper bound in multiples of the standard deviation.
-
 We give pseudocode for the detection of outliers.
+\newpage
 
 \begin{algorithm}[H] \label{alg:outlier_detection}
 	\SetAlgoLined
@@ -474,6 +473,8 @@ In order to answer the questions from chapter~\ref{chapter:introduction} concern
 
 Fourier Transformation is used when an application is concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
 
+[TODO Zitat?]
+
 \begin{figure}[h]
 	\centering
 	
@@ -495,25 +496,24 @@ Fourier Transformation is used when an application is concerned with cyclic temp
 	\label{fig:tempoal_shift}
 \end{figure}
 
-As the function of sound waves or oscillations in the \Calcium concentration in t cells is almost cyclic we might be interested in a decomposition into simple cyclic function, such as sine. We can then analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. Fast Fourier Transformation (FFT) is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
+As the function of oscillations in the \Calcium concentration in t cells is almost cyclic we might be interested in a decomposition into simple cyclic functions, such as sine. Then, we can analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. Fast Fourier Transformation (FFT) is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
 
-As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can use the frequency with the highest amplitude and use them to further analyse the oscillations. After having found this estimation of the frequency we can use the method from before, but with a sin function instead of the sigmoid functions. In detail, we once again utilize \texttt{scipy.optimize.curve\_fit}, this time using the function
-
+As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can use the frequency with the highest amplitude and use them to further analyse the oscillations. After having found this estimation of the frequency we can use the method from before, but with a sine function instead of the sigmoid functions. In detail, we once again utilize \texttt{scipy.optimize.curve\_fit}, this time using the function
 \begin{align*}
 	f(x, A, w, p) := A \cdot \sin(w \cdot t + p)
 \end{align*}
 
-with parameters amplitude $A$, angular frequency $w$ and phase $p$. The starting value for the approximation can be set using the results of the FFT. We denote the frequency with the highest amplitude returned from the FFT by $f_{guess}$ and the standard deviation of the approximation residuum time series with $std(Y)$. Then we can set the start value of $A$ to be $\sqrt{2 \cdot std(Y)}$, the one of $w$ to be $2\pi |f_{guess}|$ and the one of $p$ to be $0$.
+with parameters amplitude $A$, angular frequency $w$ and phase $p$. The starting value for the approximation can be set using the results of the FFT. We denote the frequency with the highest amplitude returned from the FFT by $freq_{guess}$ and the standard deviation of the approximation residuum time series with $std(Y)$. Then, we can set the start value of $A$ to be $\sqrt{2 \cdot std(Y)}$, the one of $w$ to be $2\pi |freq_{guess}|$ and the one of $p$ to be $0$.
 
-The drawback of this method is that only oscillations that can be represented by a single sin function can be modelled. However, for our purpose we can assume that the oscillations are of this form.
+The drawback of this method is that only oscillations that can be represented by a single sine function can be modelled. However, for our purpose we can assume that the oscillations are of this form.
 
-Doing this gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
+This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{fig/particle_vis_fft_approx_pos}
 	
-	\caption{The data of an activated cell with heavy oscillation is shown in black, simple approximation in orange and the approximation with FFT added in red. The first plot is scaled from 0 to 5, the second one is scaled to fit the data.}
+	\caption{The data of an activated cell with heavy oscillations is shown in black, simple approximation in orange and the approximation with FFT added in red. The first plot is scaled from 0 to 5, the second one is scaled to fit the data.}
 	\label{fig:particle_vis_fft_approx}
 \end{figure}
 

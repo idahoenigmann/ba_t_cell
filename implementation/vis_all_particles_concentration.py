@@ -48,7 +48,7 @@ if __name__ == '__main__':
     Generate single plot of all particle concentrations.
     """
 
-    # main("human_positive")
+    main("human_positive")
     # main("human_negative")
-    main("mouse_positive")
+    # main("mouse_positive")
     # main("mouse_negative")
