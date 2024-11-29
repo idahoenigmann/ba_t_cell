@@ -12,7 +12,7 @@ Often gathered observations are distributed as a normal distribution. These dist
 \begin{align*}
 	g(x|\mu, \Sigma) = \frac{1}{(2\pi)^{D/2} |\Sigma|^{1/2}} \exp\left( - \frac{1}{2} (x-\mu)^T \Sigma^{-1} (x-\mu) \right)
 \end{align*}
-with parameters $D$ called the dimension, $\mu$ called the mean vector and $\Sigma$ called the covariance matrix.
+with parameters $D$ called the dimension, $\mu$ called the mean vector and $\Sigma$ called the\\ covariance matrix.
 
 As we are concerned with clustering data points we expect the observed data points from different clusters to have different parameters in the normal distribution they come from. Assuming we have $n$ different data sources gives us normal distributions $g_i(x|\mu_i, \Sigma_i)$ where $i=1, ..., n$. Additionally, we might have more data points being generated from some normal distributions while less from others. We can express this using another parameter for the weights $w_i$ with $i=1, ..., n$. To normalise the weights we set the constraint $\sum w_i = 1$.
 
@@ -69,15 +69,15 @@ We want to show that this is equivalent to minimizing
 	\sum_{l=1}^{k} \frac{1}{|S_l|} \sum_{x, y \in S_l} ||x-y||^2.
 \end{align*}
 
-This follows from the equality
+Denoting the expectation with $\mathds{E}$, this follows from the equality
 
 \begin{align*}
-	\frac{1}{|S_l|} \sum_{x, y \in S_l} ||x-y||^2 &=\\
-	\frac{1}{|S_l|} \sum_{x, y \in S_l} ||x||^2 - 2||x|| ||y|| + ||y||^2 &=\\
-	\frac{1}{|S_l|} \left(|S_l| \sum_{x\in S_l} ||x||^2 - 2\sum_{x, y \in S_l}||x|| ||y|| + |S_l| \sum_{y \in S_l}||y||^2\right) &=\\
-	\frac{1}{|S_l|} (|S_l|^2 \mathds{E}(S_l^2) - 2\left(\sum_{x\in S_l}||x||\right)\left(\sum_{y \in S_l}||y||\right) + |S_l|^2 \mathds{E}(S_l^2)) &=\\
-	2|S_l| E(S_l^2) - 2|S_l| E(S_l)^2 &=\\
-	2 |S_l| Var(S_l).
+	&\frac{1}{|S_l|} \sum_{x, y \in S_l} ||x-y||^2\\
+	&= \frac{1}{|S_l|} \sum_{x, y \in S_l} ||x||^2 - 2||x|| ||y|| + ||y||^2\\
+	&= \frac{1}{|S_l|} \left(|S_l| \sum_{x\in S_l} ||x||^2 - 2\sum_{x, y \in S_l}||x|| ||y|| + |S_l| \sum_{y \in S_l}||y||^2\right)\\
+	&= \frac{1}{|S_l|} (|S_l|^2 \mathds{E}(S_l^2) - 2\left(\sum_{x\in S_l}||x||\right)\left(\sum_{y \in S_l}||y||\right) + |S_l|^2 \mathds{E}(S_l^2))\\
+	&= 2|S_l| \mathds{E}(S_l^2) - 2|S_l| \mathds{E}(S_l)^2\\
+	&= 2 |S_l| Var(S_l).
 \end{align*}
 
 Minimizing is hard, but is typically solved by the approximation using the following algorithm consisting of two steps.
@@ -102,7 +102,7 @@ The convergence of the algorithm towards a minimum seems likely. The choice of i
 
 \section{Implementation of the Clustering Algorithm}
 
-Python offers an implementation of Gaussian Mixture Model and KMeans with the sklearn package. The function with parameters relevant to us is
+Python offers an implementation of Gaussian Mixture Model and K-Means with the sklearn package. The function with parameters relevant to us is
 
 \noindent
 \texttt{sklearn.mixture.GaussianMixture(n\_components, covariance\_type, n\_init)} and
@@ -128,7 +128,7 @@ As the input of the clustering we use data points of the form \mbox{\texttt{[a, 
 	
 	\BlankLine
 	\Begin{
-		initialize Gaussian Mixture or KMeans by specifying the number of components and \texttt{covariance\_type} for Gaussian Mixture\;
+		initialize Gaussian Mixture or K-Means by specifying the number of components and \texttt{covariance\_type} for Gaussian Mixture\;
 		apply clustering method to matrix of all parameters of the approximations of all particle data sets\;
 		assign particles to clusters according to clustering results\;
 		compare assignments from clustering to those of the data set the data stems from\;
@@ -153,7 +153,7 @@ When comparing different covariance types in the Gaussian Mixture we see that us
 
 Using a diagonal covariance matrix we can now try to separate the data sets and visualize the results. As the data is 7 dimensional we show lower dimensional representations of the data both as it is assigned according to the data set it stems from as well as the assignment from algorithm~\ref{alg:separate}.
 
-Choosing good axis for visualizing high dimensional data is tricky. One approach for minimizing the data lost by the lower dimensional representation is called Principal Component Analysis. Axis are specifically chosen to maximize variance along those axes, which we assume corresponds to information displayed along the axis. The drawback is that the new axis can be more difficult to intuitively understand. The results can be seen in figure~\ref{fig:vis_output_seperate}.
+Choosing good axis for visualizing high dimensional data is tricky. One approach for minimizing the data lost by the lower dimensional representation is called Principal\\ Component Analysis. Axis are specifically chosen to maximize variance along those axes, which we assume corresponds to information displayed along the axis. The drawback is that the new axis can be more difficult to intuitively understand. The results can be seen in figure~\ref{fig:vis_output_seperate}.
 	
 \begin{figure}
 	\centering
@@ -172,6 +172,6 @@ Choosing good axis for visualizing high dimensional data is tricky. One approach
 
 By comparing which data points are from which data set and where they were assigned by the clustering method we can find which cluster most likely belongs to the positive control, and which cluster corresponds to the negative control.
 
-The relevant information derived from the Gaussian Mixture clustering is the means and covariances of the four components. For KMeans clustering the means of the components are relevant. In both cases we can decide which cluster a new data point belongs to from this information. A use case might be to find percentages of activated cells in an experiment. Distinguishing between mouse and human cells does not have a clear use case. When specifying \texttt{n\_components=2} we assume to have a cluster for activated and a second for unactivated cells.
+The relevant information derived from the Gaussian Mixture clustering is the means and covariances of the four components. For K-Means clustering the means of the components are relevant. In both cases we can decide which cluster a new data point belongs to from this information. A use case might be to find percentages of activated cells in an experiment. Distinguishing between mouse and human cells does not have a clear use case. When specifying \texttt{n\_components=2} we assume to have a cluster for activated and a second for unactivated cells.
 
 In comparison to the approach focusing on outlier detection in section~\ref{sec:analysis_of_approximation}, we now have an approach that is not only independent on parameters specified by a user, but can also be applied to a greater set of problems. A proposed way of answering the research questions from chapter~\ref{chapter:introduction} using these methods is described in chapter~\ref{chapter:results}.

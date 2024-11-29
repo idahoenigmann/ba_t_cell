@@ -1,7 +1,7 @@
 \chapter{Approximating the Calcium Concentration}
 \label{chapter:approximating}
 
-If we have a look at the typical trajectory of the calcium concentration in activated and unactivated cells, shown in figure~\ref{fig:all_cells_overlayed}, we can see differences emerging. For one, the maximum concentration value reached by most activated cells is higher. Another distinguishing feature is the presence of a steep incline at the moment of activation.
+If we have a look at the typical trajectory of the calcium concentration in activated and unactivated cells, shown in figure~\ref{fig:all_cells_overlayed}, we can see differences emerging. For one, the\\ maximum concentration value reached by most activated cells is higher. Another\\ distinguishing feature is the presence of a steep incline at the moment of activation.
 
 \begin{figure}[h]
 	\centering
@@ -251,7 +251,7 @@ Using the same method, we choose the parameters $w_1 - start$ and $w_2 - w_1$, w
 The condition $t \leq w_2$ can be violated, but it is ensured that at least $w_1 \leq w_2$.
 \newpage
 
-The other conditions are met as $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$ and
+The other conditions are met as\\ $k_1 \in [0.05, 10] \implies k_1 > 0$ while $k_2 \in [-1, -0.01] \implies k_2 < 0$ and
 \begin{align*}
 	t = w_1 - \underbrace{log(1/99) / k_1}_{< 0} \geq w_1.
 \end{align*}
@@ -295,6 +295,7 @@ Along with the boundaries we specify so-called starting values. These define to 
 Starting values can have a big impact on the approximation reached by the algorithm. We want to choose starting values close to the expected resulting parameters. By choosing the starting value of $w_1 - start$ as $0$, which corresponds to choosing $w_1 = start$, we favour the first increase in the data to be the point of activation. Otherwise, we are more likely to mistake an oscillation later in the data as the activation point. As we do not know when the activation happens when setting the boundaries we guess that $w_2$ will lie somewhere in the middle. Therefore we choose $(end - start)/2$ as the starting value for $w_2 - w_1$. The other starting values are chosen as we expect $u$ to be low, $a$ to be high, $d$ to lie somewhere in the middle. Experimenting showed that $k_1$ often has a value around $0.1$ while $k_2$ lies around $-0.03$.
 
 Using algorithm~\ref{alg:approximate} we now describe a routine which handles reading the data, some necessary preprocessing steps and saving of the resulting parameter lists.
+\newpage
 
 \begin{algorithm}[H] \label{alg:main}
 	\SetAlgoLined
@@ -327,7 +328,7 @@ Using algorithm~\ref{alg:approximate} we now describe a routine which handles re
 
 Filtering the data is necessary as the ratio can be very large if the denominator is small. Values are therefore bounded to lie within the interval $[0, 5]$. Any values higher than 5 are almost certainly caused by measurement errors. Values below 0 are definitely incorrect, as both the denominator and enumerator are measured as the brightness of a pixel, which can not be negative.
 
-The visualization in line 10 of algorithm~\ref{alg:main} generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}. It depicts the approximation on two t cells, one of which is activated during the recording, while the other is not.
+The visualization in line 10 of algorithm~\ref{alg:main} generates images such as figure~\ref{fig:particle_vis_sigmoid_approx}. It depicts the approximation of two t cells, one of which is activated during the recording, while the other is not. The ratio data recorded is shown in black, while the approximation is shown in orange. It is important to note that the approximation performed on unactivated t cells still uses the same function $f_{ac}$.
 
 \begin{figure}[h]
 	\centering
@@ -339,7 +340,7 @@ The visualization in line 10 of algorithm~\ref{alg:main} generates images such a
 		\includegraphics[width=\textwidth]{fig/particle_vis_sigmoid_approx_neg}
 	\end{subfigure}
 	
-	\caption{The left plot shows the data in black and approximation in orange of an activated cell. The first plot is scaled from 0 to 5, the second one is scaled to fit the data. The right plot shows the same of an unactivated cell.}
+	\caption{The left plot shows the data in black and approximation in orange of an\\ activated cell. The upper plot is scaled from 0 to 5, the lower one is scaled to fit the data. The right plot shows the same of an unactivated cell.}
 	\label{fig:particle_vis_sigmoid_approx}
 \end{figure}
 
@@ -395,7 +396,7 @@ A particle from the positive control dataset that has a value in parameter $a$ h
 		& $w_2$ & 469.952 & 105.375 & 304.283 & 179.834 & 165.669 \\
 		\hline
 	\end{tabular}
-	\caption{Average $\mu$ and standard deviation $\sigma$ of the parameters retrieved from approximating the human cell data.}
+	\caption{Average $\mu$ and standard deviation $\sigma$ of the parameters retrieved from\\ approximating the human cell data.}
 	\label{tab:statistics_parameters}
 \end{table}
 
@@ -473,8 +474,6 @@ In order to answer the questions from chapter~\ref{chapter:introduction} concern
 
 Fourier Transformation is used when an application is concerned with cyclic temporal data. Examples are sound waves, seismic data or oscillations of a skyscraper in strong wind. This data can be represented as a function of amplitude over time. Most of the time we are not interested in the amplitude at a specific point in time, as a temporal shift would represent very similar information. Such a shift is demonstrated in figure~\ref{fig:tempoal_shift}.
 
-[TODO Zitat?]
-
 \begin{figure}[h]
 	\centering
 	
@@ -496,7 +495,7 @@ Fourier Transformation is used when an application is concerned with cyclic temp
 	\label{fig:tempoal_shift}
 \end{figure}
 
-As the function of oscillations in the \Calcium concentration in t cells is almost cyclic we might be interested in a decomposition into simple cyclic functions, such as sine. Then, we can analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. Fast Fourier Transformation (FFT) is an algorithm that transforms temporal data into such a representation of a weighted sum of sines.
+As the function of oscillations in the \Calcium concentration in t cells is almost cyclic we might be interested in a decomposition into simple cyclic functions, such as sine. Then, we can analyse the most prominent frequencies and their respective amplitudes. This gives a representation of the data, that can be easier to interpret. Fast Fourier\\ Transformation (FFT) is an algorithm that transforms temporal data into such a\\ representation of a weighted sum of sines. Pseudocode and a detailed description are provided by Cormen et al\cite{Cormen2009}.
 
 As the oscillations happen in the decrease of the \Calcium concentration we apply FFT to that part of the data. We can use the frequency with the highest amplitude and use them to further analyse the oscillations. After having found this estimation of the frequency we can use the method from before, but with a sine function instead of the sigmoid functions. In detail, we once again utilize \texttt{scipy.optimize.curve\_fit}, this time using the function
 \begin{align*}

@@ -1,16 +1,16 @@
 \chapter{Results}
 \label{chapter:results}
 
-Combining all the methods and algorithms from the previous chapters, such as approximation, clustering and outlier detection, gives us insight into the \Calcium concentration data. We give an algorithm for detecting activated t cells, look at differences between mouse and human t cells, analyse the oscillations and investigate whether there are different types of activated t cells.
+Combining all the methods and algorithms from the previous chapters, such as\\ approximation, clustering and outlier detection, gives us insight into the \Calcium concentration data. We give an algorithm for detecting activated t cells, look at differences between mouse and human t cells, analyse the oscillations and investigate whether there are different types of activated t cells.
 
 \section{Proposed Algorithm for Detecting Activated T Cells}
 \label{sec:proposed-algorithm}
 
-A relevant question this work aims to provide an answer to is how pre-activated, unactivated and activated t cells can be distinguished.
+A relevant question this work aims to provide an answer to is, how pre-activated,\\ unactivated and activated t cells can be distinguished.
 
 First we give a method for filtering the pre-activated cells from a dataset. From their nature we expect a high value in \Calcium concentration at the start of the recording. Using the approximation from chapter~\ref{chapter:approximating} it is easy to get the approximate \Calcium concentration value at the start of the recording, as it is the parameter $u$. Using the algorithm~\ref{alg:outlier_detection} with parameters threshold as $[\infty, 0.5]$ and parameters\_used as [$u$] gives good results. It returns the indices of particles, which are pre-activated in the data sets of the positive controls.
 
-After having filtered out pre-activated particles, we want to distinguish between unactivated and activated particles. For this we propose the following steps:
+After having filtered out pre-activated particles, we want to distinguish between\\ unactivated and activated particles. For this we propose the following steps:
 
 \begin{enumerate}
 	\item get positive control, negative control and experiment recordings
@@ -37,7 +37,7 @@ This algorithm is implemented in Python and shown in appendix~\ref{chapter:pytho
 		  & experiment & 716 & 890 & 80.449\%\\
 		 \hline
 		  & negative control & 53 & 969 & 5.470\%\\
-		 kmeans & positive control & 926 & 969 & 95.562\%\\
+		 k-means & positive control & 926 & 969 & 95.562\%\\
 		  & experiment & 687 & 890 & 77.191\%\\
 		 \hline
 	\end{tabular}
@@ -95,9 +95,9 @@ By comparing the means from table~\ref{tab:mean_std_parameters} we see that inde
 \section{Oscillation in Decrease}
 \label{sec:oscillation_in_decrease}
 
-Looking at the frequencies, amplitudes and phases returned from the approximation described in section~\ref{sec:adding_oscillation_to_the_approximation} gives us an idea with which period the typical t cell oscillates in \Calcium concentration during the decrease after activation. The figure~\ref{fig:freq_amp} shows violin plots of all three parameters in the positive control on human t cells. The means in this data set are 0.005 for the frequency, 0.01 for the amplitude and -0.001 for the phase. The details of the density distribution are shown in the width of each of the violin plots.
+Looking at the frequencies, amplitudes and phases returned from the approximation\\ described in section~\ref{sec:adding_oscillation_to_the_approximation} gives us an idea with which period the typical t cell oscillates in \Calcium concentration during the decrease after activation. The figure~\ref{fig:freq_amp} shows violin plots of all three parameters in the positive control on human t cells. The means in this data set are 0.005 for the frequency, 0.01 for the amplitude and -0.001 for the phase. The details of the density distribution are shown in the width of each of the violin plots.
 
-As some t cells do not oscillate, the approximation sometimes returns a misleading frequency with a low amplitude. We want to filter these cells before looking at the typical period with which the \Calcium concentration oscillates. We choose arbitrary threshold values, that seemed sensible to the author. Namely, all particles with an amplitude less than 0.1 or a frequency less than 0.005 are removed before once again looking at the average values. Now the average frequency is 0.008 with an average amplitude of 0.223. This corresponds to a period of oscillation being $1/freq = $ 125 seconds. Indeed, looking at the example provided in figure~\ref{fig:freq_amp}, this seems like a good estimate.
+As some t cells do not oscillate, the approximation sometimes returns a misleading\\ frequency with a low amplitude. We want to filter these cells before looking at the typical period with which the \Calcium concentration oscillates. We choose arbitrary threshold values, that seemed sensible to the author. Namely, all particles with an amplitude less than 0.1 or a frequency less than 0.005 are removed before once again looking at the average values. Now the average frequency is 0.008 with an average amplitude of 0.223. This corresponds to a period of oscillation being $1/freq = $ 125 seconds. Indeed, looking at the example provided in figure~\ref{fig:freq_amp}, this seems like a good estimate.
 
 Lastly we compare this to the positive control in mouse cells. Before filtering the averages are 0.007 for the frequency, 0.071 for the amplitude and 0.288 for the phase. After filtering, with the same thresholds as for human cells, we have an average of 0.007 for the frequency and 0.177 for the amplitude. Converting this to the period gives us 143 seconds. This compares to the average period found in human t cells.
 
@@ -105,7 +105,7 @@ Lastly we compare this to the positive control in mouse cells. Before filtering 
 	\centering
 	\includegraphics[width=0.9\textwidth]{fig/freq_amp}
 	
-	\caption{Violin plots of the frequencies, amplitudes and phases of the oscillation approximation in the positive control dataset of human t cells.}
+	\caption{Violin plots of the frequencies, amplitudes and phases of the oscillation\\ approximation in the positive control dataset of human t cells.}
 	\label{fig:freq_amp}
 \end{figure}
 
@@ -116,7 +116,7 @@ It is interesting to see whether there are different types of activated cells. W
 
 From figure~\ref{fig:positive_control}, it is not apparent that there are different types of activated cells.
 
-Lastly we can have a look whether particles differ in the oscillation. Using the approximation of the oscillation and the filtering done in section~\ref{sec:oscillation_in_decrease} we can for example differ between oscillating t cells, marked by high amplitude and period around the expected 125 seconds, and non-oscillating t cells, marked by low amplitude or different period.
+Lastly we can have a look whether particles differ in the oscillation. Using the\\ approximation of the oscillation and the filtering done in section~\ref{sec:oscillation_in_decrease} we can for example differ between oscillating t cells, marked by high amplitude and period around the expected 125 seconds, and non-oscillating t cells, marked by low amplitude or different period.
 
 We note that out of 139 particles in the positive control of human t cells only 14 have the behaviour of a heavily oscillating t cell. In the mouse positive control it is 192 out of 1058.
 

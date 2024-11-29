@@ -1,15 +1,11 @@
 \chapter{Optimization Algorithms}
 \label{chapter:optimization}
 
-[TODO newpages]
-
 An optimization problem is any problem where a function $f\colon X \rightarrow Y$ is given, and we search for the point $x \in X$ such that $f(x)$ is minimal or maximal. Obviously the minimum or maximum must not exist, as the example $f\colon (0, 1) \rightarrow \mathds{R}, x \mapsto x$ demonstrates by not having either. Investigating conditions on $X$, $Y$ and $f$ such that a minimum or maximum exists is mathematically interesting. However, when implementing an optimization algorithm the true minimum or maximum can sometimes not be found even if it exists and is instead replaced by a sufficiently good approximation.
 
 \section{Gradient Descent}
 
-[TODO Zitat zu Gradient Descent?]
-
-An iterative algorithm for finding the minimum of a differentiable function $f\colon \mathds{R}^n \rightarrow \mathds{R}$ is gradient descent. As the name suggests, it uses information of the gradient $\nabla f$. Locally, the negative gradient always points into the direction of greatest descent. The idea is to follow this direction for the next guess of the minimum. The pseudocode of this approach is given below.
+An iterative algorithm for finding the minimum of a differentiable function $f\colon \mathds{R}^n \rightarrow \mathds{R}$ is gradient descent. This method of steepest descent is described in detail by Chong and Żak\cite{Chong2013}. As the name suggests, it uses information of the gradient $\nabla f$. Locally, the negative gradient always points into the direction of greatest descent. The idea is to follow this direction for the next guess of the minimum. The pseudocode of this approach is given below.
 
 \begin{algorithm}[H] \label{alg:gradient_descent}
 	\SetAlgoLined
@@ -68,7 +64,7 @@ Improvements can be made by choosing good step sizes, starting value or by start
 
 We now focus on the Least Square Problem and give an introduction into various algorithms solving this problem.
 
-In the example dealt within this work we are given some data points $((x_k, y_k))_{k \in \{1, 2, ..., n\}}$ and want to find a close approximation in the form of a function $g(x, a_1, a_2, ..., a_m)$ where for every list of function parameters $a = (a_1, ..., a_m)$ we have the function $g_a(x)\colon \mathds{R} \rightarrow \mathds{R}, x \mapsto g(x, a_1, ..., a_m)$. Searching for a good approximation can be reformulated as searching for the minimum of $r(a) := \sum_{k=1}^{n} |g_a(x_k) - y_k|^2$ or any other error function. This form of optimization problem is called the Least Square Problem.
+In the example dealt within this work we are given some data points $((x_k, y_k))_{k \in \{1, 2, ..., n\}}$ and want to find a close approximation in the form of a function $g(x, a_1, a_2, ..., a_m)$ where for every list of function parameters $a = (a_1, ..., a_m)$ we have the function \\${g_a(x)\colon \mathds{R} \rightarrow \mathds{R}, x \mapsto g(x, a_1, ..., a_m)}$. Searching for a good approximation can be reformulated as searching for the minimum of $r(a) := \sum_{k=1}^{n} |g_a(x_k) - y_k|^2$ or any other error function. This form of optimization problem is called the Least Square Problem.
 
 First, we want to discuss some variations of the problem. Easiest to solve are linear problems. These can be formulated as the minimization of $||Ax - b||^2$, and solved using calculus by $x=(A^TA)^{-1}A^Tb$ provided the rank of $A$ is full.
 
@@ -88,7 +84,7 @@ Some algorithm for minimization are now discussed below.
 
 \subsection{Gauss–Newton Algorithm}
 
-[TODO Zitat dazu?]
+The Gauss-Newton algorithm is detailed by Björck in his book Numerical Methods for Least Squares Problems\cite{Bjoerck1996}.
 
 The idea behind this algorithm is that it is easy to find the intersection with zero of a linear function. If we linearize $r\colon\mathds{R}^n \rightarrow \mathds{R}^m$ locally, we can approximate the root by finding it of the linear approximating function. This is demonstrated in figure~\ref{fig:approx_root_with_lin}.
 
@@ -115,7 +111,7 @@ The idea behind this algorithm is that it is easy to find the intersection with 
 	\label{fig:approx_root_with_lin}
 \end{figure}
 
-Iterating this step of linear approximating gives us the Gauss-Newton Method. In figure~\ref{fig:gauss_newton_example} we can see that indeed $x_n$ seems to converge towards the root of the function.
+Iterating this step of linear approximating gives us the Gauss-Newton Method. In\\ figure~\ref{fig:gauss_newton_example} we can see that indeed $x_n$ seems to converge towards the root of the function.
 
 \begin{figure}[h]
 	\centering
@@ -145,6 +141,7 @@ Iterating this step of linear approximating gives us the Gauss-Newton Method. In
 	\caption{Iteratively applying linear approximation gives the Gauss-Newton Method for approximating the root.}
 	\label{fig:gauss_newton_example}
 \end{figure}
+\newpage
 
 Define $Dr$ as the Jacobian matrix $\left(\frac{\partial r_i}{\partial x_j}\right)_{ij}$. Using Taylor's theorem we get the linear approximation
 \begin{align*}
@@ -177,11 +174,11 @@ Rewriting this as $r(x) \approx Ax - b$ where $A := Dr(a)$ and $b := Dr(a)a-r(a)
 	}
 \end{algorithm}
 
-Gauss-Newton is guaranteed to find a local minimum $x$ if $r$ is twice continuously differentiable in an open convex set including $x$, $Dr$ has a full rank and the initial value is close enough to $x$.
+Gauss-Newton is guaranteed to find a local minimum $x$ if $r$ is twice continuously\\ differentiable in an open convex set including $x$, $Dr$ has a full rank and the initial value is close enough to $x$.
 
-For the example demonstrated in figure~\ref{fig:gauss_newton_fails_sin} we can see that choosing a particular starting value leads to a loop in which only two points are explored as possible roots. More extreme examples exists in which Gauss-Newton gets increasingly further away from the root, due to an increasingly flat incline the further we get from the root. One example of such a function can be seen in figure~\ref{fig:gauss_newton_fails_cubic_root}.
+For the example demonstrated in figure~\ref{fig:gauss_newton_fails_sin} we can see that choosing a particular starting value leads to a loop in which only two points are explored as possible roots. A more extreme examples can be seen in figure~\ref{fig:gauss_newton_fails_cubic_root}, in which Gauss-Newton gets increasingly further away from the root, due to an increasingly flat incline the further we get from the root.
 
-\begin{figure}
+\begin{figure}[h!]
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[xmin=-4.71238898, xmax=3.141592653, samples=100]
@@ -207,7 +204,7 @@ For the example demonstrated in figure~\ref{fig:gauss_newton_fails_sin} we can s
 	\label{fig:gauss_newton_fails_sin}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[h!]
 	\centering
 	\begin{tikzpicture}
 		\begin{axis}[xmin=-5, xmax=5, samples=500]
@@ -264,11 +261,11 @@ Writing the above idea as a single squared norm to minimize gives us the problem
 
 We observe that as $\lambda_n$ is positive the left matrix has full rank. From this it follows that a unique solution exists.
 
-The change of including $\lambda_n$ translates into the algorithm as replacing solving $A_n^TA_nx_{n+1} = A_n^Tb_n$ in Gauss-Newton by solving ${A_n^T A_n z + \lambda_n z= A_n^T b_n + \lambda_n x_n}$.
+The change of including $\lambda_n$ translates into the algorithm as replacing solving\\ ${A_n^TA_nx_{n+1} = A_n^Tb_n}$ in Gauss-Newton by solving ${A_n^T A_n z + \lambda_n z= A_n^T b_n + \lambda_n x_n}$.
 
 The question of how to choose $\lambda_n$ arises. If it is too small, $x_{n+1}$ can be too far from $x_n$ to trust the approximation. If it is too big, the convergence will be slow. If in the previous step the objective $||r(x_n)||^2$ decreased we decrease $\lambda_{n+1}$ slightly. If the last step was not successful $\lambda_n$ was too small. Therefore we increase $\lambda_{n+1}$.
 
-Pseudocode of the resulting Levenberg-Marquardt algorithm is shown below. The stopping criteria of $||2Dr(x_n)^Tr(x_n)||$ being too small is known as the optimality condition. It is derived from the fact that $2Dr(x)^Tr(x) = \nabla||r(x)||^2 = 0$ holds for any $x$ minimizing $||r(x)||^2$. Note that this condition can be met for points other that the minimum.
+Pseudocode of the resulting Levenberg-Marquardt algorithm is shown below. The\\ stopping criteria of $||2Dr(x_n)^Tr(x_n)||$ being too small is known as the optimality condition. It is derived from the fact that $2Dr(x)^Tr(x) = \nabla||r(x)||^2 = 0$ holds for any $x$ minimizing $||r(x)||^2$. Note that this condition can be met for points other that the minimum.
 
 \begin{algorithm}[H] \label{alg:levenberg-marquardt}
 	\SetAlgoLined
@@ -342,10 +339,10 @@ Further improvements to this algorithm can be made using good starting values pe
 \subsection{Algorithms for Bounded Least Square Problems}
 \label{subsec:algorithms_bounded_lsp}
 
-The algorithms described above do not consider bounds. For bounded problems two algorithms known as Trust Region Reflective Algorithm and Dogleg Algorithm with Rectangular Trust Regions can be used.
+The algorithms described above do not consider bounds. For bounded problems two\\ algorithms known as Trust Region Reflective Algorithm and Dogleg Algorithm with\\ Rectangular Trust Regions can be used.
 
 Trust Region Reflective gets its name from the use of trust regions as in Levenberg-Marquardt as well as reflecting along the bounds. A more detailed explanation is provided by Branch et al. \cite{branch1999}. If an iterative $x_n$ lands outside the bounds set, it is replaced by a reflected value within the bounds. This ensures each iterative is feasible as a solution.
 
-As the name suggests the Dogleg Algorithm with Rectangular Trust Regions uses rectangular trust regions as opposed to ellipsoids. Voglis and Lagaris describe this algorithm in more detail\cite{voglis2004}. As the bounds are specified as a rectangle to stay within, this results in the intersection of trust region and bounds to be rectangular. The resulting minimizing problem is solved with an adequate algorithm\cite{Nocedal1999}.
+As the name suggests the Dogleg Algorithm with Rectangular Trust Regions uses\\ rectangular trust regions as opposed to ellipsoids. Voglis and Lagaris describe this algorithm in more detail\cite{voglis2004}. As the bounds are specified as a rectangle to stay within, this results in the intersection of trust region and bounds to be rectangular. The resulting minimizing problem is solved with an adequate algorithm, as one described by Nocedal and Wrigh\cite{Nocedal1999}.
 
 In Python the library SciPy provides the three methods Levenberg-Marquardt, Trust Region Reflective and Dogleg with Rectangular Trust Regions for solving Least Square Problems.
