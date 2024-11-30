@@ -1,13 +1,13 @@
 \chapter{Introduction}
 \label{chapter:introduction}
 
-As part of the bodies' defence against viruses t cells can undergo activation in their lifetime. Whether and when a t cell activates is an interesting topic when studying immunology. However, measuring activation is often done indirectly by using the correlation between calcium concentration within the cell and activation. Measuring the calcium concentration leads to a time series that can be analysed by experts for activation.
+As part of the bodies' defence against viruses T cells can undergo activation in their lifetime. They are named after the thymus, where they are differentiated into T cells. Whether and when a T cell activates is an interesting topic when studying immunology. However, measuring activation is often done indirectly by using the correlation between calcium concentration within the cell and activation. Measuring the calcium concentration leads to a time series that can be analysed for activation by experts.
 
-This work aims to provide an algorithm for automatic detection of activation. By using approximation algorithms the time series is fitted with sigmoid functions. This reduces the data from hundreds of values in a time series to few parameters of the approximation function. Additionally, the parameters are chosen to be valuable for interpretation by experts. This parameter representation of the data is then filtered and used for clustering the data into activated and unactivated cells.
+This work aims to model the activation behaviour of T cells and provide an algorithm for automatic detection of activation. By using approximation algorithms the time series is fitted with sigmoid functions. This reduces the data from hundreds of values in a time series to few parameters of the approximation function. Additionally, the parameters are chosen to be valuable for interpretation by experts. This parameter representation of the data is then filtered and used for clustering the data into activated and unactivated cells.
 
 The given algorithm can be used on any data set, provided a positive control and negative control is supplied. The most simple use case of finding the number of activated cells in the data set is described in more detail.
 
-The proposed algorithm is tested with two of the most common types of t cells, human Jurkat cells and mouse 5c.c7 cells, which will be explained in section~\ref{sec:jurkat_cells_primary_mouse_t_cells_and_fura2}.
+The proposed algorithm is tested with two of the most common types of T cells, human Jurkat cells and mouse 5c.c7 cells, which will be explained in section~\ref{sec:jurkat_cells_primary_mouse_t_cells_and_fura2}.
 
 \vspace*{0.7cm}
 \noindent
@@ -15,9 +15,9 @@ The main question this work aims to answer is which criteria can distinguish bet
 
 When only looking at activated cells some interesting questions are whether there are different types of activated cells and how they are different. A typical pattern observed in activated cells is that they show oscillations of the calcium concentration. Analysing the frequencies of these oscillations might be interesting.
 
-Lastly, differences between mouse and human cells show whether the proposed algorithm is applicable to the two most common types of t cells studied.
+Lastly, differences between mouse and human cells show whether the proposed algorithm is applicable to the two most common types of T cells studied.
 
-To summarize the main research questions are
+To summarize, the main research questions are:
 \begin{itemize}
 	\item Which criteria can distinguish between unactivated, activated and pre-activated cells?
 	\item Do different types of activated cells exists? How are they different?
@@ -25,21 +25,19 @@ To summarize the main research questions are
 	\item Is there a difference between mouse and human cells?
 \end{itemize}
 
-with the first question being the most relevant.
-
 \newpage
 \noindent
-This work starts with a chapter on optimization algorithms. In chapter~\ref{chapter:optimization} the relevant algorithm, Trust Region Reflective Algorithm, is attained from other algorithms, which are described as well.
+This work starts with a chapter on optimization algorithms. In chapter~\ref{chapter:optimization} the relevant algorithm, trust region reflective algorithm, is attained from other algorithms, which are described as well.
 
-Following is chapter~\ref{chapter:t-cell} focusing on the biology of t cells. All relevant components of t cells for changes in calcium concentration are depicted. Their interconnections are outlined as well.
+Following is chapter~\ref{chapter:t-cell} focusing on the biology of T cells. All relevant components of T cells for changes in calcium concentration are depicted. Their interconnections are outlined as well.
 
 Next, chapter~\ref{chapter:data} describes the structure and experimental setup for retrieving the data. Some processing steps performed on the data are outlined.
 
 The main focus of this work, approximating the calcium concentration, are portrayed in chapter~\ref{chapter:approximating}. Here the approximation function is inferred and characterized. Parameter descriptions are provided. Pseudocode for the approximation algorithms are given and explained. The parameters found from the approximation of the data sets used in this work are analysed. Oscillations are approximated in this chapter as well.
 
-In chapter~\ref{chapter:clustering} the clustering algorithms Gaussian Mixture Model and K-Means are\\ characterized and applied to the output of the approximation. Visual representation of the clustering is shown.
+In chapter~\ref{chapter:clustering} the clustering algorithms gaussian mixture model and k-means are characterized and applied to the output of the approximation. Visual representation of the clustering is shown.
 
-Chapter~\ref{chapter:results} aims to answer the main research questions posed above by using the\\ approximation and clustering described in the other chapters.
+Chapter~\ref{chapter:results} aims to answer the main research questions posed above by using the approximation and clustering described in the other chapters.
 
 A final discussion of the results provided in this work is provided in chapter~\ref{chapter:conclusion}. The outlook is featured here as well.
 

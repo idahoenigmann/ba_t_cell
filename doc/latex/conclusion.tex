@@ -6,25 +6,26 @@ This chapter gives answers to the questions from chapter~\ref{chapter:introducti
 \begin{itemize}
 	\item Which criteria can distinguish between unactivated, activated and pre-activated cells?
 	
-	Pre-activated cells can be detected by having a parameter $u$ that is bigger than\\ ${\mu + 0.5 \sigma}$, with $\mu$ being the mean and $\sigma$ being the standard deviation of $u$.\\ Distinguishing between activated and unactivated t cells can be done by the algorithm proposed in section~\ref{sec:proposed-algorithm}.
+	Pre-activated cells can be detected by having a parameter $u$ that is bigger than ${\mu + 0.5 \sigma}$, with $\mu$ being the mean and $\sigma$ being the standard deviation of $u$. Distinguishing between activated and unactivated T cells can be done by the algorithm proposed in section~\ref{sec:proposed-algorithm}.
 	\item Do different types of activated cells exists? How are they different?
 	
-	There are no apparent differences between different activated t cells. The parameters found behave according to a normal distribution. Differences can be found in how pronounced the oscillations are.
+	There are no apparent differences between different activated T cells. The parameters found behave according to a normal distribution. Differences can be found in how pronounced the oscillations are.
 	\item With which frequencies does the Calcium concentration repeat after activation?
 	
-	The oscillations appear to have a frequency of about 0.0075 which corresponds to a period of 133 seconds in both human and mouse t cells.
+	The oscillations appear to have a frequency of about 0.0075 which corresponds to a period of 133 seconds in both human and mouse T cells.
 	\item Is there a difference between mouse and human cells?
 	
-	There are differences between the two different types of t cells. The biggest differences are present in the parameter $u$ of the \Calcium concentration before activation.
+	There are differences between the two different types of T cells. The biggest differences are present in the parameter $u$ of the \Calcium concentration before activation.
 \end{itemize}
 
-As the first question is the most relevant we want to discuss the answer further. To give a value for accuracy achieved by the proposed algorithm we have to know how many t cells from the experiment dataset are activated. We do this by using some of the particles from the positive and negative control. Using random sampling we select some particles from each control data set to be the experiment data. Of course, we then have to remove these particles from the control data to avoid training on the data we test with. By varying the number of particles chosen from the two control data sets we can vary the percentage of activated cells in this generated experiment data. The results from this test can be found in table~\ref{tab:accuracy}.
+As the first question is the most relevant we want to discuss the answer further. To give a value for accuracy achieved by the proposed algorithm we have to know how many T cells from the experiment dataset are activated. We do this by using some of the particles from the positive and negative control. Using random sampling we select some particles from each control data set to be the experiment data. Of course, we then have to remove these particles from the control data to avoid training on the data we test with. By varying the number of particles chosen from the two control data sets we can vary the percentage of activated cells in this generated experiment data. The results from this test can be found in table~\ref{tab:accuracy}.
 
 \begin{table}[h]
 	\centering
 	\begin{tabular}{|c|c|c|}
 		\hline
-		percentage activated & K-Means output & Gaussian Mixture output\\
+		\textbf{percentage activated} & \textbf{k-means output} & \textbf{gaussian mixture output}\\
+		\hline
 		\hline
 		0\% & 5.5\% & 4\%\\
 		\hline
@@ -37,14 +38,16 @@ As the first question is the most relevant we want to discuss the answer further
 		100\% & 96\% & 97.5\%\\
 		\hline
 	\end{tabular}
-	\caption{Percentage activated output by K-Means and Gaussian Mixture for different true values of percentages of activated t cells.}
+	\caption{Percentage activated output by k-means and gaussian Mixture for different true values of percentages of activated T cells.}
 	\label{tab:accuracy}
 \end{table}
 
-We now discuss possible improvements. The proposed algorithm and subsequent analysis of the clustering performed can be improved by applying the discussed algorithm to enough data points to achieve a good approximation for average and standard deviation that hold for arbitrary data points from the same t cell line.
+We now discuss possible improvements. The proposed algorithm and subsequent analysis of the clustering performed can be improved by applying the discussed algorithm to enough data points to achieve a good approximation for average and standard deviation that hold for arbitrary data points from the same T cell line.
 
-Another improvement can be made in the frequency analysis. Exploring what causes these oscillations can give a better understanding as to what type of oscillation is to be expected and how these might differ between different t cells. The assumption made in this work, that the oscillations can be modelled by a single sine wave, might prove wrong. In this case a different modelling approach has to be chosen. Alternatively, the output of the FFT can be used directly.
+Another improvement can be made in the frequency analysis. Exploring what causes these oscillations can give a better understanding as to what type of oscillation is to be expected and how these might differ between different T cells. The assumption made in this work, that the oscillations can be modelled by a single sine wave, might prove wrong. In this case a different modelling approach has to be chosen. Alternatively, the output of the FFT can be used directly.
 
-Lastly, the performance of the Python implementation given in the appendix~\ref{chapter:python_implementation} is\\ suboptimal. Changing to other programming languages or improving the performance of the code in Python desirable.
+Lastly, the performance of the Python implementation given in the appendix~\ref{chapter:python_implementation} is suboptimal. Changing to other programming languages or improving the performance of the code in Python desirable.
 
-In summary this work proposed an algorithm for detecting activated t cells in \Calcium concentration recordings, without a need for user specified criteria for activation detection. The accuracy of this algorithm is acceptable, and the implementation is given in Python.
+\vspace{0.5cm}
+\noindent
+In summary this work proposed an algorithm for detecting activated T cells in \Calcium concentration recordings, without a need for user specified criteria for activation detection. The accuracy of this algorithm is acceptable, and the implementation is given in Python.
