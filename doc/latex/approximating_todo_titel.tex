@@ -33,7 +33,7 @@ for unactivated cells and
 \begin{align}
 	\label{math:function_activated_cell}
 	f_{\text{ac}}(x) := \begin{cases}
-		\frac{a-u}{1 + \text{e}^{-k_1(x-w_1)}} + u & \textbf{ if } x <= t\\
+		\frac{a-u}{1 + \text{e}^{-k_1(x-w_1)}} + u & \textbf{ if } x \leq t\\
 		\frac{a-d}{1 + \text{e}^{-k_2(x-w_2)}} + d & \textbf{ else}
 	\end{cases}
 \end{align}
@@ -512,7 +512,7 @@ As the oscillations happen in the decrease of the \Calcium concentration we appl
 with parameters amplitude $A$, angular frequency $\omega$ and phase $p$. The starting value for the approximation can be set using the results of the FFT. We denote the frequency with the highest amplitude returned from the FFT by $freq_{guess}$ and the standard deviation of the approximation residuum time series with $std(Y)$. Then, we can set the start value of $A$ to be $\sqrt{2 \cdot std(Y)}$, the one of $\omega$ to be $2\pi |freq_{guess}|$ and the one of $p$ to be $0$.
 
 The drawback of this method is that only oscillations that can be represented by a single sine function can be modelled. However, for our purpose we can assume that the oscillations are of this form.
-This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}.
+This gives an even better approximation of the data, which can be seen in figure~\ref{fig:particle_vis_fft_approx}. We store the data gathered from the approximation as a list of frequency, amplitude and phase.
 
 \begin{figure}[h]
 	\centering
@@ -521,5 +521,3 @@ This gives an even better approximation of the data, which can be seen in figure
 	\caption{The data of an activated cell with heavy oscillations is shown in black, simple approximation in orange and the approximation with FFT added in red. The first plot is scaled from 0 to 5, the second one is scaled to fit the data.}
 	\label{fig:particle_vis_fft_approx}
 \end{figure}
-
-We store the data gathered from the approximation as a list of frequency, amplitude and phase.

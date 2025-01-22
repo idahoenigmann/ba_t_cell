@@ -1,0 +1,11 @@
+this is the directory for the input data files
+add the h5 files here
+
+I have files named
+    mouse_negative.h5               = negative control on mouse t cells
+    mouse_positive.h5
+    mouse_experiment.h5             = medium density
+    mouse_negative_with_ctrl.h5     = filtered negative control (remove bad cells from h5 file)
+    mouse_positive_with_ctrl.h5
+    human_negative.h5
+    human_positive.h5

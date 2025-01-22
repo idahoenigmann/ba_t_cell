@@ -1,5 +1,5 @@
 .idea/
-data/
+data/*.h5
 *.csv
 
 # Byte-compiled / optimized / DLL files
