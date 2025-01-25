@@ -321,4 +321,4 @@ if __name__ == '__main__':
     to False.
     """
 
-    main("human_negative")
+    main("mouse_negative")

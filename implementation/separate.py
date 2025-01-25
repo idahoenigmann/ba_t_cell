@@ -108,7 +108,8 @@ def main(n_components, clustering_method, normalize, equalize_weights, vis_indiv
         data[["a", "u", "d", "k1", "k2", "w1", "w2"]] = scaler.transform(data[["a", "u", "d", "k1", "k2", "w1", "w2"]])
 
     dim = 2
-    prediction_parameters = ["a", "u", "d", "k1", "k2"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
+    # NOTE: It probably makes sense to remove w1 and w2 and maybe add w2-w1 instead
+    prediction_parameters = ["a", "u", "d", "k1", "k2", "w1", "w2"]  # idx,start,s,w1,t,w2,e,a,d,u,k1,k2,mse_sigmoid,mse_total
 
     # clustering
     if clustering_method == "gaussian_mixture":

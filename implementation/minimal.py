@@ -174,8 +174,8 @@ def separate(neg_df, pos_df, prediction_parameters, clustering):
 
 
 if __name__ == "__main__":
-    FILE_NAME_NEG = "mouse_negative"
-    FILE_NAME_POS = "mouse_positive"
+    FILE_NAME_NEG = "mouse_negative_with_ctrl"
+    FILE_NAME_POS = "mouse_positive_with_ctrl"
     FILE_NAME_EXP = "mouse_experiment"
 
     USED_COLUMNS = ["a", "u", "d", "k1", "k2"]

@@ -54,7 +54,7 @@ def visualize_2d_compare(data, x_axis, y_axis):
 
 
 def main(n_components, normalize, equalize_weights):
-    data = import_all_data(["human_positive", "human_negative"], equalize_weights)
+    data = import_all_data(["mouse_positive", "mouse_negative"], equalize_weights)
 
     if normalize:
         scaler = StandardScaler()

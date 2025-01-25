@@ -194,7 +194,7 @@ if __name__ == '__main__':
     """
 
     # filter out all outliers
-    main("mouse_negative", [3, 3], ["a", "u", "d", "k1", "k2"], ignore_file=True)
+    main("human_positive", [3, 3], ["a", "u", "d", "k1", "k2"], ignore_file=True)
 
 
     # filter out pre-activated cells
