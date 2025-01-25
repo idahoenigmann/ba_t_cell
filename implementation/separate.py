@@ -94,8 +94,8 @@ def main(n_components, clustering_method, normalize, equalize_weights, vis_indiv
     print(f"{n_components} components with {clustering_method}")
 
     fit_files = ["mouse_positive", "mouse_negative"]
-    ctrl_files = ["mouse_positive_with_ctrl", "mouse_negative_with_ctrl"]
-    files = ["mouse_positive_with_ctrl", "mouse_negative_with_ctrl", "mouse_positive", "mouse_negative"]
+    ctrl_files = [] # ["mouse_positive_with_ctrl", "mouse_negative_with_ctrl"]
+    files = ["mouse_experiment", "mouse_positive", "mouse_negative"] # ["mouse_positive_with_ctrl", "mouse_negative_with_ctrl", "mouse_positive", "mouse_negative"]
 
     print(f"fit with {fit_files}, show with {files}")
 
