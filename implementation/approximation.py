@@ -267,6 +267,8 @@ def main(file_name):
     # matplotlib.use('TkAgg')
     print(file_name)
 
+    VISUALIZE = True
+
     data = read_data(file_name)
     # filter out nan and inf values as well as too low and high values
     data = data[np.isfinite(data["ratio"])]
@@ -296,7 +298,7 @@ def main(file_name):
 
         try:  # throws error if no best fit was found or if particle was rejected by user (select_by_input)
             parameters = particle_to_parameters(single_particle_data, output_information=False,
-                                                visualize_particles=False, select_by_input=False,
+                                                visualize_particles=VISUALIZE, select_by_input=False,
                                                 titel=f"particle {particle_idx}")
 
             parameters["idx"] = particle_idx
